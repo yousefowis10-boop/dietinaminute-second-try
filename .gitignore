@@ -1,0 +1,48 @@
+# === Python / Django ===
+__pycache__/
+*.py[cod]
+# *.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+.env
+.venv/
+*.env
+local_settings.py
+*.migrations/
+
+# Django cache and config
+*.mo
+*.~ 
+*.bak
+*.swp
+*.swo
+
+# === React Frontend ===
+auth-frontend/node_modules/
+auth-frontend/.env
+auth-frontend/build/
+auth-frontend/dist/
+auth-frontend/.next/
+auth-frontend/.turbo/
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# === Testing / Coverage ===
+.coverage
+.tox/
+.nox/
+pytest_cache/
+htmlcov/
+coverage.xml
