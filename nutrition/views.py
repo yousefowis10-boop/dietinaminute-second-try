@@ -106,9 +106,9 @@ class ClientProfileView(APIView):
             serializer = ClientProfileSerializer(data=request.data)
 
         if serializer.is_valid():
-            carb_percentage = request.data.get('carb_percentage')
-            protein_percentage = request.data.get('protein_percentage')
-            fat_percentage = request.data.get('fat_percentage')
+            carb_percentage = request.data.get('carb_percentage', request.data.get('carb_pct'))
+            protein_percentage = request.data.get('protein_percentage', request.data.get('protein_pct'))
+            fat_percentage = request.data.get('fat_percentage', request.data.get('fat_pct'))
             bmr = request.data.get('bmr')
             activity_value = request.data.get('activity_value')
             target_calories = request.data.get('target_calories')

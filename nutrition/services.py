@@ -169,7 +169,7 @@ def totals_for(items, foods_by_id):
     return {k: round(v, 1) for k, v in totals.items()}
 
 
-def fit_servings(items, foods_by_id, targets, rounds=6, step=0.5):
+def fit_servings(items, foods_by_id, targets, rounds=6, step=0.5, allow_drop=False):
     """Adjust servings so each macro lands near its target.
 
     Foods are grouped by their type (carb/protein/fat). Each round scales a
@@ -190,6 +190,45 @@ def fit_servings(items, foods_by_id, targets, rounds=6, step=0.5):
             scale = needed / from_group
             for i in group:
                 i['quantity'] = max(step, round(i['quantity'] * scale / step) * step)
+    refined = refine_servings(items, foods_by_id, targets, step=step, minimum=0 if allow_drop else step)
+    return [i for i in refined if i['quantity'] > 0]
+
+
+def _error(items, foods_by_id, targets):
+    total = 0.0
+    for macro in ('protein', 'carb', 'fat'):
+        if not targets.get(macro):
+            continue
+        amount = sum(getattr(foods_by_id[i['food_id']], macro) * i['quantity'] for i in items)
+        total += ((amount - targets[macro]) / targets[macro]) ** 2
+    return total
+
+
+def refine_servings(items, foods_by_id, targets, step=0.5, minimum=0.5, maximum=15, max_moves=400):
+    """Step-by-step search: nudge one food by half a serving at a time while it gets closer.
+
+    Balances all three macros together, so mixed foods (e.g. cheese = protein + fat)
+    are handled. Deterministic and bounded.
+    """
+    items = [dict(i) for i in items]
+    best = _error(items, foods_by_id, targets)
+    for _ in range(max_moves):
+        move = None
+        for index, item in enumerate(items):
+            for delta in (step, -step):
+                new_q = round(item['quantity'] + delta, 2)
+                if new_q < minimum or new_q > maximum:
+                    continue
+                old_q = item['quantity']
+                item['quantity'] = new_q
+                err = _error(items, foods_by_id, targets)
+                item['quantity'] = old_q
+                if err < best - 1e-9 and (move is None or err < move[2]):
+                    move = (index, new_q, err)
+        if move is None:
+            break
+        items[move[0]]['quantity'] = move[1]
+        best = move[2]
     return items
 
 

@@ -35,6 +35,7 @@ urlpatterns = [
     path('plan/<int:plan_id>/workout/', v2.PlanWorkoutView.as_view()),
     path('plan/<int:plan_id>/notes/', v2.PlanNotesView.as_view()),
     path('plan/<int:plan_id>/delete/', v2.PlanDeleteView.as_view()),
+    path('plan/<int:plan_id>/replace/', v2.PlanReplaceView.as_view()),
     path('templates/', v2.PlanTemplateListView.as_view()),
     path('templates/<int:template_id>/', v2.PlanTemplateDetailView.as_view()),
     path('templates/<int:template_id>/apply/<int:client_id>/', v2.ApplyTemplateView.as_view()),

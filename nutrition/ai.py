@@ -148,7 +148,11 @@ def draft_plan(client, meals=4, language='ar'):
     if is_fake():
         picks, note = [], '[TEST MODE - sample foods chosen by a simple rule, not real AI]'
         for food_type in ('protein', 'carb', 'fat'):
-            options = sorted([f for f in allowed if f.food_type == food_type], key=lambda f: -getattr(f, food_type))[:2]
+            def purity(f, m=food_type):
+                kcal = f.protein * 4 + f.carb * 4 + f.fat * 9
+                return (getattr(f, m) * (9 if m == 'fat' else 4)) / kcal if kcal else 0
+            options = sorted([f for f in allowed if f.food_type == food_type and getattr(f, food_type) > 0],
+                             key=lambda f: -purity(f))[:2]
             for food in options:
                 picks.append({'food_id': food.id, 'servings': 1, 'meals': meal_tags[::2][:2]})
     else:
@@ -183,7 +187,7 @@ def draft_plan(client, meals=4, language='ar'):
     if not items:
         raise AIUnavailable('bad_response')
 
-    fitted = fit_servings(items, foods_by_id, targets)
+    fitted = fit_servings(items, foods_by_id, targets, allow_drop=True)
     totals = totals_for(fitted, foods_by_id)
     for item in fitted:
         food = foods_by_id[item['food_id']]

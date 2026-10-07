@@ -492,3 +492,50 @@ class FitServingsView(APIView):
         fitted = fit_servings(free, foods_by_id, remaining) + fixed if free else fixed
         totals = totals_for(fitted, foods_by_id)
         return Response({'items': fitted, 'totals': totals, 'targets': targets, 'on_target': within(totals, targets)})
+
+
+class PlanReplaceView(APIView):
+    """Save an edited plan: replaces its foods, servings and meals in one step."""
+
+    @transaction.atomic
+    def put(self, request, plan_id):
+        plan = get_object_or_404(plan_qs(request.user).select_related('client'), id=plan_id)
+        items = request.data.get('items') or []
+        if not items:
+            return Response({'error': 'No items provided.'}, status=400)
+        excluded = set(plan.client.excluded_foods.values_list('id', flat=True))
+        foods = {f.id: f for f in FoodItem.objects.filter(id__in=[i.get('id') for i in items])}
+        blocked = [foods[i['id']].name for i in items if i.get('id') in excluded and i.get('id') in foods]
+        if blocked:
+            return Response({'error': 'excluded_foods', 'foods': blocked}, status=400)
+        tags_by_name = {t.name: t for t in Tag.objects.all()}
+        plan.items.all().delete()
+        totals = {'protein': 0.0, 'carb': 0.0, 'fat': 0.0}
+        for entry in items:
+            food = foods.get(entry.get('id'))
+            if food is None:
+                continue
+            qty = float(entry.get('quantity') or 0)
+            if qty <= 0:
+                continue
+            item = DietItem.objects.create(
+                plan=plan, food=food, category=entry.get('category') or food.food_type, quantity=qty,
+                protein=food.protein * qty, carb=food.carb * qty, fat=food.fat * qty)
+            for macro in totals:
+                totals[macro] += getattr(food, macro) * qty
+            meal_tags = [tags_by_name[m] for m in entry.get('meals') or [] if m in tags_by_name]
+            if meal_tags:
+                item.tags.set(meal_tags)
+                shares = {str(tags_by_name[k].id): float(v) for k, v in (entry.get('shares') or {}).items()
+                          if k in tags_by_name}
+                if shares:
+                    item.meal_shares = shares
+                    item.save(update_fields=['meal_shares'])
+        client = plan.client
+        plan.name = (request.data.get('name') or plan.name)[:255]
+        plan.total_protein, plan.total_carb, plan.total_fat = totals['protein'], totals['carb'], totals['fat']
+        plan.missing_protein = max(0, (client.target_protein or 0) - totals['protein'])
+        plan.missing_carb = max(0, (client.target_carb or 0) - totals['carb'])
+        plan.missing_fat = max(0, (client.target_fat or 0) - totals['fat'])
+        plan.save()
+        return Response({'plan_id': plan.id})
