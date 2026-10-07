@@ -1,0 +1,65 @@
+import { useCallback, useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Pencil, Plus } from "lucide-react";
+import API from "../hooks/useApi";
+import { useI18n } from "../i18n";
+import { Avatar, Badge, Spinner, Tabs } from "../ui";
+import OverviewTab from "./client/OverviewTab";
+import InterviewTab from "./client/InterviewTab";
+import PlansTab from "./client/PlansTab";
+import ProgressTab from "./client/ProgressTab";
+
+export default function ClientPage() {
+  const { id } = useParams();
+  const { t, num } = useI18n();
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") || "overview";
+  const [data, setData] = useState(null);
+  const [failed, setFailed] = useState(false);
+
+  const load = useCallback(() => {
+    API.get(`/nutrition/clients/${id}/overview/`).then((r) => setData(r.data)).catch(() => setFailed(true));
+  }, [id]);
+  useEffect(() => { load(); }, [load]);
+
+  if (failed) return <p className="text-muted">{t("error")}</p>;
+  if (!data) return <Spinner label={t("loading")} />;
+  const c = data.client;
+
+  return (
+    <>
+      <Link to="/dashboard/clients" className="mb-2 inline-block text-sm text-muted hover:text-brand">← {t("clients")}</Link>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <Avatar name={c.name} size={48} />
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-bold">{c.name}</h1>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            <span className="chip">{num(c.age)} {t("years")} · {c.gender === "F" ? t("female") : t("male")}</span>
+            <span className="chip num">{num(c.weight, 1)} {t("kg")} · {num(c.height)} {t("cm")}</span>
+            {c.pbf ? <span className="chip">{t("bodyFat")} {num(c.pbf, 1)}%</span> : null}
+            <span className="chip">{t(`ws_${c.work_style}`)}</span>
+            <Badge tone="brand">{t("goal")}: {t(`goal_${c.goal || ""}`)}</Badge>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Link to={`/dashboard/clients/${c.id}/edit`} className="btn-secondary"><Pencil className="h-4 w-4" />{t("edit")}</Link>
+          <Link to={`/dashboard/clients/${c.id}/plans/new`} className="btn-primary"><Plus className="h-4 w-4" />{t("newPlan")}</Link>
+        </div>
+      </div>
+      <Tabs
+        value={tab}
+        onChange={(v) => setParams(v === "overview" ? {} : { tab: v })}
+        tabs={[
+          { value: "overview", label: t("tabOverview") },
+          { value: "interview", label: t("tabInterview"), badge: c.interview_status === "submitted" ? "!" : null },
+          { value: "plans", label: `${t("tabPlans")} (${data.plans.length})` },
+          { value: "progress", label: t("tabProgress") },
+        ]}
+      />
+      {tab === "overview" && <OverviewTab data={data} reload={load} />}
+      {tab === "interview" && <InterviewTab data={data} reload={load} />}
+      {tab === "plans" && <PlansTab data={data} reload={load} />}
+      {tab === "progress" && <ProgressTab data={data} />}
+    </>
+  );
+}

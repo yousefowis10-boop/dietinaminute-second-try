@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-page text-brand-ink; }
+  html[lang="ar"] body { font-family: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif; }
+  html[lang="en"] body { font-family: "Inter", "IBM Plex Sans Arabic", system-ui, sans-serif; }
+  input, select, textarea { @apply text-brand-ink; }
+  .num { font-variant-numeric: tabular-nums; }
+}
+
+@layer components {
+  .card { @apply bg-white border border-line rounded-2xl; }
+  .input { @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/15; }
+  .label { @apply mb-1 block text-xs font-medium text-muted; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50; }
+  .btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark; }
+  .btn-secondary { @apply btn border border-line bg-white text-brand-ink hover:bg-page; }
+  .btn-ghost { @apply btn text-muted hover:bg-page hover:text-brand-ink; }
+  .btn-danger { @apply btn border border-line bg-white text-bad hover:bg-bad-soft; }
+  .btn-ai { @apply btn bg-ai text-white hover:opacity-90; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full border border-line bg-white px-2.5 py-1 text-xs; }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+}
