@@ -22,7 +22,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ziq3@y&z7f_$ts258l__cd+u39t-4lkv3m@+(s4udcl2fbxa$l'
 
 AUTH_USER_MODEL = 'authapp.CustomUser'
 DB_LIVE = os.getenv('DB_LIVE')
@@ -33,7 +32,21 @@ if DB_LIVE in ['False', False]:
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['diet-in-a-minute-service-production.up.railway.app', '127.0.0.1', 'localhost']
+def _env_list(name, default=''):
+    return [v.strip() for v in os.getenv(name, default).split(',') if v.strip()]
+
+# The secret key must come from the environment in production.
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'local-development-only-not-secret'
+    else:
+        raise RuntimeError('SECRET_KEY environment variable is required when DEBUG is off')
+
+ALLOWED_HOSTS = _env_list(
+    'ALLOWED_HOSTS',
+    'diet-in-a-minute-service-production.up.railway.app,127.0.0.1,localhost',
+)
 
 # Application definition
 
@@ -64,10 +77,10 @@ MIDDLEWARE = [
 
 CSRF_COOKIE_SECURE = True  # Use secure cookies for CSRF (use this only if you have HTTPS enabled)
 CSRF_COOKIE_HTTPONLY = True  # Make CSRF cookies accessible only via HTTP
-CSRF_TRUSTED_ORIGINS = [
-    'https://diet-in-a-minute-service-production.up.railway.app',  # Add your production domain
-    'http://localhost:8000',  # If you're testing locally
-]
+CSRF_TRUSTED_ORIGINS = _env_list(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://diet-in-a-minute-service-production.up.railway.app,http://localhost:8000',
+)
 
 ROOT_URLCONF = 'paymentSystem.urls'
 
@@ -88,11 +101,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'paymentSystem.wsgi.application'
 
-CORS_ALLOW_ALL_ORIGINS = True
+# Only the app's own website(s) may call the API. Set CORS_ALLOWED_ORIGINS
+# to a comma-separated list, e.g. https://dietinaminute-second-try.vercel.app
+CORS_ALLOWED_ORIGINS = _env_list(
+    'CORS_ALLOWED_ORIGINS',
+    'https://dietinaminute-second-try.vercel.app,http://localhost:3000',
+)
+CORS_ALLOWED_ORIGIN_REGEXES = _env_list('CORS_ALLOWED_ORIGIN_REGEXES')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    # Every endpoint requires login unless it explicitly allows anonymous access.
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
     ),
 }
 

@@ -218,7 +218,8 @@ class DietItem(models.Model):
     plan = models.ForeignKey(DietPlan, on_delete=models.CASCADE, related_name='items')
     food = models.ForeignKey('nutrition.FoodItem', on_delete=models.CASCADE)
     category = models.CharField(max_length=10, choices=[('carb', 'Carb'), ('protein', 'Protein'), ('fat', 'Fat')])
-    quantity = models.IntegerField(default=1, help_text="Number of servings (default = 1)")
+    # Float so half servings (1.5 = 150 g) are stored exactly instead of being cut to 1.
+    quantity = models.FloatField(default=1, help_text="Number of servings (default = 1)")
     
     protein = models.FloatField()
     carb = models.FloatField()

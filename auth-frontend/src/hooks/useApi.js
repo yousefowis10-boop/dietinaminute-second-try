@@ -1,7 +1,10 @@
 import axios from "axios";
 
-// const baseURL = "http://localhost:8000";
-const baseURL = "https://diet-in-a-minute-service-production.up.railway.app";
+// The server address comes from REACT_APP_API_URL (set per site on Vercel).
+// Without it, the site keeps talking to the current live server.
+const baseURL =
+  process.env.REACT_APP_API_URL ||
+  "https://diet-in-a-minute-service-production.up.railway.app";
 const API = axios.create({
   baseURL: baseURL + '/api',
 });

@@ -62,6 +62,8 @@ class ClientProfileHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
+        if not ClientProfile.objects.filter(pk=pk, user=request.user).exists():
+            return Response({"detail": "Client not found"}, status=status.HTTP_404_NOT_FOUND)
         revisions = ClientProfileRevision.objects.filter(client_id=pk).order_by('-created_at')
         data = [{
             "created_at": rev.created_at,
@@ -228,7 +230,7 @@ class DietPlanDetailView(APIView):
 
         for item_data in items_data:
             item_id = item_data.get("item_id")
-            quantity = int(item_data.get("quantity", 1))
+            quantity = float(item_data.get("quantity", 1))
             category = item_data.get("category")
 
             if not item_id:
@@ -285,7 +287,7 @@ class AddItemToPlanView(APIView):
     def post(self, request, pk):
         plan = get_object_or_404(DietPlan, pk=pk, user=request.user)
         food_id = request.data.get("food_id")
-        quantity = int(request.data.get("quantity", 1))
+        quantity = float(request.data.get("quantity", 1))
         category = request.data.get("category")
 
         food = get_object_or_404(FoodItem, pk=food_id)
@@ -429,7 +431,7 @@ class CustomDietPlanCreateView(APIView):
 
     def post(self, request, client_id):
         try:
-            client = ClientProfile.objects.get(id=client_id)
+            client = ClientProfile.objects.get(id=client_id, user=request.user)
         except ObjectDoesNotExist:
             return Response({"error": "Client not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -497,12 +499,16 @@ class CustomDietPlanCreateView(APIView):
         return Response({"message": "Custom diet plan created", "plan_id": plan.id})
 
 class BMRFormulaListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         formulas = BMRFormula.objects.prefetch_related('gender_formulas', 'activity_levels').all()
         serializer = BMRFormulaSerializer(formulas, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class TagListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         tags = Tag.objects.all()
         serializer = TagSerializer(tags, many=True)
@@ -541,9 +547,10 @@ class TagListAPIView(APIView):
 #         return Response({"detail": "Meal plan updated successfully"}, status=status.HTTP_200_OK)
 
 class DietPlanTagsUpdateAPIView(APIView):
-    
+    permission_classes = [IsAuthenticated]
+
     def put(self, request, plan_id):
-        diet_plan = get_object_or_404(DietPlan, id=plan_id)
+        diet_plan = get_object_or_404(DietPlan, id=plan_id, user=request.user)
         updates = request.data.get("items", [])
 
         for entry in updates:
@@ -554,23 +561,29 @@ class DietPlanTagsUpdateAPIView(APIView):
             tag_ids = serializer.validated_data['tag_ids']
 
             item = get_object_or_404(DietItem, id=item_id, plan=diet_plan)
-            item.tags.set(tag_ids)
+            valid_tag_ids = list(Tag.objects.filter(id__in=tag_ids).values_list('id', flat=True))
+            item.tags.set(valid_tag_ids)
 
         return Response({"detail": "Tags updated successfully"}, status=status.HTTP_200_OK)
 
 class DietPlanSplitView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, plan_id):
         try:
-            diet_plan = DietPlan.objects.get(id=plan_id)
+            diet_plan = DietPlan.objects.get(id=plan_id, user=request.user)
         except DietPlan.DoesNotExist:
             return Response({"error": "Diet plan not found"}, status=status.HTTP_404_NOT_FOUND)
 
         result = defaultdict(list)
+        unassigned = []
         items = DietItem.objects.filter(plan=diet_plan).prefetch_related('tags', 'food')
 
         for item in items:
             tags = list(item.tags.all())
             if not tags:
+                # Previously these foods silently disappeared from the printout.
+                unassigned.append(item.food.name_ar or item.food.name)
                 continue
 
             tag_count = len(tags)
@@ -589,7 +602,8 @@ class DietPlanSplitView(APIView):
         response_data = {
             "name": diet_plan.name,
             "client": client_data,
-            "split": result
+            "split": result,
+            "unassigned": unassigned,
         }
 
         return Response(response_data, status=status.HTTP_200_OK)

@@ -13,6 +13,7 @@ const DietPlanSplitView = () => {
   const [editingHeader, setEditingHeader] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [unassigned, setUnassigned] = useState([]);
   const contentRef = useRef();
   const [logo, setLogo] = useState(null);
 
@@ -35,7 +36,8 @@ const DietPlanSplitView = () => {
     const fetchSplitPlan = async () => {
       try {
         const response = await API.get(`/nutrition/plan/${planId}/split/`);
-        const { client, split } = response.data;
+        const { client, split, unassigned: notInAnyMeal } = response.data;
+        setUnassigned(notInAnyMeal || []);
         setTaggedItems(split);
         setClient(client);
 
@@ -118,6 +120,12 @@ const DietPlanSplitView = () => {
           Download PDF
         </button>
       </div>
+
+      {unassigned.length > 0 && (
+        <div className="max-w-6xl mx-auto mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong>Not in any meal yet:</strong> {unassigned.join("، ")}. These foods are in the plan but will not appear on the client's sheet until you assign them to a meal.
+        </div>
+      )}
 
       <div
         ref={contentRef}

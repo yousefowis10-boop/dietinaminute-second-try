@@ -63,7 +63,7 @@ export default function MealEditor() {
     try {
       await API.post(`/nutrition/plan/custom/${client.id}/`, { items: allItems, name:name });
       toast.success("Meal plan created!");
-      navigate(`/client/${client.id}/meal-plan`);
+      navigate(`/dashboard/clients/${client.id}/plans`);
     } catch {
       toast.error("Failed to update meal plan");
     }
@@ -97,7 +97,7 @@ export default function MealEditor() {
     try {
       await API.put(`/nutrition/plan/${id}/`, { items: allItems, name: name });
       toast.success("Meal plan updated!");
-      navigate(`/client/${client.id}/meal-plan`);
+      navigate(`/dashboard/clients/${client.id}/plans`);
     } catch {
       toast.error("Failed to update meal plan");
     }

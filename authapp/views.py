@@ -9,6 +9,7 @@ from .serializers import RegisterSerializer, ChangePasswordSerializer
 User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
+    permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
     queryset = User.objects.all()
     # def post(self, request):

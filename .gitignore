@@ -46,3 +46,8 @@ Thumbs.db
 pytest_cache/
 htmlcov/
 coverage.xml
+
+# Never commit local data or uploads
+db.sqlite3
+*.sqlite3
+media/

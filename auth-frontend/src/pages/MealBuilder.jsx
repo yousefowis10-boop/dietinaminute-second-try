@@ -39,7 +39,7 @@
 //     try {
 //       await API.post(`/nutrition/plan/custom/${client.id}/`, { items: allItems });
 //       toast.success("Custom diet plan created!");
-//       navigate(`/client/${client.id}/meal-plan`);
+//       navigate(`/dashboard/clients/${client.id}/plans`);
 //     } catch {
 //       toast.error("Failed to create plan.");
 //     }
@@ -237,7 +237,7 @@ export default function MealBuilder() {
     try {
       await API.post(`/nutrition/plan/custom/${client.id}/`, { items: allItems, name: name});
       toast.success("Custom diet plan created!");
-      navigate(`/client/${client.id}/meal-plan`);
+      navigate(`/dashboard/clients/${client.id}/plans`);
     } catch {
       toast.error("Failed to create plan.");
     }
