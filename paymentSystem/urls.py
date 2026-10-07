@@ -19,6 +19,7 @@ from django.urls import path, include
 from authapp.admin import custom_admin_site
 from django.conf import settings
 from django.conf.urls.static import static
+from nutrition.views_v2 import PublicInterviewView
 
 
 urlpatterns = [
@@ -26,6 +27,8 @@ urlpatterns = [
     path('cadmin/', custom_admin_site.urls),
     path('api/auth/', include('authapp.urls')),
     path("api/nutrition/", include("nutrition.urls")),
+    # Public: the client's interview link (no login, protected by a long random token).
+    path("api/public/interview/<uuid:token>/", PublicInterviewView.as_view()),
 ]
 
 if settings.DEBUG:

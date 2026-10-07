@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
+import uuid
 
 
 User = get_user_model()
@@ -12,6 +13,10 @@ def user_logo_upload_path(instance, filename):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     logo = models.ImageField(upload_to=user_logo_upload_path, blank=True, null=True)
+    # Logo stored in the database (as a small data URL) so it survives server restarts.
+    logo_data = models.TextField(blank=True, default='')
+    clinic_name = models.CharField(max_length=200, blank=True, default='')
+    ai_enabled = models.BooleanField(default=True, help_text='Dietitian can switch all AI features off')
 
     def __str__(self):
         return f"Profile of {self.user.username}"
@@ -107,6 +112,11 @@ class ClientProfile(models.Model):
     protein_percentage = models.FloatField(null=True, blank=True, help_text="Percentage of protein")
     fat_percentage = models.FloatField(null=True, blank=True, help_text="Percentage of fat")
 
+    # Foods this client must never get (allergies, medical exclusions). Hard rule.
+    excluded_foods = models.ManyToManyField('nutrition.FoodItem', blank=True, related_name='excluded_for_clients')
+    INTERVIEW_STATUS = [('none', 'Not sent'), ('sent', 'Link sent'), ('submitted', 'Answered, waiting for review'), ('reviewed', 'Reviewed')]
+    interview_status = models.CharField(max_length=10, choices=INTERVIEW_STATUS, default='none')
+
 
     def save(self, *args, **kwargs):
         
@@ -181,7 +191,9 @@ class ClientProfile(models.Model):
             'loss': 'Weight Loss',
             'maintain': 'Maintain'
         }
-        detailed_profile.fitness_goal = goal_map.get(self.goal, '')
+        # Keep the client's own words if they already answered this question.
+        if not (detailed_profile.fitness_goal or '').strip() or detailed_profile.fitness_goal in goal_map.values():
+            detailed_profile.fitness_goal = goal_map.get(self.goal, '')
 
         detailed_profile.save()
 
@@ -210,6 +222,7 @@ class DietPlan(models.Model):
     missing_fat = models.FloatField(default=0)
 
     notes = models.TextField(blank=True)
+    workout = models.ForeignKey('nutrition.WorkoutTemplate', null=True, blank=True, on_delete=models.SET_NULL, related_name='plans')
 
     def __str__(self):
         return f"{self.user.username} - Plan on {self.created_at.date()}"
@@ -225,6 +238,8 @@ class DietItem(models.Model):
     carb = models.FloatField()
     fat = models.FloatField()
     tags = models.ManyToManyField(Tag, related_name='diet_items', blank=True)
+    # Optional unequal split across meals: {"<tag_id>": share}. Empty = equal split.
+    meal_shares = models.JSONField(default=dict, blank=True)
 
 
     def __str__(self):
@@ -474,3 +489,68 @@ class DetailedProfileRevision(models.Model):
 
     def __str__(self):
         return f"Revision of {self.detailed_profile} at {self.modified_at}"
+
+
+
+class PlanTemplate(models.Model):
+    """A reusable plan. user=None means a shared template (e.g. medical starting plans)."""
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='plan_templates')
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default='')
+    is_medical = models.BooleanField(default=False)
+    condition = models.CharField(max_length=100, blank=True, default='')
+    # True until a dietitian has checked it. Shown as a warning in the app.
+    is_draft = models.BooleanField(default=False)
+    # [{"food_id": 1, "quantity": 1.5, "category": "carb", "meals": ["meal1"], "shares": {"meal1": 1}}]
+    items = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class WorkoutTemplate(models.Model):
+    """A ready workout guide picked by goal, level and place. user=None = shared library."""
+    GOALS = [('fat_loss', 'Fat loss'), ('muscle_gain', 'Muscle gain'), ('general_health', 'General health')]
+    LEVELS = [('beginner', 'Beginner'), ('intermediate', 'Intermediate')]
+    PLACES = [('home', 'Home'), ('gym', 'Gym')]
+
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='workout_templates')
+    name = models.CharField(max_length=200)
+    name_ar = models.CharField(max_length=200, blank=True, default='')
+    goal = models.CharField(max_length=20, choices=GOALS)
+    level = models.CharField(max_length=20, choices=LEVELS, default='beginner')
+    place = models.CharField(max_length=10, choices=PLACES, default='home')
+    # Gentle version for clients with medical limits.
+    is_safe_version = models.BooleanField(default=False)
+    is_draft = models.BooleanField(default=False)
+    notes = models.TextField(blank=True, default='')
+    notes_ar = models.TextField(blank=True, default='')
+    # [{"title": "Day 1", "title_ar": "...", "exercises": [{"name": "...", "name_ar": "...", "sets": "3", "reps": "12", "rest": "60s"}]}]
+    days = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class InterviewInvite(models.Model):
+    """A private link a client opens to answer the first-visit questions at home."""
+    client = models.ForeignKey(ClientProfile, on_delete=models.CASCADE, related_name='interview_invites')
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    answers = models.JSONField(default=dict, blank=True)
+
+    def __str__(self):
+        return f"Interview for {self.client.name}"
+
+
+class AIResult(models.Model):
+    """Saved AI output so the dietitian can see it again without paying twice."""
+    KINDS = [('summary', 'Interview summary'), ('message', 'Client message'), ('followup', 'Follow-up suggestion')]
+    client = models.ForeignKey(ClientProfile, on_delete=models.CASCADE, related_name='ai_results')
+    plan = models.ForeignKey(DietPlan, null=True, blank=True, on_delete=models.CASCADE, related_name='ai_results')
+    kind = models.CharField(max_length=20, choices=KINDS)
+    content = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)

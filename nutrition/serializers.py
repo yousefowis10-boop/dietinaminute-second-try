@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ClientProfile, DietItem, DietPlan, FoodItem, BMRFormula, BMRGenderFormula, BMRActivityMultiplier, Tag, DetailedProfile, UserProfile, DetailedProfileRevision
+from .models import PlanTemplate, WorkoutTemplate, InterviewInvite, AIResult, ClientProfile, DietItem, DietPlan, FoodItem, BMRFormula, BMRGenderFormula, BMRActivityMultiplier, Tag, DetailedProfile, UserProfile, DetailedProfileRevision
 
 class DetailedProfileRevisionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,9 +7,18 @@ class DetailedProfileRevisionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    logo_url = serializers.SerializerMethodField()
+
     class Meta:
         model = UserProfile
-        fields = ['logo']
+        fields = ['logo', 'logo_url', 'clinic_name', 'ai_enabled']
+        extra_kwargs = {'logo': {'write_only': True, 'required': False}}
+
+    def get_logo_url(self, obj):
+        # Data URL kept in the database; falls back to an older uploaded file path.
+        if obj.logo_data:
+            return obj.logo_data
+        return obj.logo.url if obj.logo else None
 
 
 class ClientProfileSerializer(serializers.ModelSerializer):
@@ -25,9 +34,10 @@ class ClientProfileSerializer(serializers.ModelSerializer):
             'bmr', 'activity_value', 'target_calories',
             'target_protein', 'target_carb', 'target_fat',
             'carb_percentage', 'protein_percentage', 'fat_percentage',
+            'excluded_foods', 'interview_status', 'created_at',
         ]
         read_only_fields = [
-            'target_protein', 'target_carb', 'target_fat'
+            'target_protein', 'target_carb', 'target_fat', 'excluded_foods', 'interview_status', 'created_at',
         ]
 
     def to_internal_value(self, data):
@@ -66,8 +76,14 @@ class DietItemSerializer(serializers.ModelSerializer):
             'protein',
             'carb',
             'fat',
-            'tag_ids'
+            'tag_ids',
+            'meal_shares',
+            'food_type',
+            'multiplying_factor',
         ]
+
+    food_type = serializers.CharField(source='food.food_type', read_only=True)
+    multiplying_factor = serializers.FloatField(source='food.multiplying_factor', read_only=True)
 
     def get_adjusted_quantity(self, obj):
         factor = obj.food.multiplying_factor or 1
@@ -81,13 +97,13 @@ class DietPlanSerializer(serializers.ModelSerializer):
         model = DietPlan
         fields = [
             'id', 'created_at', 'name', 'total_protein', 'total_carb', 'total_fat',
-            'missing_protein', 'missing_carb', 'missing_fat', 'items', 'client'
+            'missing_protein', 'missing_carb', 'missing_fat', 'items', 'client', 'workout', 'notes'
         ]
 
 class FoodItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodItem
-        fields = ['id', 'name', 'unit', 'food_type', 'protein', 'carb', 'fat']
+        fields = ['id', 'name', 'name_ar', 'unit', 'unit_ar', 'food_type', 'protein', 'carb', 'fat', 'multiplying_factor']
 
 
 class BMRGenderFormulaSerializer(serializers.ModelSerializer):
@@ -126,3 +142,33 @@ class DetailedProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = DetailedProfile
         fields = '__all__'
+
+class PlanTemplateSerializer(serializers.ModelSerializer):
+    is_shared = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PlanTemplate
+        fields = ['id', 'name', 'description', 'is_medical', 'condition', 'is_draft', 'items', 'created_at', 'is_shared']
+        read_only_fields = ['is_draft', 'created_at']
+
+    def get_is_shared(self, obj):
+        return obj.user_id is None
+
+
+class WorkoutTemplateSerializer(serializers.ModelSerializer):
+    is_shared = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WorkoutTemplate
+        fields = ['id', 'name', 'name_ar', 'goal', 'level', 'place', 'is_safe_version', 'is_draft', 'notes',
+                  'notes_ar', 'days', 'created_at', 'is_shared']
+        read_only_fields = ['is_draft', 'created_at']
+
+    def get_is_shared(self, obj):
+        return obj.user_id is None
+
+
+class AIResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AIResult
+        fields = ['id', 'kind', 'content', 'created_at', 'plan']

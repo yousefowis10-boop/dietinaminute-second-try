@@ -12,8 +12,12 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
+from datetime import timedelta
+
+from django.utils import timezone
+
 from nutrition.models import (
-    BMRActivityMultiplier, BMRFormula, BMRGenderFormula, ClientProfile, FoodItem, Tag,
+    BMRActivityMultiplier, BMRFormula, BMRGenderFormula, ClientProfile, ClientProfileRevision, FoodItem, Tag,
 )
 
 MEAL_TAGS = ['meal1', 'snack1', 'meal2', 'snack2', 'meal3', 'snack3', 'meal4']
@@ -99,16 +103,34 @@ class Command(BaseCommand):
         user, created = User.objects.get_or_create(username='demo@dietinaminute.test')
         if created:
             user.set_password(password)
-            user.is_subscribed = True
-            user.save()
+        user.is_subscribed = True
+        user.plan_tier = 'pro'  # demo account can try the AI features (test mode)
+        user.first_name = 'Demo'
+        user.save()
 
         for c in DEMO_CLIENTS:
-            if ClientProfile.objects.filter(user=user, name=c['name']).exists():
-                continue
             bmr = round(mifflin_bmr(c), 2)
             multiplier = dict(FORMULAS['Mifflin-St Jeor']['levels'])[c['work_style']]
             target = round(bmr * multiplier + GOAL_ADJUST[c['goal']], 2)
-            ClientProfile.objects.create(
-                user=user, bmr=bmr, activity_value=multiplier, target_calories=target, **c)
+            client = ClientProfile.objects.filter(user=user, name=c['name']).first()
+            if client is None:
+                client = ClientProfile.objects.create(
+                    user=user, bmr=bmr, activity_value=round(bmr * multiplier), target_calories=target, **c)
+            if client.profile_revisions.count() >= 2:
+                continue
+            # Three earlier visits so the progress report has something to show.
+            for weeks_ago, delta in ((9, 3.5), (6, 2.2), (3, 1.0)):
+                rev = ClientProfileRevision.objects.create(
+                    client=client, age=c['age'], weight=c['weight'] + delta * (1 if c['goal'] == 'loss' else -0.4),
+                    height=c['height'], gender=c['gender'], goal=c['goal'], smm=c['smm'],
+                    pbf=c['pbf'] + delta * (0.6 if c['goal'] == 'loss' else -0.1), work_style=c['work_style'],
+                    bmr=bmr, calorie_target=target)
+                ClientProfileRevision.objects.filter(pk=rev.pk).update(
+                    created_at=timezone.now() - timedelta(weeks=weeks_ago))
+            ClientProfileRevision.objects.create(
+                client=client, age=c['age'], weight=c['weight'], height=c['height'], gender=c['gender'],
+                goal=c['goal'], smm=c['smm'], pbf=c['pbf'], work_style=c['work_style'], bmr=bmr,
+                calorie_target=target, target_protein=client.target_protein, target_carb=client.target_carb,
+                target_fat=client.target_fat)
 
         self.stdout.write(self.style.SUCCESS('Demo data ready.'))

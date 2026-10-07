@@ -1,15 +1,21 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import Clinic, CustomUser
 
 # Register your models here.
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ['username', 'email', 'is_staff', 'is_active', 'is_subscribed']
+    list_display = ['username', 'email', 'is_staff', 'is_active', 'is_subscribed', 'plan_tier', 'clinic']
+    list_filter = ['is_subscribed', 'plan_tier', 'clinic']
     fieldsets = UserAdmin.fieldsets + (
-        ("Subscription", {"fields": ("is_subscribed",)}),
+        ("Subscription", {"fields": ("is_subscribed", "plan_tier", "clinic", "is_clinic_admin")}),
     )
+
+
+@admin.register(Clinic)
+class ClinicAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_at']
 
 
 from django.urls import path

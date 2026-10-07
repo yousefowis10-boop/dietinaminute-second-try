@@ -9,6 +9,7 @@ from django.forms.models import model_to_dict
 from collections import defaultdict
 from decimal import Decimal, ROUND_HALF_UP
 
+from .services import client_qs, plan_qs, calculate_targets, split_plan
 from .models import ClientProfile, DietPlan, FoodItem, DietItem, ClientProfileRevision, BMRFormula, Tag, DetailedProfile, DetailedProfileRevision, UserProfile
 from .serializers import ClientProfileSerializer, DietPlanSerializer, FoodItemSerializer, BMRFormulaSerializer, DietItemTagUpdateSerializer, \
     TagSerializer, DetailedProfileSerializer, UserProfileSerializer, DetailedProfileRevisionSerializer
@@ -20,7 +21,7 @@ class ClientProfileRevisionsListView(ListAPIView):
 
     def get_queryset(self):
         client_id = self.kwargs.get('client_id')
-        return DetailedProfileRevision.objects.filter(client__id=client_id, user=self.request.user).order_by('-modified_at')
+        return DetailedProfileRevision.objects.filter(client__in=client_qs(self.request.user), client__id=client_id).order_by('-modified_at')
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -51,7 +52,7 @@ class ClientProfileDetailView(APIView):
 
     def get(self, request, pk):
         try:
-            client = ClientProfile.objects.get(pk=pk, user=request.user)
+            client = client_qs(request.user).get(pk=pk)
         except ClientProfile.DoesNotExist:
             return Response({"detail": "Client not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -62,7 +63,7 @@ class ClientProfileHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
-        if not ClientProfile.objects.filter(pk=pk, user=request.user).exists():
+        if not client_qs(request.user).filter(pk=pk).exists():
             return Response({"detail": "Client not found"}, status=status.HTTP_404_NOT_FOUND)
         revisions = ClientProfileRevision.objects.filter(client_id=pk).order_by('-created_at')
         data = [{
@@ -88,7 +89,7 @@ class ClientProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        clients = ClientProfile.objects.filter(user=request.user).order_by('-created_at')
+        clients = client_qs(request.user).order_by('-created_at')
         serializer = ClientProfileSerializer(clients, many=True)
         return Response(serializer.data)
     
@@ -97,7 +98,7 @@ class ClientProfileView(APIView):
         create_revision = request.data.get("create_revision", True)
         if client_id:
             try:
-                client = ClientProfile.objects.get(id=client_id, user=request.user)
+                client = client_qs(request.user).get(id=client_id)
                 serializer = ClientProfileSerializer(client, data=request.data, partial=True)
             except ClientProfile.DoesNotExist:
                 return Response({"detail": "Client not found."}, status=404)
@@ -108,15 +109,36 @@ class ClientProfileView(APIView):
             carb_percentage = request.data.get('carb_percentage')
             protein_percentage = request.data.get('protein_percentage')
             fat_percentage = request.data.get('fat_percentage')
-            instance = serializer.save(
-                user=request.user,
-                bmr=request.data.get('bmr'),
-                activity_value=request.data.get('activity_value'),
-                target_calories=request.data.get('target_calories'),
+            bmr = request.data.get('bmr')
+            activity_value = request.data.get('activity_value')
+            target_calories = request.data.get('target_calories')
+            if request.data.get('formula'):
+                # New app: the server does the calculation from the client's numbers.
+                existing = ({k: getattr(serializer.instance, k, None) for k in ('gender', 'weight', 'height', 'age', 'work_style')}
+                            if serializer.instance else {})
+                data = {**existing, **serializer.validated_data}
+                try:
+                    calc = calculate_targets(
+                        formula_name=request.data.get('formula'), gender=data['gender'], weight=data['weight'],
+                        height=data['height'], age=data['age'], work_style=data['work_style'],
+                        adjustment=float(request.data.get('adjustment') or 0),
+                        protein_pct=float(protein_percentage or 25), carb_pct=float(carb_percentage or 55),
+                        fat_pct=float(fat_percentage or 20))
+                except (ValueError, KeyError, TypeError) as exc:
+                    return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+                bmr, activity_value, target_calories = calc['bmr'], calc['tdee'], calc['target_calories']
+                protein_percentage, carb_percentage, fat_percentage = calc['protein_pct'], calc['carb_pct'], calc['fat_pct']
+            save_kwargs = dict(
+                bmr=bmr,
+                activity_value=activity_value,
+                target_calories=target_calories,
                 carb_percentage=carb_percentage,
                 protein_percentage=protein_percentage,
-                fat_percentage=fat_percentage
-                )
+                fat_percentage=fat_percentage,
+            )
+            if serializer.instance is None:
+                save_kwargs['user'] = request.user
+            instance = serializer.save(**save_kwargs)
             if create_revision:
                 ClientProfileRevision.objects.create(
                     client=instance,
@@ -213,12 +235,12 @@ class DietPlanDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
-        plan = get_object_or_404(DietPlan, pk=pk, user=request.user)
+        plan = get_object_or_404(plan_qs(request.user), pk=pk)
         serializer = DietPlanSerializer(plan)
         return Response(serializer.data)
     
     def put(self, request, pk):
-        plan = get_object_or_404(DietPlan, pk=pk, user=request.user)
+        plan = get_object_or_404(plan_qs(request.user), pk=pk)
         items_data = request.data.get("items", [])
         name = request.data.get("name", 'Default Diet Plan')
 
@@ -238,6 +260,8 @@ class DietPlanDetailView(APIView):
                     {"detail": "Each item must have an item_id."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+            if plan.client.excluded_foods.filter(id=item_id).exists():
+                return Response({"error": "excluded_foods", "foods": [item_id]}, status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 diet_item = plan.items.get(food_id=item_id)
@@ -273,7 +297,7 @@ class ClientDietPlansView(APIView):
 
     def get(self, request, client_id):
         try:
-            client = ClientProfile.objects.get(id=client_id, user=request.user)
+            client = client_qs(request.user).get(id=client_id)
         except ClientProfile.DoesNotExist:
             return Response({"detail": "Client not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -285,7 +309,7 @@ class AddItemToPlanView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        plan = get_object_or_404(DietPlan, pk=pk, user=request.user)
+        plan = get_object_or_404(plan_qs(request.user), pk=pk)
         food_id = request.data.get("food_id")
         quantity = float(request.data.get("quantity", 1))
         category = request.data.get("category")
@@ -431,7 +455,7 @@ class CustomDietPlanCreateView(APIView):
 
     def post(self, request, client_id):
         try:
-            client = ClientProfile.objects.get(id=client_id, user=request.user)
+            client = client_qs(request.user).get(id=client_id)
         except ObjectDoesNotExist:
             return Response({"error": "Client not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -440,6 +464,12 @@ class CustomDietPlanCreateView(APIView):
 
         if not items:
             return Response({"error": "No items provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+        excluded = set(client.excluded_foods.values_list('id', flat=True))
+        blocked = [i.get("id") for i in items if i.get("id") in excluded]
+        if blocked:
+            names = list(FoodItem.objects.filter(id__in=blocked).values_list('name', flat=True))
+            return Response({"error": "excluded_foods", "foods": names}, status=status.HTTP_400_BAD_REQUEST)
 
         total_p = total_c = total_f = 0
         diet_items = []
@@ -469,6 +499,8 @@ class CustomDietPlanCreateView(APIView):
                 "protein": protein,
                 "carb": carb,
                 "fat": fat,
+                "meals": item.get("meals") or [],
+                "shares": item.get("shares") or {},
             })
 
 
@@ -485,8 +517,9 @@ class CustomDietPlanCreateView(APIView):
             missing_fat=max(0, client.target_fat - total_f),
         )
 
+        tags_by_name = {t.name: t for t in Tag.objects.all()}
         for item in diet_items:
-            DietItem.objects.create(
+            diet_item = DietItem.objects.create(
                 plan=plan,
                 food=item["food"],
                 category=item["category"],
@@ -495,6 +528,14 @@ class CustomDietPlanCreateView(APIView):
                 carb=item["carb"],
                 fat=item["fat"],
             )
+            # Optional: meals chosen up front (templates, AI drafts, new builder).
+            meal_tags = [tags_by_name[m] for m in item["meals"] if m in tags_by_name]
+            if meal_tags:
+                diet_item.tags.set(meal_tags)
+                shares = {str(tags_by_name[k].id): float(v) for k, v in item["shares"].items() if k in tags_by_name}
+                if shares:
+                    diet_item.meal_shares = shares
+                    diet_item.save(update_fields=["meal_shares"])
 
         return Response({"message": "Custom diet plan created", "plan_id": plan.id})
 
@@ -550,7 +591,7 @@ class DietPlanTagsUpdateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, plan_id):
-        diet_plan = get_object_or_404(DietPlan, id=plan_id, user=request.user)
+        diet_plan = get_object_or_404(plan_qs(request.user), id=plan_id)
         updates = request.data.get("items", [])
 
         for entry in updates:
@@ -563,6 +604,10 @@ class DietPlanTagsUpdateAPIView(APIView):
             item = get_object_or_404(DietItem, id=item_id, plan=diet_plan)
             valid_tag_ids = list(Tag.objects.filter(id__in=tag_ids).values_list('id', flat=True))
             item.tags.set(valid_tag_ids)
+            shares = entry.get("shares") or {}
+            item.meal_shares = {str(k): float(v) for k, v in shares.items()
+                                if str(k).isdigit() and int(k) in valid_tag_ids and float(v) >= 0}
+            item.save(update_fields=["meal_shares"])
 
         return Response({"detail": "Tags updated successfully"}, status=status.HTTP_200_OK)
 
@@ -571,31 +616,11 @@ class DietPlanSplitView(APIView):
 
     def get(self, request, plan_id):
         try:
-            diet_plan = DietPlan.objects.get(id=plan_id, user=request.user)
+            diet_plan = plan_qs(request.user).get(id=plan_id)
         except DietPlan.DoesNotExist:
             return Response({"error": "Diet plan not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        result = defaultdict(list)
-        unassigned = []
-        items = DietItem.objects.filter(plan=diet_plan).prefetch_related('tags', 'food')
-
-        for item in items:
-            tags = list(item.tags.all())
-            if not tags:
-                # Previously these foods silently disappeared from the printout.
-                unassigned.append(item.food.name_ar or item.food.name)
-                continue
-
-            tag_count = len(tags)
-            quantity_per_tag = (
-                Decimal(item.quantity * item.food.multiplying_factor) / tag_count
-            ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-            for tag in tags:
-                result[tag.name].append({
-                    "food": item.food.name_ar if hasattr(item.food, "name_ar") else str(item.food),
-                    "quantity": f"{quantity_per_tag} {item.food.unit_ar if hasattr(item.food, 'unit_ar') else ''}"
-                })
+        result, unassigned = split_plan(diet_plan)
 
         client_data = ClientProfileSerializer(diet_plan.client).data
 
@@ -614,7 +639,7 @@ class ClientDetailedProfileView(APIView):
     def get(self, request, client_id):
         # Fetch the client based on the client_id and user
         try:
-            client = ClientProfile.objects.get(id=client_id, user=request.user)
+            client = client_qs(request.user).get(id=client_id)
         except ClientProfile.DoesNotExist:
             return Response({"detail": "Client not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -623,7 +648,7 @@ class ClientDetailedProfileView(APIView):
         #     detailed_profile = DetailedProfile.objects.get(client=client)
         # except DetailedProfile.DoesNotExist:
         #     return Response({"detail": "Detailed profile not found."}, status=status.HTTP_404_NOT_FOUND)
-        detailed_profile, created = DetailedProfile.objects.get_or_create(client=client, user = request.user)
+        detailed_profile, created = DetailedProfile.objects.get_or_create(client=client, defaults={'user': client.user})
         if created:
             if client.name:
                 parts = client.name.strip().split(' ', 1)
@@ -643,12 +668,12 @@ class ClientDetailedProfileView(APIView):
     def put(self, request, client_id):
         # Fetch the client based on the client_id and user
         try:
-            client = ClientProfile.objects.get(id=client_id, user=request.user)
+            client = client_qs(request.user).get(id=client_id)
         except ClientProfile.DoesNotExist:
             return Response({"detail": "Client not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Retrieve the DetailedProfile associated with the client, or create a new one if it doesn't exist
-        detailed_profile, created = DetailedProfile.objects.get_or_create(client=client, user=request.user)
+        detailed_profile, created = DetailedProfile.objects.get_or_create(client=client, defaults={'user': client.user})
 
         # Use the serializer to validate and update the profile
         serializer = DetailedProfileSerializer(detailed_profile, data=request.data, partial=True)

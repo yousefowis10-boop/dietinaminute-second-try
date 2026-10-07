@@ -18,7 +18,33 @@ from .views import ClientProfileView, \
     UserProfileView, \
     ClientProfileRevisionsListView
 
+from . import views_v2 as v2
+
 urlpatterns = [
+    # --- upgrade ---
+    path('account/', v2.AccountView.as_view()),
+    path('account/branding/', v2.BrandingView.as_view()),
+    path('dashboard/', v2.DashboardView.as_view()),
+    path('calc-targets/', v2.CalcTargetsView.as_view()),
+    path('clients/<int:client_id>/fit-servings/', v2.FitServingsView.as_view()),
+    path('clients/<int:client_id>/overview/', v2.ClientOverviewView.as_view()),
+    path('clients/<int:client_id>/exclusions/', v2.ClientExclusionsView.as_view()),
+    path('clients/<int:client_id>/interview-link/', v2.InterviewLinkView.as_view()),
+    path('clients/<int:client_id>/interview-reviewed/', v2.InterviewReviewedView.as_view()),
+    path('plan/<int:plan_id>/sheet/', v2.PlanSheetView.as_view()),
+    path('plan/<int:plan_id>/workout/', v2.PlanWorkoutView.as_view()),
+    path('plan/<int:plan_id>/notes/', v2.PlanNotesView.as_view()),
+    path('plan/<int:plan_id>/delete/', v2.PlanDeleteView.as_view()),
+    path('templates/', v2.PlanTemplateListView.as_view()),
+    path('templates/<int:template_id>/', v2.PlanTemplateDetailView.as_view()),
+    path('templates/<int:template_id>/apply/<int:client_id>/', v2.ApplyTemplateView.as_view()),
+    path('workouts/', v2.WorkoutListView.as_view()),
+    path('workouts/<int:workout_id>/', v2.WorkoutDetailView.as_view()),
+    path('ai/clients/<int:client_id>/summary/', v2.AISummaryView.as_view()),
+    path('ai/clients/<int:client_id>/draft-plan/', v2.AIDraftPlanView.as_view()),
+    path('ai/clients/<int:client_id>/follow-up/', v2.AIFollowUpView.as_view()),
+    path('ai/plans/<int:plan_id>/client-message/', v2.AIClientMessageView.as_view()),
+    # --- existing ---
     path('profile/', UserProfileView.as_view(), name='user-profile'),
 
     path("clients/", ClientProfileView.as_view(), name="client-profile"),
