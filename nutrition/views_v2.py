@@ -693,7 +693,7 @@ def create_checkin(client, data, *, source, reviewed=True, file=None, recalculat
         body_fat_mass=values['body_fat_mass'], visceral_fat=values['visceral_fat'], waist_hip=values['waist_hip'],
         inbody_bmr=values['inbody_bmr'])
     date = str(data.get('date') or '')
-    if len(date) == 10:
+    if len(date) == 10 and date != timezone.localdate().isoformat():
         try:
             when = timezone.make_aware(datetime.fromisoformat(date + 'T12:00:00'))
             if when <= timezone.now() + timedelta(days=1):

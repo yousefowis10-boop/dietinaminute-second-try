@@ -29,7 +29,8 @@ export function CheckInPanel({ client, last, mode, onClose, onSaved }) {
   const { t, num } = useI18n();
   const blocker = useAIBlocker();
   const fileRef = useRef(null);
-  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const today = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   const [values, setValues] = useState({ date: today });
   const [file, setFile] = useState(null); // {name, content_type, data, preview}
   const [read, setRead] = useState(false);
