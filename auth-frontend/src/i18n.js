@@ -298,6 +298,8 @@ const STRINGS = {
     gridHintAmount: "تُقسم الكمية بالتساوي — اضغط على الكمية لتغييرها",
     kcalPerMeal: "السعرات لكل وجبة",
     backToEqual: "رجوع للتقسيم بالتساوي",
+    sidebarOpen: "إظهار القائمة",
+    sidebarClose: "تصغير القائمة",
   },
   en: {
     appName: "Diet in a Minute",
@@ -578,6 +580,8 @@ const STRINGS = {
     gridHintAmount: "The amount is split equally — click an amount to change it",
     kcalPerMeal: "Calories per meal",
     backToEqual: "Back to equal split",
+    sidebarOpen: "Show menu",
+    sidebarClose: "Collapse menu",
   },
 };
 

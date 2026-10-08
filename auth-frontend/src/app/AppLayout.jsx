@@ -1,27 +1,35 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { ClipboardList, Dumbbell, Home, LayoutGrid, LogOut, Menu, Salad, Settings, Users, X } from "lucide-react";
+import { ClipboardList, Dumbbell, Home, LayoutGrid, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Salad, Settings, Users, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../i18n";
 import { Avatar } from "../ui";
 import API from "../hooks/useApi";
 
-function NavItem({ to, icon: Icon, label, badge, end }) {
+function NavItem({ to, icon: Icon, label, badge, end, slim }) {
   return (
     <NavLink
       to={to}
       end={end}
+      title={slim ? label : undefined}
       className={({ isActive }) =>
-        `mb-0.5 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${
+        `relative mb-0.5 flex items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition ${slim ? "justify-center px-0" : "px-3"} ${
           isActive ? "bg-brand-soft text-brand" : "text-[#3b4541] hover:bg-page"
         }`
       }
     >
-      <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
-      <span className="flex-1">{label}</span>
-      {badge ? <span className="rounded-full bg-warn px-2 text-[11px] font-semibold text-white">{badge}</span> : null}
+      <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.8} />
+      {!slim && <span className="flex-1">{label}</span>}
+      {badge ? (slim
+        ? <span className="absolute end-1.5 top-1.5 h-2 w-2 rounded-full bg-warn" />
+        : <span className="rounded-full bg-warn px-2 text-[11px] font-semibold text-white">{badge}</span>) : null}
     </NavLink>
   );
+}
+
+const SLIM_KEY = "dim.sidebarSlim";
+function readSlim() {
+  try { return localStorage.getItem(SLIM_KEY) === "1"; } catch { return false; }
 }
 
 export function LanguageSwitch({ className = "" }) {
@@ -61,8 +69,13 @@ function NotSubscribed() {
 
 export default function AppLayout() {
   const { user, account, logout } = useAuth();
-  const { t } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const [open, setOpen] = useState(false);
+  const [slimPref, setSlimPref] = useState(readSlim);
+  const toggleSlim = () => setSlimPref((v) => {
+    try { localStorage.setItem(SLIM_KEY, v ? "0" : "1"); } catch { /* not saved, still works */ }
+    return !v;
+  });
   const [waiting, setWaiting] = useState(0);
   const location = useLocation();
 
@@ -77,45 +90,62 @@ export default function AppLayout() {
   const planLabel = { basic: t("planBasic"), pro: t("planPro"), clinic: t("planClinic") }[account?.plan_tier] || "";
   const name = account?.first_name || user?.username?.split("@")[0] || "";
 
-  const sidebar = (
-    <div className="flex h-full flex-col px-4 py-5">
-      <div className="mx-1.5 mb-7 flex items-center gap-2.5">
+  const sidebar = (slim) => (
+    <div className={`flex h-full flex-col py-5 ${slim ? "px-2.5" : "px-4"}`}>
+      <div className={`mb-7 flex items-center gap-2.5 ${slim ? "flex-col" : "mx-1.5"}`}>
         {account?.logo_url ? (
           <img src={account.logo_url} alt="" className="h-9 w-9 rounded-lg border border-line object-contain" />
         ) : (
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-brand text-sm font-bold text-white">D</span>
         )}
-        <div className="min-w-0 leading-tight">
-          <div className="truncate font-bold" dir="ltr">{t("appName")}</div>
-          <div className="truncate text-xs text-muted">{account?.clinic_name || t("tagline")}</div>
-        </div>
+        {!slim && (
+          <div className="min-w-0 flex-1 leading-tight">
+            <div className="truncate font-bold" dir="ltr">{t("appName")}</div>
+            <div className="truncate text-xs text-muted">{account?.clinic_name || t("tagline")}</div>
+          </div>
+        )}
+        {slim !== null && (
+          <button type="button" onClick={toggleSlim} className="btn-ghost hidden p-1.5 text-muted lg:inline-flex" title={slim ? t("sidebarOpen") : t("sidebarClose")} aria-label={slim ? t("sidebarOpen") : t("sidebarClose")}>
+            {slim ? <PanelLeftOpen className="h-[18px] w-[18px] rtl:-scale-x-100" /> : <PanelLeftClose className="h-[18px] w-[18px] rtl:-scale-x-100" />}
+          </button>
+        )}
       </div>
       <nav className="flex-1 overflow-y-auto">
-        <NavItem to="/dashboard" end icon={Home} label={t("home")} />
-        <NavItem to="/dashboard/clients" icon={Users} label={t("clients")} />
-        <NavItem to="/dashboard/interviews" icon={ClipboardList} label={t("interviews")} badge={waiting} />
-        <div className="mx-3 mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-muted">{t("library")}</div>
-        <NavItem to="/dashboard/templates" icon={LayoutGrid} label={t("planTemplates")} />
-        <NavItem to="/dashboard/workouts" icon={Dumbbell} label={t("workoutPlans")} />
-        <NavItem to="/dashboard/foods" icon={Salad} label={t("foodDatabase")} />
-        <div className="mx-3 mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-muted">{t("account")}</div>
-        <NavItem to="/dashboard/settings" icon={Settings} label={t("settings")} />
+        <NavItem slim={slim} to="/dashboard" end icon={Home} label={t("home")} />
+        <NavItem slim={slim} to="/dashboard/clients" icon={Users} label={t("clients")} />
+        <NavItem slim={slim} to="/dashboard/interviews" icon={ClipboardList} label={t("interviews")} badge={waiting} />
+        {slim ? <div className="mx-2 my-3 border-t border-line" /> : <div className="mx-3 mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-muted">{t("library")}</div>}
+        <NavItem slim={slim} to="/dashboard/templates" icon={LayoutGrid} label={t("planTemplates")} />
+        <NavItem slim={slim} to="/dashboard/workouts" icon={Dumbbell} label={t("workoutPlans")} />
+        <NavItem slim={slim} to="/dashboard/foods" icon={Salad} label={t("foodDatabase")} />
+        {slim ? <div className="mx-2 my-3 border-t border-line" /> : <div className="mx-3 mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-muted">{t("account")}</div>}
+        <NavItem slim={slim} to="/dashboard/settings" icon={Settings} label={t("settings")} />
       </nav>
-      <LanguageSwitch className="mb-3" />
-      <div className="flex items-center gap-2.5 px-1">
-        <Avatar name={name} size={34} />
-        <div className="min-w-0 flex-1 leading-tight">
-          <div className="truncate text-sm font-semibold">{name}</div>
-          <div className="truncate text-[11px] text-muted">{planLabel}</div>
+      {slim ? (
+        <div className="flex flex-col items-center gap-2">
+          <button type="button" onClick={() => setLang(lang === "ar" ? "en" : "ar")} className="h-8 w-10 rounded-lg bg-page text-xs font-semibold" title={lang === "ar" ? "English" : "العربية"}>{lang === "ar" ? "EN" : "ع"}</button>
+          <span title={name}><Avatar name={name} size={34} /></span>
+          <button type="button" onClick={logout} className="btn-ghost p-2" title={t("logout")}><LogOut className="h-4 w-4" /></button>
         </div>
-        <button type="button" onClick={logout} className="btn-ghost p-2" title={t("logout")}><LogOut className="h-4 w-4" /></button>
-      </div>
+      ) : (
+        <>
+          <LanguageSwitch className="mb-3" />
+          <div className="flex items-center gap-2.5 px-1">
+            <Avatar name={name} size={34} />
+            <div className="min-w-0 flex-1 leading-tight">
+              <div className="truncate text-sm font-semibold">{name}</div>
+              <div className="truncate text-[11px] text-muted">{planLabel}</div>
+            </div>
+            <button type="button" onClick={logout} className="btn-ghost p-2" title={t("logout")}><LogOut className="h-4 w-4" /></button>
+          </div>
+        </>
+      )}
     </div>
   );
 
   return (
     <div className="min-h-screen bg-page">
-      <aside className="fixed inset-y-0 start-0 hidden w-60 border-e border-line bg-white lg:block">{sidebar}</aside>
+      <aside className={`fixed inset-y-0 start-0 z-20 hidden border-e border-line bg-white transition-[width] lg:block ${slimPref ? "w-[68px]" : "w-60"}`}>{sidebar(slimPref)}</aside>
       {/* phone / tablet */}
       <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-white px-4 py-3 lg:hidden">
         <button type="button" className="btn-ghost p-1.5" onClick={() => setOpen(true)} aria-label="menu"><Menu className="h-5 w-5" /></button>
@@ -125,11 +155,11 @@ export default function AppLayout() {
         <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setOpen(false)}>
           <aside className="absolute inset-y-0 start-0 w-72 bg-white" onClick={(e) => e.stopPropagation()}>
             <button type="button" className="btn-ghost absolute end-2 top-2 p-1.5" onClick={() => setOpen(false)}><X className="h-4 w-4" /></button>
-            {sidebar}
+            {sidebar(null)}
           </aside>
         </div>
       )}
-      <main className="px-4 py-6 sm:px-7 lg:ms-60">
+      <main className={`px-4 py-6 sm:px-7 ${slimPref ? "lg:ms-[68px]" : "lg:ms-60"}`}>
         <div className="mx-auto max-w-7xl">
           <Outlet />
         </div>
