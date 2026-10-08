@@ -8,7 +8,7 @@ import { MEAL_ORDER, useI18n } from "../i18n";
 import { Card, DraftBadge, Modal, Spinner, TestModeBadge, apiError } from "../ui";
 import { AIUnavailableNote, useAIBlocker } from "./client/AIPanel";
 import { StepsBar, colOf } from "./PlanBuilder";
-import { englishUnit, timeLabel } from "./foodUtils";
+import { englishUnit, niceAmount, timeLabel } from "./foodUtils";
 
 const enUnit = (row) => englishUnit(row.unit_en, row.unit, row.factor ?? 100);
 
@@ -71,8 +71,8 @@ function Grocery({ rows }) {
         {rows.map((g) => (
           <tr key={g.food_en} className="border-b border-[#f0f2f0]">
             <td className="px-3 py-2">☐ {ar ? g.food : g.food_en}</td>
-            <td className="num px-3 py-2 text-muted">{num(g.per_day, 1)} {ar ? g.unit : enUnit(g)}</td>
-            <td className="num px-3 py-2 font-semibold">{num(g.per_week, 1)} {ar ? g.unit : enUnit(g)}</td>
+            <td className="num px-3 py-2 text-muted">{num(niceAmount(g.per_day, g.factor), 1)} {ar ? g.unit : enUnit(g)}</td>
+            <td className="num px-3 py-2 font-semibold">{num(niceAmount(g.per_week, g.factor), 1)} {ar ? g.unit : enUnit(g)}</td>
           </tr>
         ))}
       </tbody>
@@ -115,7 +115,7 @@ function DaySheet({ data, slots, notes }) {
               <div className="grid grid-cols-3">
                 {rows.map((r, idx) => (
                   <div key={`${r.food_en}-${idx}`} className={`flex justify-between gap-2 px-4 py-2 text-[13px] ${idx % 3 ? "border-s border-[#f0f2f0]" : ""} ${idx >= 3 ? "border-t border-[#f0f2f0]" : ""}`}>
-                    <span>{ar ? r.food : r.food_en}</span><b className="num whitespace-nowrap">{num(r.amount, 1)} {ar ? r.unit : enUnit(r)}</b>
+                    <span>{ar ? r.food : r.food_en}</span><b className="num whitespace-nowrap">{num(niceAmount(r.amount, r.factor), 1)} {ar ? r.unit : enUnit(r)}</b>
                   </div>
                 ))}
               </div>
@@ -170,7 +170,7 @@ function WeekRow({ day, index, slots, names, onSwap, onEdit, compact = false }) 
             {items.map((i, idx) => (
               <div key={`${i.food_id}-${idx}`} className={`mb-0.5 flex justify-between gap-1.5 rounded-md px-1.5 py-1 text-xs ${i.swapped ? "bg-ai-soft text-[#3b3192]" : ""}`}>
                 <span className="truncate">{i.swapped ? "↻ " : ""}{ar ? i.name_ar || i.name : i.name}</span>
-                <b className="num whitespace-nowrap font-semibold">{num(i.amount, 1)} {ar ? i.unit_ar || i.unit : englishUnit(i.unit, i.unit_ar, i.factor)}</b>
+                <b className="num whitespace-nowrap font-semibold">{num(niceAmount(i.amount, i.factor), 1)} {ar ? i.unit_ar || i.unit : englishUnit(i.unit, i.unit_ar, i.factor)}</b>
               </div>
             ))}
           </div>

@@ -115,7 +115,7 @@ def normalized_shares(item, tags):
     return {tag_id: value / total for tag_id, value in shares.items()}
 
 
-TYPE_ORDER = {'protein': 0, 'carb': 1, 'fat': 2}
+TYPE_ORDER = {'carb': 0, 'protein': 1, 'fat': 2}
 
 
 def split_plan(plan):
@@ -375,8 +375,9 @@ def common_foods(user, per_type=3):
     from django.db.models import Count
 
     from .models import DietItem, FoodItem
+    # A food counts as "favourite" once it has been used in at least 3 plans.
     used = (DietItem.objects.filter(plan__user_id__in=team_user_ids(user))
-            .values('food_id', 'food__food_type').annotate(n=Count('id')).order_by('-n'))
+            .values('food_id', 'food__food_type').annotate(n=Count('plan', distinct=True)).filter(n__gte=3).order_by('-n'))
     by_name = {f.name.strip().lower(): f for f in FoodItem.objects.all()}
     out = {}
     for food_type in ('carb', 'protein', 'fat'):
@@ -451,17 +452,21 @@ def weekly_plan(plan, seed=None, days=7):
         return sum(((t[m] - target[m]) / target[m]) ** 2 for m in t if target[m])
 
     out = [{'items': [{'meal': k, 'food_id': f.id, 'quantity': q, 'swapped': False} for k, f, q in base]}]
-    for _ in range(1, days):
-        choice = {}
-        for _, food, _ in base:
-            group = group_of.get(food.id)
-            if group and food.id not in choice:
-                if rng.random() < 0.6:
-                    options = [f for f in group if f.id != food.id and f.food_type == food.food_type]
-                    options.sort(key=lambda f: (f.id not in liked, rng.random()))
-                    choice[food.id] = options[0] if options else food
-                else:
-                    choice[food.id] = food
+    # Each swappable food gets its own rotation (liked foods first), so every day is a little different.
+    cycles = {}
+    for _, food, _ in base:
+        group = group_of.get(food.id)
+        if group and food.id not in cycles:
+            options = [f for f in group if f.id != food.id and f.food_type == food.food_type]
+            rng.shuffle(options)
+            options.sort(key=lambda f: f.id not in liked)
+            cycles[food.id] = options + [food]  # back to the original once in a while
+    offsets = {fid: rng.randrange(len(c)) for fid, c in cycles.items()}
+    for day in range(1, days):
+        choice = {fid: c[(day - 1 + offsets[fid]) % len(c)] for fid, c in cycles.items()}
+        if cycles and all(choice[fid].id == fid for fid in cycles):  # never repeat day 1 exactly
+            fid = next(iter(cycles))
+            choice[fid] = cycles[fid][0]
         rows = []  # [meal, food, servings, swapped, start]
         for meal, food, q in base:
             new = choice.get(food.id, food)

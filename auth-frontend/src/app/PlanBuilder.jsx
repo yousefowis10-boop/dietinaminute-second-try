@@ -6,7 +6,7 @@ import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { CalorieRing, DraftBadge, Empty, Modal, SafetyFlags, Spinner, apiError, targetStatus } from "../ui";
 import { useAIBlocker } from "./client/AIPanel";
-import { amountOf, kcalOf, roundHalf, totalsOf, tplDesc, tplName, unitLabel } from "./foodUtils";
+import { amountOf, kcalOf, niceAmount, roundHalf, totalsOf, tplDesc, tplName, unitLabel } from "./foodUtils";
 
 const COLS = ["carb", "protein", "fat"];
 const DOT = { carb: "bg-[#b7791f]", protein: "bg-[#2563a8]", fat: "bg-[#8a4fb0]" };
@@ -120,7 +120,7 @@ function StepsBar({ current, className = "" }) {
           <span className={`grid h-6 w-6 place-items-center rounded-full border text-xs ${i < current ? "border-ok bg-ok text-white" : i === current ? "border-brand bg-brand text-white" : "border-line"}`}>
             {i < current ? <Check className="h-3.5 w-3.5" /> : i + 1}
           </span>
-          <span className="hidden sm:inline">{n}</span>
+          <span className={i === current ? "" : "hidden sm:inline"}>{n}</span>
         </div>
       ))}
     </div>
@@ -434,7 +434,7 @@ export default function PlanBuilder() {
                           <td className={`h-[52px] ps-5 pe-1.5 font-semibold leading-tight ${i.quantity > 0 ? "" : "text-muted"}`}>
                             {foodName(i)}{!i.common && <span className="ms-1.5 rounded-full bg-page px-1.5 py-px align-middle text-[10.5px] font-semibold text-muted">{t("addedTag")}</span>}
                           </td>
-                          <td className="num whitespace-nowrap px-1.5 text-[12.5px] text-muted">{amountOf(i, 1)} {unitLabel(i, lang)}</td>
+                          <td className="num px-1.5 text-[12.5px] leading-tight text-muted">{amountOf(i, 1)} {unitLabel(i, lang)}</td>
                           <td className="px-1.5"><Stepper value={i.quantity} onChange={(q) => updateItem(i.food_id, { quantity: q })} /></td>
                           <td className={`num whitespace-nowrap px-1.5 text-[13px] font-bold ${i.quantity > 0 ? "text-brand" : "font-medium text-[#c3c9c6]"}`}>
                             {i.quantity > 0 ? `${amountOf(i, i.quantity)} ${unitLabel(i, lang)}` : "—"}
@@ -533,7 +533,7 @@ export default function PlanBuilder() {
                             <div className="flex flex-wrap items-center gap-1.5">
                               {meals.length ? meals.map((m) => {
                                 const slot = slots.find((s) => s.key === m);
-                                const amount = Math.round(total * fr[m] * 100) / 100;
+                                const amount = niceAmount(total * fr[m], i.multiplying_factor);
                                 const isEditing = editAmount?.food_id === i.food_id && editAmount?.meal === m;
                                 return (
                                   <span key={m} className="inline-flex h-7 items-center gap-1.5 rounded-full bg-[#d7ebe4] px-3 text-[13px] font-semibold text-[#124a3c]">

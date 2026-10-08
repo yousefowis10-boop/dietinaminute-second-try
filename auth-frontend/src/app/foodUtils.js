@@ -17,7 +17,7 @@ export function totalsOf(items) {
 const UNIT_EN = { "غرام": "g", "جرام": "g", "مل": "ml" };
 const EN_FIX = [
   [/^(tea ?spoon|tra spoon|teaspoon|tsp)$/, "tsp"], [/^(table ?spoon|tbs|tbsp)$/, "tbsp"],
-  [/^scoo+p$/, "scoop"], [/^medium egg$/, "medium egg"],
+  [/^scoo+p$/, "scoop"],
 ];
 
 // Clean English unit for an amount: "1 scoop" -> "scoop", "Tra spoon" -> "tsp", "100 G" (factor 100) -> "g".
@@ -27,7 +27,9 @@ export function englishUnit(unit, unitAr, factor) {
   if (/[\u0600-\u06FF]/.test(u)) return UNIT_EN[(unitAr || "").trim()] || u; // unit typed in Arabic in the database
   u = u.replace(/^(1|one|a)\s+/, "");
   const fix = EN_FIX.find(([re]) => re.test(u));
-  return fix ? fix[1] : u;
+  if (fix) return fix[1];
+  if (/\bmedium\b|\blarge\b|\bsmall\b/.test(u)) return "pc"; // "medium banana", "medium egg" -> pieces
+  return u;
 }
 
 // Real-world unit for an amount (servings × factor). Arabic names come from the database.
@@ -58,3 +60,9 @@ export const timeLabel = (value, lang) =>
 
 export const tplName = (tpl, lang) => (lang === "ar" && tpl.name_ar) || tpl.name;
 export const tplDesc = (tpl, lang) => (lang === "ar" && tpl.description_ar) || tpl.description;
+
+// Display an amount: whole grams/ml for weighed foods, up to 1 decimal for pieces and spoons.
+export const niceAmount = (amount, factor = 1) => {
+  const v = Number(amount) || 0;
+  return (factor || 1) >= 10 ? Math.round(v) : Math.round(v * 10) / 10;
+};
