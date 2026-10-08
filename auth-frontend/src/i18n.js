@@ -293,6 +293,11 @@ const STRINGS = {
     noNewCheckins: "لا توجد متابعات جديدة.",
     weightRequired: "الوزن مطلوب",
     fileTooBig: "الملف كبير جدًا (الحد 8 ميغابايت).",
+    gridHintAdd: "اضغط على مربع فارغ لإضافة الطعام لهذه الوجبة",
+    gridHintRemove: "اضغط على المربع المحدد لإزالته",
+    gridHintAmount: "تُقسم الكمية بالتساوي — اضغط على الكمية لتغييرها",
+    kcalPerMeal: "السعرات لكل وجبة",
+    backToEqual: "رجوع للتقسيم بالتساوي",
   },
   en: {
     appName: "Diet in a Minute",
@@ -568,6 +573,11 @@ const STRINGS = {
     noNewCheckins: "No new check-ins.",
     weightRequired: "Weight is required",
     fileTooBig: "File is too large (8 MB max).",
+    gridHintAdd: "Click an empty box to add the food to that meal",
+    gridHintRemove: "Click a ticked box to remove it",
+    gridHintAmount: "The amount is split equally — click an amount to change it",
+    kcalPerMeal: "Calories per meal",
+    backToEqual: "Back to equal split",
   },
 };
 

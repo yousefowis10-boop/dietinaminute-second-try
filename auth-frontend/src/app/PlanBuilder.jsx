@@ -507,87 +507,106 @@ export default function PlanBuilder() {
           </div>
 
           <div className="card overflow-hidden">
-            <table className="w-full table-fixed border-collapse text-sm">
-              <colgroup><col style={{ width: "20%" }} /><col style={{ width: "13%" }} /><col style={{ width: "50%" }} /><col style={{ width: "17%" }} /></colgroup>
-              <thead><tr className="border-b border-line bg-[#fafbfa] text-[12px] text-muted">
-                <th className="px-5 py-3 text-start font-semibold">{t("colFood")}</th><th className="px-2.5 py-3 text-start font-semibold">{t("colDaily")}</th>
-                <th className="px-2.5 py-3 text-start font-semibold">{t("colMeals")}</th><th className="px-2.5 py-3 text-start font-semibold">{t("colPick")}</th>
-              </tr></thead>
-              <tbody>
-                {COLS.map((col) => {
-                  const rows = active.filter((i) => colOf(i) === col);
-                  if (!rows.length) return null;
-                  return [
-                    <tr key={`g-${col}`} className={HEAD[col]}><td colSpan={4} className="h-[38px] px-5 text-[13px] font-bold"><i className={`me-2 inline-block h-2.5 w-2.5 rounded-[3px] ${DOT[col]}`} />{t(col === "carb" ? "carbs" : col)}</td></tr>,
-                    ...rows.map((i) => {
-                      const fr = mealAmounts(i);
-                      const meals = Object.keys(fr);
-                      const total = amountOf(i, i.quantity);
-                      const custom = meals.length > 1 && Object.keys(i.shares || {}).some((m) => meals.includes(m));
-                      const free = slots.filter((s) => !meals.includes(s.key));
-                      return (
-                        <tr key={i.food_id} className="border-b border-[#f0f2f0]">
-                          <td className="h-[54px] px-5 font-semibold">{foodName(i)}</td>
-                          <td className="num px-2.5 text-[13px] font-bold text-brand">{total} {unitLabel(i, lang)}</td>
-                          <td className="px-2.5 py-2">
-                            <div className="flex flex-wrap items-center gap-1.5">
-                              {meals.length ? meals.map((m) => {
-                                const slot = slots.find((s) => s.key === m);
-                                const amount = niceAmount(total * fr[m], i.multiplying_factor);
-                                const isEditing = editAmount?.food_id === i.food_id && editAmount?.meal === m;
-                                return (
-                                  <span key={m} className="inline-flex h-7 items-center gap-1.5 rounded-full bg-[#d7ebe4] px-3 text-[13px] font-semibold text-[#124a3c]">
-                                    {slot?.name} ·
-                                    {isEditing ? (
-                                      <input autoFocus className="num w-14 rounded bg-white px-1 text-center outline-none" type="number" step="any" defaultValue={amount}
-                                        onBlur={(e) => { setMealAmount(i, m, Number(e.target.value)); setEditAmount(null); }}
-                                        onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} />
-                                    ) : (
-                                      <button type="button" className="num font-bold underline decoration-dotted underline-offset-2" title={t("clickToEditAmount")}
-                                        onClick={() => meals.length > 1 && setEditAmount({ food_id: i.food_id, meal: m })}>{amount}</button>
-                                    )}
-                                    {unitLabel(i, lang)}
-                                    <button type="button" className="opacity-60 hover:opacity-100" onClick={() => updateItem(i.food_id, { meals: i.meals.filter((x) => x !== m), shares: {} })} aria-label={t("delete")}><X className="h-3 w-3" /></button>
-                                  </span>
-                                );
-                              }) : <span className="inline-flex h-7 items-center rounded-full bg-bad-soft px-3 text-[13px] font-semibold text-bad">{t("notInMealYet")}</span>}
-                              {meals.length > 1 && (
-                                <button type="button" onClick={() => custom && updateItem(i.food_id, { shares: {} })}
-                                  className={`ms-1 rounded-full border px-2.5 py-0.5 text-[11.5px] ${custom ? "border-[#d9d4fa] bg-ai-soft font-semibold text-ai" : "border-line text-muted"}`}>
-                                  {custom ? t("modeCustom") : t("modeEqual")}
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-2.5">
-                            <select className="input h-9 py-0 text-[13px] text-muted" value="" disabled={!free.length}
-                              onChange={(e) => e.target.value && updateItem(i.food_id, { meals: [...i.meals.filter((x) => slotKeys.includes(x)), e.target.value], shares: {} })}>
-                              <option value="">{t("addMealSel")}</option>
-                              {free.map((s) => <option key={s.key} value={s.key}>{s.name}</option>)}
-                            </select>
-                          </td>
-                        </tr>
-                      );
-                    }),
-                  ];
-                })}
-              </tbody>
-            </table>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 border-b border-line px-5 py-3 text-[13px] text-muted">
+              <span className="inline-flex items-center gap-2"><i className="grid h-[22px] w-[26px] place-items-center rounded-md border-[1.5px] border-dashed border-[#d4dad7] not-italic text-[#b3bbb7]">+</i>{t("gridHintAdd")}</span>
+              <span className="inline-flex items-center gap-2"><i className="grid h-[22px] w-[26px] place-items-center rounded-md border-[1.5px] border-[#9fd0bd] bg-[#d7ebe4]"><Check className="h-3 w-3 text-brand" /></i>{t("gridHintRemove")}</span>
+              <span>{t("gridHintAmount")}</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-separate border-spacing-0 text-sm" style={{ minWidth: 300 + slots.length * 120 }}>
+                <thead>
+                  <tr className="text-[12px] text-muted">
+                    <th className="sticky start-0 z-10 w-[190px] border-b border-line bg-[#fafbfa] px-5 py-3 text-start font-semibold">{t("colFood")}</th>
+                    <th className="w-[90px] border-b border-line bg-[#fafbfa] px-2 py-3 text-center font-semibold">{t("perDay")}</th>
+                    {slots.map((s) => (
+                      <th key={s.key} className="border-b border-line bg-[#fafbfa] px-2 py-3 text-center font-semibold">
+                        <span className="block truncate text-[13.5px] font-bold text-brand-ink">{s.name}</span>
+                        <span className="num">{s.time || " "}</span>
+                      </th>
+                    ))}
+                    <th className="w-[84px] border-b border-line bg-[#fafbfa]" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {COLS.map((col) => {
+                    const rows = active.filter((i) => colOf(i) === col);
+                    if (!rows.length) return null;
+                    return [
+                      <tr key={`g-${col}`}>
+                        <td className={`sticky start-0 z-10 h-9 px-5 text-[13px] font-bold ${HEAD[col]}`}><i className={`me-2 inline-block h-2.5 w-2.5 rounded-[3px] ${DOT[col]}`} />{t(col === "carb" ? "carbs" : col)}</td>
+                        <td colSpan={slots.length + 2} className={HEAD[col]} />
+                      </tr>,
+                      ...rows.map((i) => {
+                        const fr = mealAmounts(i);
+                        const meals = Object.keys(fr);
+                        const total = amountOf(i, i.quantity);
+                        const custom = meals.length > 1 && Object.keys(i.shares || {}).some((m) => meals.includes(m));
+                        const missing = !meals.length;
+                        const toggle = (m) => updateItem(i.food_id, {
+                          meals: meals.includes(m) ? i.meals.filter((x) => x !== m) : [...i.meals.filter((x) => slotKeys.includes(x)), m],
+                          shares: {},
+                        });
+                        return (
+                          <tr key={i.food_id}>
+                            <td className={`sticky start-0 z-10 h-[52px] border-b border-[#f0f2f0] px-5 font-semibold ${missing ? "bg-bad-soft text-bad" : "bg-white"}`}>{foodName(i)}</td>
+                            <td className="num border-b border-[#f0f2f0] px-2 text-center text-[13px] font-bold text-brand">{total} {unitLabel(i, lang)}</td>
+                            {slots.map((s) => {
+                              const on = meals.includes(s.key);
+                              const amount = on ? niceAmount(total * fr[s.key], i.multiplying_factor) : null;
+                              const isEditing = editAmount?.food_id === i.food_id && editAmount?.meal === s.key;
+                              return (
+                                <td key={s.key} className={`border-b border-[#f0f2f0] px-1.5 py-1.5 text-center ${s.key.startsWith("snack") ? "bg-[#fbfcfb]" : ""}`}>
+                                  {on ? (
+                                    <div role="button" tabIndex={0} onClick={() => !isEditing && toggle(s.key)} onKeyDown={(e) => e.key === "Enter" && !isEditing && toggle(s.key)} title={t("gridHintRemove")}
+                                      className="mx-auto flex h-9 w-full max-w-[118px] cursor-pointer items-center justify-center gap-1.5 rounded-[10px] border-[1.5px] border-[#9fd0bd] bg-[#d7ebe4] px-1.5 text-[13px] font-bold text-[#124a3c]">
+                                      <span className="grid h-4 w-4 shrink-0 place-items-center rounded-[5px] bg-brand text-white"><Check className="h-3 w-3" /></span>
+                                      {isEditing ? (
+                                        <input autoFocus className="num w-12 rounded bg-white px-1 text-center outline-none" type="number" step="any" defaultValue={amount}
+                                          onClick={(e) => e.stopPropagation()}
+                                          onBlur={(e) => { setMealAmount(i, s.key, Number(e.target.value)); setEditAmount(null); }}
+                                          onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEditAmount(null); }} />
+                                      ) : meals.length > 1 ? (
+                                        <button type="button" className="num underline decoration-dotted underline-offset-2" title={t("clickToEditAmount")}
+                                          onClick={(e) => { e.stopPropagation(); setEditAmount({ food_id: i.food_id, meal: s.key }); }}>{amount}</button>
+                                      ) : <span className="num">{amount}</span>}
+                                      <span className="truncate text-[12px] font-semibold">{unitLabel(i, lang)}</span>
+                                    </div>
+                                  ) : (
+                                    <button type="button" onClick={() => toggle(s.key)} aria-label={`${t("gridHintAdd")}: ${s.name}`}
+                                      className="mx-auto grid h-9 w-full max-w-[118px] place-items-center rounded-[10px] border-[1.5px] border-dashed border-[#d4dad7] text-lg text-[#b3bbb7] transition hover:border-brand/50 hover:bg-brand-soft hover:text-brand">+</button>
+                                  )}
+                                </td>
+                              );
+                            })}
+                            <td className="border-b border-[#f0f2f0] px-2 text-center">
+                              {custom ? (
+                                <button type="button" onClick={() => updateItem(i.food_id, { shares: {} })} title={t("backToEqual")}
+                                  className="whitespace-nowrap rounded-full bg-ai-soft px-2.5 py-0.5 text-[11.5px] font-semibold text-ai">{t("modeCustom")} ↺</button>
+                              ) : missing ? <span className="whitespace-nowrap text-[11.5px] font-semibold text-bad">{t("notInMealYet")}</span> : null}
+                            </td>
+                          </tr>
+                        );
+                      }),
+                    ];
+                  })}
+                  <tr>
+                    <td className="sticky start-0 z-10 h-16 bg-[#fafbfa] px-5 font-bold">{t("kcalPerMeal")}</td>
+                    <td className="num bg-[#fafbfa] px-2 text-center text-xs text-muted">{num(Object.values(mealKcal).reduce((a, b) => a + b, 0))} {t("kcal")}</td>
+                    {slots.map((s) => (
+                      <td key={s.key} className="bg-[#fafbfa] px-2 text-center">
+                        <div className="num text-xl font-bold">{num(mealKcal[s.key])} <small className="text-[11px] font-medium text-muted">{t("kcal")}</small></div>
+                        <div className="mx-auto mt-1 h-[5px] max-w-[100px] overflow-hidden rounded-full bg-[#edf0ee]"><i className="block h-full rounded-full bg-ok" style={{ width: `${(mealKcal[s.key] / maxMealKcal) * 100}%` }} /></div>
+                      </td>
+                    ))}
+                    <td className="bg-[#fafbfa]" />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           {unassigned.length > 0 && (
             <div className="mt-3 rounded-xl bg-warn-soft px-4 py-2.5 text-[13px] font-medium text-[#7a5418]">⚠ {t("notInMealWarn", { foods: unassigned.map((i) => foodName(i)).join("، ") })}</div>
           )}
-
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {slots.map((s) => (
-              <div key={s.key} className="card p-4">
-                <div className="truncate font-bold">{s.name}</div>
-                <div className="num mb-1 text-xs text-muted">{s.time || " "}</div>
-                <div className="num mb-2 text-2xl font-bold">{num(mealKcal[s.key])} <small className="text-xs font-medium text-muted">{t("kcal")}</small></div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-[#edf0ee]"><i className="block h-full rounded-full bg-ok" style={{ width: `${(mealKcal[s.key] / maxMealKcal) * 100}%` }} /></div>
-              </div>
-            ))}
-          </div>
           <div className="mt-5 flex justify-between">
             <button type="button" className="btn-secondary h-11" onClick={() => setStep(0)}>{lang === "ar" ? "→" : "←"} {t("back")}</button>
             <button type="button" className="btn-primary h-11" disabled={busy === "save" || !active.length} onClick={save}>{busy === "save" ? t("saving") : t("saveViewSheet")}</button>
