@@ -76,8 +76,8 @@ export default function PublicInterview() {
         {state === "form" && (
           <div className="space-y-4">
             {steps.map((st, i) => (
-              <section key={st.key} className="card overflow-hidden">
-                <div className="flex items-center gap-3 border-b border-line bg-[#fafbfa] px-5 py-3.5">
+              <section key={st.key} className="card">
+                <div className="flex items-center gap-3 rounded-t-2xl border-b border-line bg-[#fafbfa] px-5 py-3.5">
                   <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-sm font-bold text-white">{i + 1}</span>
                   <h2 className="text-base font-bold">{st[lang] || st.en}</h2>
                 </div>

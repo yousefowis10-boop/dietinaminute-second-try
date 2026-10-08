@@ -218,9 +218,9 @@ export default function InterviewTab({ data, reload }) {
             const [a, b] = counts[i];
             const isClosed = closed[step.key];
             return (
-              <section key={step.key} id={`sec-${step.key}`} className="card scroll-mt-4 overflow-hidden">
+              <section key={step.key} id={`sec-${step.key}`} className="card scroll-mt-4">
                 <button type="button" onClick={() => setClosed((x) => ({ ...x, [step.key]: !x[step.key] }))}
-                  className={`flex w-full items-center gap-3 bg-[#fafbfa] px-6 py-4 text-start ${isClosed ? "" : "border-b border-line"}`}>
+                  className={`flex w-full items-center gap-3 ${isClosed ? "rounded-2xl" : "rounded-t-2xl"} bg-[#fafbfa] px-6 py-4 text-start ${isClosed ? "" : "border-b border-line"}`}>
                   <span className="grid h-[30px] w-[30px] place-items-center rounded-[9px] bg-brand text-sm font-bold text-white">{i + 1}</span>
                   <h3 className="text-[17px] font-bold">{step[lang] || step.en}</h3>
                   <span className="ms-auto flex items-center gap-2">

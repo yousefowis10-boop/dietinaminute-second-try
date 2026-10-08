@@ -409,8 +409,8 @@ export default function PlanBuilder() {
               const options = foods.filter((f) => colOf(f) === col && !used.has(f.id) && !excludedIds.has(f.id));
               const diff = Math.round((v - tg) * 10) / 10;
               return (
-                <section key={col} className="card overflow-hidden">
-                  <header className={`flex items-center gap-2.5 border-b border-line px-5 py-3.5 ${HEAD[col]}`}>
+                <section key={col} className="card">
+                  <header className={`flex items-center gap-2.5 rounded-t-2xl border-b border-line px-5 py-3.5 ${HEAD[col]}`}>
                     <i className={`h-2.5 w-2.5 rounded-[3px] ${DOT[col]}`} /><h3 className="text-base font-bold">{t(col === "carb" ? "carbs" : col)}</h3>
                   </header>
                   <div className="border-b border-line px-5 py-3.5">
