@@ -420,7 +420,7 @@ export default function PlanBuilder() {
                     </div>
                     <div className="mb-2 mt-1 text-sm text-muted"><b className="num text-[28px] font-bold text-brand-ink">{num(v, 1)}</b><span className="num"> / {num(tg)} {t("g")}</span></div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-[#edf0ee]"><i className={`block h-full rounded-full ${BAR[s]}`} style={{ width: `${tg ? Math.min(v / tg, 1) * 100 : 0}%` }} /></div>
-                    <div className="num mt-2 text-xs text-muted">{diff >= 0 ? t("gOver", { n: num(diff, 1) }) : t("gToGo", { n: num(-diff, 1) })}</div>
+                    <div className="num mt-2 text-xs text-muted">{diff >= 0 ? t("gOver", { n: num(Math.round(diff)) }) : t("gToGo", { n: num(Math.round(-diff)) })}</div>
                   </div>
                   <table className="w-full table-fixed border-collapse text-sm">
                     <colgroup><col style={{ width: "34%" }} /><col style={{ width: "17%" }} /><col style={{ width: "27%" }} /><col style={{ width: "16%" }} /><col style={{ width: "6%" }} /></colgroup>

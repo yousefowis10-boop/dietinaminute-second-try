@@ -163,9 +163,9 @@ function WeekRow({ day, index, slots, names, onSwap, onEdit, compact = false }) 
         const kcal = items.reduce((a, i) => a + i.kcal, 0);
         return (
           <div key={s.key} className={`${compact ? "m-1.5 p-2" : "m-2.5 p-3"} rounded-xl border border-[#edf0ee] bg-[#fcfdfc]`}>
-            <div className="mb-1.5 flex items-baseline justify-between gap-1.5">
-              <b className="truncate text-[13px]">{s.name}</b>
-              <span className="num whitespace-nowrap text-[11px] text-muted">{s.time ? `${s.time} · ` : ""}{num(kcal)} {t("kcal")}</span>
+            <div className="mb-1.5">
+              <b className="block truncate text-[13px]">{s.name}</b>
+              <span className="num block whitespace-nowrap text-[11px] text-muted">{s.time ? `${s.time} · ` : ""}{num(kcal)} {t("kcal")}</span>
             </div>
             {items.map((i, idx) => (
               <div key={`${i.food_id}-${idx}`} className={`mb-0.5 flex justify-between gap-1.5 rounded-md px-1.5 py-1 text-xs ${i.swapped ? "bg-ai-soft text-[#3b3192]" : ""}`}>
@@ -315,10 +315,10 @@ export default function PlanSheet() {
           <TriangleAlert className="h-4 w-4 shrink-0 text-warn" />{t("unassignedWarn", { foods: data.unassigned.join("، ") })}
         </div>
       )}
-      <div className="mb-4 flex gap-1 overflow-x-auto border-b border-line">
+      <div className="mb-4 flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_#e6e9e6]">
         {tabs.map(([v, label]) => (
           <button key={v} type="button" onClick={() => setTab(v)}
-            className={`-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold ${tab === v ? "border-brand text-brand" : "border-transparent text-muted hover:text-brand-ink"}`}>{label}</button>
+            className={`whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold ${tab === v ? "border-brand text-brand" : "border-transparent text-muted hover:text-brand-ink"}`}>{label}</button>
         ))}
       </div>
 

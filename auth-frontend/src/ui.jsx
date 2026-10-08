@@ -89,13 +89,13 @@ export function Field({ label, hint, children, className = "" }) {
 
 export function Tabs({ tabs, value, onChange }) {
   return (
-    <div className="mb-5 flex gap-1 overflow-x-auto border-b border-line">
+    <div className="mb-5 flex gap-1 overflow-x-auto overflow-y-hidden shadow-[inset_0_-1px_0_#e6e9e6]">
       {tabs.map((tab) => (
         <button
           key={tab.value}
           type="button"
           onClick={() => onChange(tab.value)}
-          className={`-mb-px whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
+          className={`whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
             value === tab.value ? "border-brand text-brand" : "border-transparent text-muted hover:text-brand-ink"
           }`}
         >

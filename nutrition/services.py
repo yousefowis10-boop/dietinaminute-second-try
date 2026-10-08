@@ -484,7 +484,7 @@ def weekly_plan(plan, seed=None, days=7):
             for i, r in enumerate(rows):
                 if not (r[3] or r[1].food_type == 'fat'):
                     continue
-                lo, hi = (max(0, r[4] - 1), r[4] + 1) if r[1].food_type == 'fat' else (max(0.5, r[4] - 0.5), r[4] + 0.5)
+                lo, hi = (max(0.5, r[4] - 1), r[4] + 1) if r[1].food_type == 'fat' else (max(0.5, r[4] - 0.5), r[4] + 0.5)
                 for d in (-0.5, 0.5):
                     if lo <= r[2] + d <= hi:
                         r[2] += d

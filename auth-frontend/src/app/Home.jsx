@@ -95,7 +95,7 @@ export default function Home() {
                     <li key={p.id}>
                       <Link to={`/dashboard/plans/${p.id}`} className="block py-2.5 hover:text-brand">
                         <div className="text-sm font-medium">{p.client}</div>
-                        <div className="text-xs text-muted">{p.name} · {fmtDate(p.created_at)}</div>
+                        <div className="text-xs text-muted">{p.name || t("defaultPlanName", { date: "" }).trim()} · {fmtDate(p.created_at)}</div>
                       </Link>
                     </li>
                   ))}

@@ -45,7 +45,7 @@ export default function ClientPage() {
       <Link to="/dashboard/clients" className="mb-2 inline-block text-sm text-muted hover:text-brand">← {t("clients")}</Link>
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <Avatar name={c.name} size={48} />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 sm:min-w-[24rem]">
           <h1 className="text-2xl font-bold">{c.name}</h1>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             <span className="chip">{num(c.age)} {t("years")} · {c.gender === "F" ? t("female") : t("male")}</span>

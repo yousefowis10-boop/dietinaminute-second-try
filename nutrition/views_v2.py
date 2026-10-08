@@ -660,20 +660,29 @@ def create_checkin(client, data, *, source, reviewed=True, file=None, recalculat
         'body_fat_mass': _number(data.get('body_fat_mass'), 0, 200), 'visceral_fat': _number(data.get('visceral_fat'), 0, 60),
         'waist_hip': _number(data.get('waist_hip'), 0.3, 2), 'inbody_bmr': _number(data.get('inbody_bmr'), 500, 5000),
     }
+    old_weight = client.weight
     client.weight = weight
     if values['pbf'] is not None:
         client.pbf = values['pbf']
     if values['smm'] is not None:
         client.smm = values['smm']
-    if recalculate and client.formula_name:
+    if recalculate and old_weight and abs(old_weight - weight) >= 0.05:
+        # Keep the client's current deficit/surplus and macro split; only the energy need moves with the weight.
+        # Works for clients from the old app too (no saved formula -> the default formula).
         try:
-            calc = calculate_targets(
-                formula_name=client.formula_name, gender=client.gender, weight=client.weight, height=client.height,
-                age=client.age, work_style=client.work_style, adjustment=client.calorie_adjustment,
-                protein_pct=client.protein_percentage or 25, carb_pct=client.carb_percentage or 55,
-                fat_pct=client.fat_percentage or 20)
-            client.bmr, client.activity_value, client.target_calories = calc['bmr'], calc['tdee'], calc['target_calories']
-        except ValueError:
+            kw = dict(formula_name=client.formula_name or '', gender=client.gender, height=client.height,
+                      age=client.age, work_style=client.work_style)
+            before = calculate_targets(weight=old_weight, **kw)
+            after = calculate_targets(weight=weight, **kw)
+            old_target = client.target_calories or before['target_calories']
+            new_target = round(old_target + after['tdee'] - before['tdee'])
+            scale = new_target / old_target if old_target else 1
+            client.bmr, client.activity_value, client.target_calories = after['bmr'], after['tdee'], new_target
+            for field in ('target_protein', 'target_carb', 'target_fat'):
+                value = getattr(client, field)
+                if value:
+                    setattr(client, field, round(value * scale, 1))
+        except (ValueError, TypeError):
             pass
     client.save()
     rev = ClientProfileRevision.objects.create(

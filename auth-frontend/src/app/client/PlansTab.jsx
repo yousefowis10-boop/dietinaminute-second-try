@@ -31,7 +31,7 @@ export default function PlansTab({ data, reload }) {
       {data.plans.map((p) => (
         <div key={p.id} className="flex flex-wrap items-center gap-4 px-4 py-3">
           <div className="min-w-0 flex-1">
-            <div className="font-semibold">{p.name}</div>
+            <div className="font-semibold">{p.name || t("defaultPlanName", { date: fmtDate(p.created_at) })}</div>
             <div className="text-xs text-muted">{fmtDate(p.created_at)}</div>
           </div>
           <div className="flex gap-4 text-xs text-muted">
