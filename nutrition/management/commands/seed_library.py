@@ -4,6 +4,7 @@ Everything here is marked as a DRAFT (is_draft=True) and shows a warning in the
 app until a qualified person reviews and edits it. Safe to run many times:
 items are matched by name and never duplicated or overwritten.
 """
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 from nutrition.models import FoodItem, PlanTemplate, WorkoutTemplate
@@ -112,6 +113,7 @@ class Command(BaseCommand):
     help = 'Add the shared draft library of workout guides and medical starting plans.'
 
     def handle(self, *args, **options):
+        call_command('add_usda_foods')
         added = 0
         for spec in WORKOUTS:
             _, created = WorkoutTemplate.objects.get_or_create(

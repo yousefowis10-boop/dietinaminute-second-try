@@ -1,0 +1,104 @@
+Name,Unit,protein,carb,fat,Unit Arabic,Name Arabic,Multiplying Factor,Food Type,Group,USDA NDB,USDA description,Serving grams,kcal per serving
+Brown rice (cooked),100 g,2.7,25.6,1.0,غرام,رز بني مطبوخ,100,carb,Grains & bread,20037,"Rice, brown, long-grain, cooked",100,123
+Short-grain rice (cooked),100 g,2.4,28.7,0.2,غرام,رز قصير الحبة مطبوخ (مصري),100,carb,Grains & bread,20053,"Rice, white, short-grain, enriched, cooked",100,130
+Bulgur (cooked),100 g,3.1,18.6,0.2,غرام,برغل مطبوخ,100,carb,Grains & bread,20013,"Bulgur, cooked",100,83
+Couscous (cooked),100 g,3.8,23.2,0.2,غرام,كسكس مطبوخ,100,carb,Grains & bread,20029,"Couscous, cooked",100,112
+Quinoa (cooked),100 g,4.4,21.3,1.9,غرام,كينوا مطبوخة,100,carb,Grains & bread,20137,"Quinoa, cooked",100,120
+Whole-wheat pasta (cooked),100 g,6.0,30.1,1.7,غرام,باستا قمح كامل مطبوخة,100,carb,Grains & bread,20125,"Pasta, whole-wheat, cooked",100,149
+"Arabic bread, white (large)",1 loaf,5.5,33.4,0.7,رغيف,خبز عربي أبيض (رغيف كبير),1,carb,Grains & bread,18041,"Bread, pita, white, enriched",60,165
+"Arabic bread, white (small)",1 loaf,2.5,15.6,0.3,رغيف,خبز عربي أبيض (رغيف صغير),1,carb,Grains & bread,18041,"Bread, pita, white, enriched",28,77
+"Arabic bread, whole-wheat (large)",1 loaf,6.3,35.8,1.1,رغيف,خبز عربي أسمر (رغيف كبير),1,carb,Grains & bread,18042,"Bread, pita, whole-wheat",64,168
+Whole-wheat toast,1 slice,4.0,13.7,1.1,شريحة,توست أسمر,1,carb,Grains & bread,18075,"Bread, whole-wheat, commercially prepared",32,81
+Flour tortilla (wrap),1 pc,3.9,24.1,3.7,حبة,خبز تورتيلا (راب),1,carb,Grains & bread,18970,"Tortillas, ready-to-bake or -fry, flour, shelf stable",49,146
+Corn flakes,30 g,2.2,25.2,0.1,غرام,كورن فليكس,30,carb,Grains & bread,08020,"Cereals ready-to-eat, KELLOGG, KELLOGG'S Corn Flakes",30,107
+"Potato, baked with skin",100 g,2.5,21.1,0.1,غرام,بطاطا مشوية بقشرها,100,carb,Grains & bread,11674,"Potatoes, baked, flesh and skin, without salt",100,93
+Lentils (cooked),100 g,9.0,20.1,0.4,غرام,عدس مطبوخ,100,carb,Legumes,16070,"Lentils, mature seeds, cooked, boiled, without salt",100,116
+Chickpeas (cooked),100 g,8.9,27.4,2.6,غرام,حمص حب مسلوق,100,carb,Legumes,16057,"Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",100,164
+Fava beans / foul (cooked),100 g,7.6,19.6,0.4,غرام,فول مدمس,100,carb,Legumes,16053,"Broadbeans (fava beans), mature seeds, cooked, boiled, without salt",100,110
+Kidney beans (cooked),100 g,8.7,22.8,0.5,غرام,فاصوليا حمراء مطبوخة,100,carb,Legumes,16028,"Beans, kidney, all types, mature seeds, cooked, boiled, without salt",100,127
+Green peas (cooked),100 g,5.2,14.3,0.3,غرام,بازيلاء مطبوخة,100,carb,Legumes,11313,"Peas, green, frozen, cooked, boiled, drained, without salt",100,78
+Orange,1 pc,1.2,15.4,0.2,حبة,برتقال,1,carb,Fruits,09200,"Oranges, raw, all commercial varieties",131,62
+Mandarin,1 pc,0.7,11.7,0.3,حبة,يوسفي (مندلينا),1,carb,Fruits,09218,"Tangerines, (mandarin oranges), raw",88,47
+Pear,1 pc,0.6,27.1,0.2,حبة,إجاص,1,carb,Fruits,09252,"Pears, raw",178,101
+Peach,1 pc,1.4,14.3,0.4,حبة,دراق,1,carb,Fruits,09236,"Peaches, yellow, raw",150,58
+Kiwi,1 pc,0.8,10.1,0.4,حبة,كيوي,1,carb,Fruits,09148,"Kiwifruit, green, raw",69,42
+Plum,1 pc,0.5,7.5,0.2,حبة,خوخ,1,carb,Fruits,09279,"Plums, raw",66,30
+Fig (fresh),1 pc,0.4,9.6,0.1,حبة,تين,1,carb,Fruits,09089,"Figs, raw",50,37
+Medjool date,1 pc,0.4,18.0,0.0,حبة,تمر مجدول,1,carb,Fruits,09421,"Dates, medjool",24,66
+Dried fig,1 pc,0.3,5.4,0.1,حبة,تين مجفف,1,carb,Fruits,09094,"Figs, dried, uncooked",8.4,21
+Strawberries,100 g,0.7,7.7,0.3,غرام,فراولة,100,carb,Fruits,09316,"Strawberries, raw",100,32
+Mango,100 g,0.8,15.0,0.4,غرام,مانجا,100,carb,Fruits,09176,"Mangos, raw",100,60
+Pineapple,100 g,0.5,13.1,0.1,غرام,أناناس,100,carb,Fruits,09266,"Pineapple, raw, all varieties",100,50
+Cantaloupe,100 g,0.8,8.2,0.2,غرام,شمام,100,carb,Fruits,09181,"Melons, cantaloupe, raw",100,34
+Pomegranate seeds,100 g,1.7,18.7,1.2,غرام,رمان (حبوب),100,carb,Fruits,09286,"Pomegranates, raw",100,83
+Apricot,100 g,1.4,11.1,0.4,غرام,مشمش,100,carb,Fruits,09021,"Apricots, raw",100,48
+Cherries,100 g,1.1,16.0,0.2,غرام,كرز,100,carb,Fruits,09070,"Cherries, sweet, raw",100,63
+Raspberries,100 g,1.2,11.9,0.7,غرام,توت أحمر,100,carb,Fruits,09302,"Raspberries, raw",100,52
+Guava,100 g,2.5,14.3,0.9,غرام,جوافة,100,carb,Fruits,09139,"Guavas, common, raw",100,68
+Grapefruit,100 g,0.8,10.7,0.1,غرام,جريب فروت,100,carb,Fruits,09112,"Grapefruit, raw, pink and red, all areas",100,42
+Raisins,30 g,0.9,23.8,0.1,غرام,زبيب,30,carb,Fruits,09298,"Raisins, seedless",30,90
+Carrots,100 g,0.9,9.6,0.2,غرام,جزر,100,carb,Vegetables,11124,"Carrots, raw",100,41
+Lettuce (romaine),100 g,1.2,3.3,0.3,غرام,خس,100,carb,Vegetables,11251,"Lettuce, cos or romaine, raw",100,17
+Spinach,100 g,2.9,3.6,0.4,غرام,سبانخ,100,carb,Vegetables,11457,"Spinach, raw",100,23
+Red bell pepper,100 g,1.0,6.0,0.3,غرام,فلفل رومي أحمر,100,carb,Vegetables,11821,"Peppers, sweet, red, raw",100,31
+Green bell pepper,100 g,0.9,4.6,0.2,غرام,فلفل رومي أخضر,100,carb,Vegetables,11333,"Peppers, sweet, green, raw",100,20
+Zucchini,100 g,1.2,3.1,0.3,غرام,كوسا,100,carb,Vegetables,11477,"Squash, summer, zucchini, includes skin, raw",100,17
+Eggplant,100 g,1.0,5.9,0.2,غرام,باذنجان,100,carb,Vegetables,11209,"Eggplant, raw",100,25
+Cauliflower,100 g,1.9,5.0,0.3,غرام,زهرة,100,carb,Vegetables,11135,"Cauliflower, raw",100,25
+Cabbage,100 g,1.3,5.8,0.1,غرام,ملفوف,100,carb,Vegetables,11109,"Cabbage, raw",100,25
+Mushrooms,100 g,3.1,3.3,0.3,غرام,فطر,100,carb,Vegetables,11260,"Mushrooms, white, raw",100,22
+Green beans,100 g,1.8,7.0,0.2,غرام,فاصوليا خضراء,100,carb,Vegetables,11052,"Beans, snap, green, raw",100,31
+Okra,100 g,1.9,7.5,0.2,غرام,بامية,100,carb,Vegetables,11278,"Okra, raw",100,33
+Beetroot,100 g,1.6,9.6,0.2,غرام,شمندر,100,carb,Vegetables,11080,"Beets, raw",100,43
+Jam,1 tbsp,0.1,13.8,0.0,ملعقة طعام,مربى,1,carb,Sweet,19297,Jams and preserves,20,56
+Sugar,1 tsp,0.0,4.2,0.0,ملعقة شاي,سكر,1,carb,Sweet,19335,"Sugars, granulated",4.2,16
+Chicken breast (raw),100 g,22.5,0.0,2.6,غرام,صدر دجاج نيء,100,protein,Meat & poultry,05062,"Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",100,120
+Chicken breast (cooked),100 g,31.0,0.0,3.6,غرام,صدر دجاج مطبوخ,100,protein,Meat & poultry,05064,"Chicken, broilers or fryers, breast, meat only, cooked, roasted",100,165
+"Chicken thigh, skinless (cooked)",100 g,24.8,0.0,8.2,غرام,فخذ دجاج بدون جلد مطبوخ,100,protein,Meat & poultry,05098,"Chicken, broilers or fryers, thigh, meat only, cooked, roasted",100,179
+"Chicken drumstick, skinless (cooked)",100 g,24.2,0.0,5.7,غرام,دبوس دجاج بدون جلد مطبوخ,100,protein,Meat & poultry,05073,"Chicken, broilers or fryers, dark meat, drumstick, meat only, cooked, roasted",100,155
+Turkey breast (cooked),100 g,30.1,0.0,2.1,غرام,صدر حبش مطبوخ,100,protein,Meat & poultry,05220,"Turkey, breast, from whole bird, meat only, roasted",100,147
+Lean ground beef 95% (cooked),100 g,26.3,0.0,6.8,غرام,لحم بقري مفروم قليل الدهن 95% مطبوخ,100,protein,Meat & poultry,23558,"Beef, ground, 95% lean meat / 5% fat, patty, cooked, broiled",100,174
+Ground beef 90% (cooked),100 g,26.1,0.0,11.8,غرام,لحم بقري مفروم 90% مطبوخ,100,protein,Meat & poultry,23563,"Beef, ground, 90% lean meat / 10% fat, patty, cooked, broiled",100,217
+Ground beef 80% (cooked),100 g,25.8,0.0,17.8,غرام,لحم بقري مفروم 80% مطبوخ,100,protein,Meat & poultry,23573,"Beef, ground, 80% lean meat / 20% fat, patty, cooked, broiled",100,270
+"Beef sirloin, lean (cooked)",100 g,29.5,0.0,6.7,غرام,لحم بقري سيرلوين قليل الدهن مطبوخ,100,protein,Meat & poultry,23629,"Beef, top sirloin, steak, separable lean only, trimmed to 1/8"" fat, choice, cooked, broiled",100,187
+"Lamb leg, lean (cooked)",100 g,28.3,0.0,7.7,غرام,لحم خروف (فخذ) قليل الدهن مطبوخ,100,protein,Meat & poultry,17014,"Lamb, domestic, leg, whole (shank and sirloin), separable lean only, trimmed to 1/4"" fat, choice, cooked, roasted",100,191
+Ground lamb (cooked),100 g,24.8,0.0,19.6,غرام,لحم خروف مفروم مطبوخ,100,protein,Meat & poultry,17225,"Lamb, ground, cooked, broiled",100,283
+Chicken liver (cooked),100 g,24.5,0.9,6.5,غرام,كبدة دجاج مطبوخة,100,protein,Meat & poultry,05028,"Chicken, liver, all classes, cooked, simmered",100,167
+Beef liver (cooked),100 g,26.5,5.2,4.7,غرام,كبدة عجل مطبوخة,100,protein,Meat & poultry,13327,"Beef, variety meats and by-products, liver, cooked, pan-fried",100,175
+Salmon (cooked),100 g,22.1,0.0,12.3,غرام,سلمون مطبوخ,100,protein,Fish & seafood,15237,"Fish, salmon, Atlantic, farmed, cooked, dry heat",100,206
+Tilapia (cooked),100 g,26.1,0.0,2.6,غرام,سمك بلطي مطبوخ,100,protein,Fish & seafood,15262,"Fish, tilapia, cooked, dry heat",100,128
+Sea bass (cooked),100 g,23.6,0.0,2.6,غرام,سمك لقس مطبوخ,100,protein,Fish & seafood,15092,"Fish, sea bass, mixed species, cooked, dry heat",100,124
+Cod (cooked),100 g,22.8,0.0,0.9,غرام,سمك قد مطبوخ,100,protein,Fish & seafood,15016,"Fish, cod, Atlantic, cooked, dry heat",100,105
+Mackerel (cooked),100 g,23.9,0.0,17.8,غرام,سمك ماكريل مطبوخ,100,protein,Fish & seafood,15047,"Fish, mackerel, Atlantic, cooked, dry heat",100,262
+Tuna in water (drained),100 g,19.4,0.0,1.0,غرام,تونا بالماء (مصفاة),100,protein,Fish & seafood,15121,"Fish, tuna, light, canned in water, drained solids",100,86
+Sardines in oil (drained),100 g,24.6,0.0,11.4,غرام,سردين بالزيت (مصفى),100,protein,Fish & seafood,15088,"Fish, sardine, Atlantic, canned in oil, drained solids with bone",100,208
+"Egg, large (boiled)",1 pc,6.3,0.6,5.3,حبة,بيضة كبيرة مسلوقة,1,protein,Eggs & dairy,01129,"Egg, whole, cooked, hard-boiled",50,78
+"Egg, large (fried)",1 pc,6.3,0.4,6.8,حبة,بيضة كبيرة مقلية,1,protein,Eggs & dairy,01128,"Egg, whole, cooked, fried",46,90
+Skim milk,100 ml,3.4,5.0,0.1,مل,حليب خالي الدسم,100,protein,Eggs & dairy,01085,"Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim)",100,35
+Low-fat milk 1%,100 ml,3.4,5.1,1.0,مل,حليب قليل الدسم 1%,100,protein,Eggs & dairy,01082,"Milk, lowfat, fluid, 1% milkfat, with added vitamin A and vitamin D",100,43
+Milk 2%,100 ml,3.4,4.9,2.0,مل,حليب 2%,100,protein,Eggs & dairy,01079,"Milk, reduced fat, fluid, 2% milkfat, with added vitamin A and vitamin D",100,51
+Low-fat yogurt,100 g,5.2,7.0,1.6,غرام,لبن قليل الدسم,100,protein,Eggs & dairy,01117,"Yogurt, plain, low fat, 12 grams protein per 8 ounce",100,63
+"Greek yogurt, fat-free",100 g,10.2,3.6,0.4,غرام,لبن يوناني خالي الدسم,100,protein,Eggs & dairy,01256,"Yogurt, Greek, plain, nonfat",100,59
+"Greek yogurt, low-fat",100 g,9.9,3.9,1.9,غرام,لبن يوناني قليل الدسم,100,protein,Eggs & dairy,01287,"Yogurt, Greek, plain, lowfat",100,73
+Cottage cheese 2%,100 g,10.4,4.8,2.3,غرام,جبنة قريش 2%,100,protein,Eggs & dairy,01015,"Cheese, cottage, lowfat, 2% milkfat",100,81
+"Ricotta, part-skim",100 g,11.4,5.1,7.9,غرام,جبنة ريكوتا قليلة الدسم,100,protein,Eggs & dairy,01037,"Cheese, ricotta, part skim milk",100,138
+Canola oil,1 tsp,0.0,0.0,4.7,ملعقة شاي,زيت كانولا,1,fat,Oils & butter,04582,"Oil, canola",4.7,41
+Coconut oil,1 tsp,0.0,0.0,4.5,ملعقة شاي,زيت جوز الهند,1,fat,Oils & butter,04047,"Oil, coconut",4.5,40
+Ghee,1 tsp,0.0,0.0,4.2,ملعقة شاي,سمن,1,fat,Oils & butter,01003,"Butter oil, anhydrous",4.3,37
+"Pistachios (roasted, unsalted)",30 g,6.3,8.5,13.7,غرام,فستق حلبي محمص بدون ملح,30,fat,Nuts & seeds,12152,"Nuts, pistachio nuts, dry roasted, without salt added",30,172
+"Peanuts (roasted, unsalted)",30 g,7.3,6.4,14.9,غرام,فول سوداني محمص بدون ملح,30,fat,Nuts & seeds,16390,"Peanuts, all types, dry-roasted, without salt",30,176
+Hazelnuts,30 g,4.5,5.0,18.2,غرام,بندق,30,fat,Nuts & seeds,12120,"Nuts, hazelnuts or filberts",30,188
+Sunflower seeds (kernels),30 g,6.2,6.0,15.4,غرام,بزر دوار الشمس (مقشر),30,fat,Nuts & seeds,12036,"Seeds, sunflower seed kernels, dried",30,175
+Pumpkin seeds (kernels),30 g,9.1,3.2,14.7,غرام,بزر قرع (مقشر),30,fat,Nuts & seeds,12014,"Seeds, pumpkin and squash seed kernels, dried",30,168
+Chia seeds,10 g,1.7,4.2,3.1,غرام,بذور الشيا,10,fat,Nuts & seeds,12006,"Seeds, chia seeds, dried",10,49
+Flaxseed,10 g,1.8,2.9,4.2,غرام,بذور الكتان,10,fat,Nuts & seeds,12220,"Seeds, flaxseed",10,53
+"Peanut butter, natural",1 tbsp,3.6,3.6,8.2,ملعقة طعام,زبدة فول سوداني طبيعية,1,fat,Nuts & seeds,16398,"Peanut butter, smooth style, without salt",16,96
+Almond butter,1 tbsp,3.4,3.0,8.9,ملعقة طعام,زبدة لوز,1,fat,Nuts & seeds,12195,"Nuts, almond butter, plain, without salt added",16,98
+Tahini,1 tbsp,2.5,3.2,8.1,ملعقة طعام,طحينة,1,fat,Nuts & seeds,12166,"Seeds, sesame butter, tahini, from roasted and toasted kernels (most common type)",15,89
+Hummus,1 tbsp,1.2,2.1,1.4,ملعقة طعام,حمص بطحينة,1,fat,Other fats,16158,"Hummus, commercial",15,25
+Black olives,1 pc,0.0,0.3,0.5,حبة,زيتون أسود,1,fat,Other fats,09193,"Olives, ripe, canned (small-extra large)",4.4,5
+Green olives,1 pc,0.0,0.1,0.4,حبة,زيتون أخضر,1,fat,Other fats,09195,"Olives, pickled, canned or bottled, green",2.7,4
+Feta cheese,30 g,4.3,1.2,6.4,غرام,جبنة فيتا,30,fat,Cheese,01019,"Cheese, feta",30,79
+"Mozzarella, part-skim",30 g,7.3,0.8,4.8,غرام,جبنة موزاريلا قليلة الدسم,30,fat,Cheese,01028,"Cheese, mozzarella, part skim milk",30,76
+Cream cheese,1 tbsp,0.9,0.8,5.0,ملعقة طعام,جبنة كريمية,1,fat,Cheese,01017,"Cheese, cream",14.5,51
+Parmesan (grated),1 tbsp,1.4,0.7,1.4,ملعقة طعام,جبنة بارميزان مبشورة,1,fat,Cheese,01032,"Cheese, parmesan, grated",5,21
