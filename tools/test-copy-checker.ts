@@ -180,6 +180,9 @@ try {
   ok("weekly plan: 7 days, day 1 = plan", wk?.days?.length === 7 && wk.days[0].swaps === 0 && wk.days[0].items.length === 8, wk?.days?.map((d: any) => [d.kcal, d.swaps]));
   ok("weekly plan: every day within 7% calories", wk?.days?.every((d: any) => Math.abs(d.kcal - k0) / k0 <= 0.07), wk?.days?.map((d: any) => d.kcal));
   ok("weekly plan: some swaps, never excluded food", wk?.days?.some((d: any) => d.swaps > 0) && !wk.days.some((d: any) => d.items.some((i: any) => i.food_id === shrimp.id)), wk?.days?.map((d: any) => d.items.filter((i: any) => i.swapped).map((i: any) => i.name)));
+  const sig = (d: any) => d.items.map((i: any) => `${i.meal}:${i.food_id}:${i.quantity}`).sort().join("|");
+  const sigs = (wk?.days || []).map(sig);
+  ok("weekly plan: no two days in a row the same", sigs.length === 7 && sigs.every((s: string, i: number) => i === 0 || s !== sigs[i - 1]), new Set(sigs).size);
   const wkBad = await req(`/nutrition/plan/${P2}/weekly/`, { method: "PUT", body: JSON.stringify({ days: [{ items: [{ meal: "meal2", food_id: shrimp.id, quantity: 1 }] }] }) }, T);
   ok("weekly edit cannot add excluded food", wkBad.status === 400, wkBad.body);
   const wkOk = await req(`/nutrition/plan/${P2}/weekly/`, { method: "PUT", body: JSON.stringify({ days: wk.days.map((d: any) => ({ items: d.items })) }) }, T);
