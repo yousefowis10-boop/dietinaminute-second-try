@@ -60,9 +60,35 @@ class ClientProfileRevision(models.Model):
     target_protein = models.FloatField(null=True, blank=True)
     target_carb = models.FloatField(null=True, blank=True)
     target_fat = models.FloatField(null=True, blank=True)
+    # Check-in details (new). source: visit / manual / inbody / client_link
+    source = models.CharField(max_length=20, blank=True, default='visit')
+    note = models.TextField(blank=True, default='')
+    body_fat_mass = models.FloatField(null=True, blank=True)
+    visceral_fat = models.FloatField(null=True, blank=True)
+    waist_hip = models.FloatField(null=True, blank=True)
+    inbody_bmr = models.FloatField(null=True, blank=True)
+    # False for check-ins the client sent by link that the dietitian has not opened yet.
+    reviewed = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.client.name} @ {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+
+class CheckInFile(models.Model):
+    """InBody photo or PDF attached to a check-in, kept in the database so it survives redeploys."""
+    revision = models.OneToOneField(ClientProfileRevision, on_delete=models.CASCADE, related_name='file')
+    name = models.CharField(max_length=255, blank=True, default='')
+    content_type = models.CharField(max_length=100, default='application/octet-stream')
+    data = models.BinaryField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class CheckInLink(models.Model):
+    """A reusable private link a client uses to send weekly check-ins from home."""
+    client = models.OneToOneField('nutrition.ClientProfile', on_delete=models.CASCADE, related_name='checkin_link')
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    active = models.BooleanField(default=True)
 
 class ClientProfile(models.Model):
     GENDER_CHOICES = [
@@ -111,6 +137,8 @@ class ClientProfile(models.Model):
     carb_percentage = models.FloatField(null=True, blank=True, help_text="Percentage of carbs")
     protein_percentage = models.FloatField(null=True, blank=True, help_text="Percentage of protein")
     fat_percentage = models.FloatField(null=True, blank=True, help_text="Percentage of fat")
+    formula_name = models.CharField(max_length=100, blank=True, default='')
+    calorie_adjustment = models.FloatField(default=0)
 
     # Foods this client must never get (allergies, medical exclusions). Hard rule.
     excluded_foods = models.ManyToManyField('nutrition.FoodItem', blank=True, related_name='excluded_for_clients')
@@ -223,6 +251,10 @@ class DietPlan(models.Model):
 
     notes = models.TextField(blank=True)
     workout = models.ForeignKey('nutrition.WorkoutTemplate', null=True, blank=True, on_delete=models.SET_NULL, related_name='plans')
+    # Meals in order with the dietitian's names: [{"key": "meal1", "name": "Breakfast", "time": "08:00"}]
+    meal_slots = models.JSONField(default=list, blank=True)
+    # Suggested week: {"days": [{"items": [{"meal": "meal1", "food_id": 1, "quantity": 1.5, "swapped": false}]}]}
+    weekly = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - Plan on {self.created_at.date()}"
@@ -311,6 +343,12 @@ class DetailedProfile(models.Model):
     food_to_eat_more = models.TextField(null=True, blank=True)
     food_to_eat_less = models.TextField(null=True, blank=True)
     food_to_avoid = models.TextField(null=True, blank=True)
+    # Picked from the food database (ids). "Never eats" foods go to the client's excluded foods.
+    liked_foods = models.JSONField(default=list, null=True, blank=True)
+    less_foods = models.JSONField(default=list, null=True, blank=True)
+    never_foods = models.JSONField(default=list, null=True, blank=True)
+    # {"coffee_tea": {"freq": "daily", "amount": "3 cups"}, ..., "water_l": 1.5}
+    drinks = models.JSONField(default=dict, null=True, blank=True)
 
     # Step 5: Supplements Intake
     current_supplement_intake = models.TextField(null=True, blank=True)
@@ -423,6 +461,12 @@ class DetailedProfileRevision(models.Model):
     food_to_eat_more = models.TextField(null=True, blank=True)
     food_to_eat_less = models.TextField(null=True, blank=True)
     food_to_avoid = models.TextField(null=True, blank=True)
+    # Picked from the food database (ids). "Never eats" foods go to the client's excluded foods.
+    liked_foods = models.JSONField(default=list, null=True, blank=True)
+    less_foods = models.JSONField(default=list, null=True, blank=True)
+    never_foods = models.JSONField(default=list, null=True, blank=True)
+    # {"coffee_tea": {"freq": "daily", "amount": "3 cups"}, ..., "water_l": 1.5}
+    drinks = models.JSONField(default=dict, null=True, blank=True)
 
     # Step 5: Supplements Intake
     current_supplement_intake = models.TextField(null=True, blank=True)

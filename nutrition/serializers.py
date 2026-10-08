@@ -34,10 +34,11 @@ class ClientProfileSerializer(serializers.ModelSerializer):
             'bmr', 'activity_value', 'target_calories',
             'target_protein', 'target_carb', 'target_fat',
             'carb_percentage', 'protein_percentage', 'fat_percentage',
-            'excluded_foods', 'interview_status', 'created_at',
+            'excluded_foods', 'interview_status', 'created_at', 'formula_name', 'calorie_adjustment',
         ]
         read_only_fields = [
             'target_protein', 'target_carb', 'target_fat', 'excluded_foods', 'interview_status', 'created_at',
+            'formula_name', 'calorie_adjustment',
         ]
 
     def to_internal_value(self, data):
@@ -97,7 +98,7 @@ class DietPlanSerializer(serializers.ModelSerializer):
         model = DietPlan
         fields = [
             'id', 'created_at', 'name', 'total_protein', 'total_carb', 'total_fat',
-            'missing_protein', 'missing_carb', 'missing_fat', 'items', 'client', 'workout', 'notes'
+            'missing_protein', 'missing_carb', 'missing_fat', 'items', 'client', 'workout', 'notes', 'meal_slots'
         ]
 
 class FoodItemSerializer(serializers.ModelSerializer):

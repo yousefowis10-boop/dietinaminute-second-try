@@ -202,3 +202,5 @@ SIMPLE_JWT = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+# InBody photos/PDFs are sent as base64 JSON (up to 8 MB files).
+DATA_UPLOAD_MAX_MEMORY_SIZE = 15 * 1024 * 1024

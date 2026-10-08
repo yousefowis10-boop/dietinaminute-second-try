@@ -246,3 +246,52 @@ def follow_up(client, change, language='ar'):
     )
     data = _json(_call(SYSTEM, prompt, max_tokens=800))
     return {'suggestion': data.get('suggestion', ''), 'test_mode': False}
+
+
+# ------------------------------------------------------------ InBody ---
+
+INBODY_FIELDS = ['weight', 'pbf', 'smm', 'body_fat_mass', 'visceral_fat', 'waist_hip', 'inbody_bmr', 'test_date']
+
+
+def read_inbody(data, content_type, client):
+    """Read the numbers from an InBody result sheet (photo or PDF). The dietitian checks them before saving."""
+    if is_fake():
+        last = client.profile_revisions.order_by('-created_at').first()
+        w = (last.weight if last and last.weight else client.weight) or 70
+        pbf = (last.pbf if last and last.pbf else client.pbf) or 25
+        smm = (last.smm if last and last.smm else client.smm) or 30
+        return {'weight': round(w - 0.6, 1), 'pbf': round(pbf - 0.4, 1), 'smm': round(smm + 0.1, 1),
+                'body_fat_mass': round((w - 0.6) * (pbf - 0.4) / 100, 1), 'visceral_fat': 9, 'waist_hip': 0.92,
+                'inbody_bmr': None, 'test_date': None, 'test_mode': True}
+    import base64
+    b64 = base64.b64encode(data).decode()
+    if content_type == 'application/pdf':
+        source = {'type': 'document', 'source': {'type': 'base64', 'media_type': 'application/pdf', 'data': b64}}
+    else:
+        media = content_type if content_type in ('image/jpeg', 'image/png', 'image/webp', 'image/gif') else 'image/jpeg'
+        source = {'type': 'image', 'source': {'type': 'base64', 'media_type': media, 'data': b64}}
+    prompt = (
+        "This is a body composition (InBody) result sheet. Read the values exactly as printed. "
+        "Return JSON with these keys (number or null if not on the sheet): "
+        '{"weight": kg, "pbf": percent body fat, "smm": skeletal muscle mass kg, "body_fat_mass": kg, '
+        '"visceral_fat": level, "waist_hip": ratio, "inbody_bmr": kcal, "test_date": "YYYY-MM-DD" or null}. '
+        "Do not guess values that are not printed."
+    )
+    data_out = _json(_call(SYSTEM, [source, {'type': 'text', 'text': prompt}], max_tokens=400))
+    clean = {}
+    for key in INBODY_FIELDS:
+        value = data_out.get(key)
+        if key == 'test_date':
+            clean[key] = value if isinstance(value, str) and re.match(r'^\d{4}-\d{2}-\d{2}$', value) else None
+            continue
+        try:
+            clean[key] = round(float(value), 2) if value is not None else None
+        except (TypeError, ValueError):
+            clean[key] = None
+    # Sanity limits so a misread never becomes a saved number silently.
+    limits = {'weight': (20, 300), 'pbf': (2, 70), 'smm': (5, 80), 'body_fat_mass': (1, 200)}
+    for key, (lo, hi) in limits.items():
+        if clean.get(key) is not None and not lo <= clean[key] <= hi:
+            clean[key] = None
+    clean['test_mode'] = False
+    return clean

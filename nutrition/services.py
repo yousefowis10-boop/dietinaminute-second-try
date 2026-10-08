@@ -321,3 +321,206 @@ def progress_change(client):
         'last_date': last.created_at.isoformat(),
         'prev_date': prev.created_at.isoformat(),
     }
+
+
+# ------------------------------------------------------------ meal names ---
+
+import random  # noqa: E402
+import re  # noqa: E402
+
+MEAL_KEY_RE = re.compile(r'^(meal|snack)([1-9]|1[0-2])$')
+DEFAULT_MEAL_NAMES = {'meal1': 'Breakfast', 'meal2': 'Lunch', 'meal3': 'Dinner', 'meal4': 'Meal 4',
+                      'snack1': 'Morning snack', 'snack2': 'Afternoon snack', 'snack3': 'Evening snack'}
+
+
+def ensure_tags(keys):
+    """Meal keys are stored as tags; make sure a tag exists for each one (extra meals add new keys)."""
+    from .models import Tag
+    have = {t.name: t for t in Tag.objects.filter(name__in=keys)}
+    for key in keys:
+        if key not in have and MEAL_KEY_RE.match(key):
+            have[key] = Tag.objects.create(name=key)
+    return have
+
+
+def clean_meal_slots(slots):
+    """[{key, name, time}] in the order the dietitian set. Unknown keys are dropped."""
+    out, seen = [], set()
+    for slot in slots or []:
+        if not isinstance(slot, dict):
+            continue
+        key = str(slot.get('key') or '')
+        if not MEAL_KEY_RE.match(key) or key in seen:
+            continue
+        seen.add(key)
+        time = str(slot.get('time') or '')[:5]
+        out.append({'key': key, 'name': str(slot.get('name') or DEFAULT_MEAL_NAMES.get(key, key))[:40],
+                    'time': time if re.match(r'^\d{1,2}:\d{2}$', time) else ''})
+    return out
+
+
+# ---------------------------------------------------------- common foods ---
+
+# Used until the dietitian has made enough plans for the app to learn their favourites.
+COMMON_FOOD_DEFAULTS = {
+    'carb': ['white rice', 'oats', 'al reef barn bread'],
+    'protein': ['chicken breast', 'whole egg boiled', 'tuna in olive'],
+    'fat': ['olive oil', 'avocado', 'walnuts'],
+}
+
+
+def common_foods(user, per_type=3):
+    """The 3 foods of each group this dietitian uses most, filled up with sensible defaults."""
+    from django.db.models import Count
+
+    from .models import DietItem, FoodItem
+    used = (DietItem.objects.filter(plan__user_id__in=team_user_ids(user))
+            .values('food_id', 'food__food_type').annotate(n=Count('id')).order_by('-n'))
+    by_name = {f.name.strip().lower(): f for f in FoodItem.objects.all()}
+    out = {}
+    for food_type in ('carb', 'protein', 'fat'):
+        ids = [row['food_id'] for row in used if row['food__food_type'] == food_type][:per_type]
+        for name in COMMON_FOOD_DEFAULTS[food_type]:
+            food = by_name.get(name)
+            if len(ids) >= per_type:
+                break
+            if food and food.id not in ids and food.food_type == food_type:
+                ids.append(food.id)
+        out[food_type] = ids
+    return out
+
+
+# ------------------------------------------------------- weekly plan ---
+
+# Foods that can stand in for each other. Names as in the food database (lower case).
+SWAP_GROUPS = [
+    ['white rice', 'pasta', 'potato', 'sweet potato'],
+    ['al reef barn bread', 'toast bread - white', 'al reef tortilla', 'alreef oat bread', 'white sandwich rolls - milk'],
+    ['banana', 'apple', 'grapes', 'watermelon', 'blueberries'],
+    ['chicken breast', 'turkey', 'steak', 'shrimp', 'salmon'],
+    ['greek yogurt, plain, al mareaei', 'labneh full fat', 'white cheese'],
+    ['walnuts', 'cashew'],
+]
+MAIN_MACRO = {'carb': 'carb', 'protein': 'protein', 'fat': 'fat'}
+
+
+def _plan_rows(plan):
+    """[(meal_key, food, servings)] for every food in every meal of the plan."""
+    rows = []
+    for item in plan.items.select_related('food').prefetch_related('tags'):
+        tags = list(item.tags.all())
+        if not tags:
+            continue
+        shares = normalized_shares(item, tags)
+        for tag in tags:
+            rows.append((tag.name, item.food, round(item.quantity * shares[tag.id], 2)))
+    return rows
+
+
+def _macro_totals(rows):
+    t = {'protein': 0.0, 'carb': 0.0, 'fat': 0.0}
+    for _, food, q in rows:
+        for m in t:
+            t[m] += getattr(food, m) * q
+    return t
+
+
+def weekly_plan(plan, seed=None, days=7):
+    """Day 1 = the plan. Days 2-7 swap foods inside the same group and recalculate servings
+    so each day stays close to the same calories and macros. Excluded foods are never used."""
+    from .models import DetailedProfile, FoodItem
+    rng = random.Random(seed if seed is not None else plan.id)
+    client = plan.client
+    excluded = set(client.excluded_foods.values_list('id', flat=True))
+    detailed = DetailedProfile.objects.filter(client=client).first()
+    liked = set(detailed.liked_foods or []) if detailed else set()
+    by_name = {f.name.strip().lower(): f for f in FoodItem.objects.all()}
+    groups = []
+    for names in SWAP_GROUPS:
+        members = [by_name[n] for n in names if n in by_name and by_name[n].id not in excluded]
+        if len(members) > 1:
+            groups.append(members)
+    group_of = {f.id: g for g in groups for f in g}
+
+    base = _plan_rows(plan)
+    target = _macro_totals(base)
+
+    def err(rows):
+        t = _macro_totals(rows)
+        return sum(((t[m] - target[m]) / target[m]) ** 2 for m in t if target[m])
+
+    out = [{'items': [{'meal': k, 'food_id': f.id, 'quantity': q, 'swapped': False} for k, f, q in base]}]
+    for _ in range(1, days):
+        choice = {}
+        for _, food, _ in base:
+            group = group_of.get(food.id)
+            if group and food.id not in choice:
+                if rng.random() < 0.6:
+                    options = [f for f in group if f.id != food.id and f.food_type == food.food_type]
+                    options.sort(key=lambda f: (f.id not in liked, rng.random()))
+                    choice[food.id] = options[0] if options else food
+                else:
+                    choice[food.id] = food
+        rows = []  # [meal, food, servings, swapped, start]
+        for meal, food, q in base:
+            new = choice.get(food.id, food)
+            if new.id != food.id:
+                macro = MAIN_MACRO.get(food.food_type, 'carb')
+                grams = getattr(food, macro) * q
+                per = getattr(new, macro) or 0
+                q2 = max(0.5, round((grams / per) * 2) / 2) if per else q
+                rows.append([meal, new, q2, True, q2])
+            else:
+                rows.append([meal, food, q, False, q])
+        # Same small search the plan builder uses: nudge swapped foods and fats by half servings.
+        for _ in range(60):
+            best, move = err([(r[0], r[1], r[2]) for r in rows]), None
+            for i, r in enumerate(rows):
+                if not (r[3] or r[1].food_type == 'fat'):
+                    continue
+                lo, hi = (max(0, r[4] - 1), r[4] + 1) if r[1].food_type == 'fat' else (max(0.5, r[4] - 0.5), r[4] + 0.5)
+                for d in (-0.5, 0.5):
+                    if lo <= r[2] + d <= hi:
+                        r[2] += d
+                        e = err([(x[0], x[1], x[2]) for x in rows])
+                        r[2] -= d
+                        if e < best - 1e-9:
+                            best, move = e, (i, d)
+            if not move:
+                break
+            rows[move[0]][2] += move[1]
+        out.append({'items': [{'meal': r[0], 'food_id': r[1].id, 'quantity': round(r[2], 2), 'swapped': r[3]}
+                              for r in rows if r[2] > 0]})
+    return {'days': out, 'generated_at': timezone.now().isoformat()}
+
+
+def describe_week(week):
+    """Add names, amounts and calories to a stored week for the screen and PDF."""
+    from .models import FoodItem
+    if not week:
+        return None
+    ids = {i['food_id'] for d in week.get('days', []) for i in d.get('items', [])}
+    foods = {f.id: f for f in FoodItem.objects.filter(id__in=ids)}
+    days = []
+    for d in week.get('days', []):
+        items, kcal = [], 0.0
+        for i in d.get('items', []):
+            f = foods.get(i['food_id'])
+            if f is None:
+                continue
+            q = float(i['quantity'])
+            k = (f.protein * 4 + f.carb * 4 + f.fat * 9) * q
+            kcal += k
+            items.append({**i, 'name': f.name, 'name_ar': f.name_ar, 'unit': f.unit, 'unit_ar': f.unit_ar,
+                          'factor': f.multiplying_factor or 1, 'food_type': f.food_type,
+                          'amount': round(q * (f.multiplying_factor or 1), 1), 'kcal': round(k)})
+        days.append({'items': items, 'kcal': round(kcal), 'swaps': sum(1 for i in items if i['swapped'])})
+    return {'days': days, 'generated_at': week.get('generated_at')}
+
+
+def sync_never_foods(client, detailed):
+    """Foods picked as 'never eats' in the interview are added to the client's excluded foods."""
+    from .models import FoodItem
+    ids = [int(i) for i in (getattr(detailed, 'never_foods', None) or []) if str(i).isdigit()]
+    if ids:
+        client.excluded_foods.add(*FoodItem.objects.filter(id__in=ids))

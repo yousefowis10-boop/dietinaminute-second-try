@@ -1,7 +1,7 @@
 """Endpoints added in the upgrade (phases 1-3)."""
 import base64
 import io
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.db import transaction
 from django.db.models import Q
@@ -15,16 +15,16 @@ from rest_framework.views import APIView
 
 from . import ai
 from .models import (
-    AIResult, ClientProfile, DetailedProfile, DetailedProfileRevision, DietItem, DietPlan, FoodItem, InterviewInvite,
-    PlanTemplate, Tag, UserProfile, WorkoutTemplate,
+    AIResult, CheckInFile, CheckInLink, ClientProfile, ClientProfileRevision, DetailedProfile, DetailedProfileRevision,
+    DietItem, DietPlan, FoodItem, InterviewInvite, PlanTemplate, Tag, UserProfile, WorkoutTemplate,
 )
 from .serializers import (
     AIResultSerializer, ClientProfileSerializer, DetailedProfileSerializer, PlanTemplateSerializer,
     WorkoutTemplateSerializer,
 )
 from .services import (
-    calculate_targets, client_qs, follow_up_due, grocery_list, plan_qs, progress_change, safety_flags, split_plan,
-    team_user_ids,
+    calculate_targets, clean_meal_slots, client_qs, common_foods, describe_week, ensure_tags, follow_up_due,
+    grocery_list, plan_qs, progress_change, safety_flags, split_plan, sync_never_foods, team_user_ids, weekly_plan,
 )
 
 # Questions a client may answer through the public link. Admin fields are not included.
@@ -37,7 +37,7 @@ PUBLIC_INTERVIEW_FIELDS = {
     'how_many_caffeine_a_day', 'caffeine_duration', 'exercise', 'exercise_duration', 'exercise_times_per_week',
     'workout_intensity', 'types_of_workout', 'sleep_time', 'sleep_duration', 'bowel_movements_per_day',
     'urinate_frequency', 'overall_energy_levels', 'pregnant', 'weeks_pregnant', 'due_date', 'breastfeeding',
-    'women_health_comments',
+    'women_health_comments', 'liked_foods', 'less_foods', 'never_foods', 'drinks',
 }
 
 
@@ -130,13 +130,18 @@ class DashboardView(APIView):
                 due.append({'id': client.id, 'name': client.name, 'last_visit': last})
         waiting = clients.filter(interview_status='submitted').values('id', 'name')
         recent = plan_qs(request.user).select_related('client').order_by('-created_at')[:6]
+        new_checkins = (ClientProfileRevision.objects.filter(client__in=clients, reviewed=False)
+                        .select_related('client').order_by('-created_at'))
         return Response({
             'counts': {
                 'clients': clients.count(),
                 'plans_this_month': plan_qs(request.user).filter(created_at__gte=now - timedelta(days=30)).count(),
                 'interviews_waiting': waiting.count(),
                 'follow_ups_due': len(due),
+                'checkins_waiting': new_checkins.count(),
             },
+            'checkins_waiting': [{'id': r.id, 'client_id': r.client_id, 'name': r.client.name, 'date': r.created_at,
+                                  'weight': r.weight} for r in new_checkins[:8]],
             'follow_ups_due': sorted(due, key=lambda d: d['last_visit'])[:8],
             'interviews_waiting': list(waiting),
             'recent_plans': [{'id': p.id, 'name': p.name, 'client_id': p.client_id, 'client': p.client.name,
@@ -190,8 +195,7 @@ class ClientOverviewView(APIView):
             'plans': [{'id': p.id, 'name': p.name, 'created_at': p.created_at, 'total_protein': p.total_protein,
                        'total_carb': p.total_carb, 'total_fat': p.total_fat,
                        'kcal': round(p.total_protein * 4 + p.total_carb * 4 + p.total_fat * 9)} for p in plans],
-            'progress': [{'date': r.created_at, 'weight': r.weight, 'pbf': r.pbf, 'smm': r.smm,
-                          'calorie_target': r.calorie_target} for r in revisions],
+            'progress': [checkin_json(r) for r in revisions.select_related('file')],
             'progress_change': progress_change(client),
             'ai_results': AIResultSerializer(client.ai_results.order_by('-created_at')[:5], many=True).data,
         })
@@ -249,6 +253,7 @@ class PublicInterviewView(APIView):
             'clinic_name': (profile.clinic_name if profile else '') or (owner.clinic.name if owner.clinic_id else ''),
             'logo_url': profile.logo_data if profile and profile.logo_data else None,
             'submitted': invite.submitted_at is not None,
+            'foods': list(FoodItem.objects.order_by('food_type', 'name').values('id', 'name', 'name_ar', 'food_type')),
         })
 
     @transaction.atomic
@@ -262,7 +267,8 @@ class PublicInterviewView(APIView):
         serializer = DetailedProfileSerializer(detailed, data=answers, partial=True)
         if not serializer.is_valid():
             return Response({'detail': 'invalid', 'errors': serializer.errors}, status=400)
-        serializer.save()
+        detailed = serializer.save()
+        sync_never_foods(client, detailed)
         DetailedProfileRevision.objects.create(
             detailed_profile=detailed, user=client.user, client=client, revision_reason='Answered by client via link',
             **model_to_dict(detailed, exclude=['id', 'user', 'client']))
@@ -290,6 +296,8 @@ class PlanSheetView(APIView):
                      'protein': round(plan.total_protein), 'carb': round(plan.total_carb), 'fat': round(plan.total_fat)},
             'client': {'id': plan.client.id, 'name': plan.client.name, 'goal': plan.client.goal},
             'meals': split,
+            'meal_slots': plan.meal_slots or [],
+            'weekly': describe_week(plan.weekly),
             'unassigned': unassigned,
             'grocery': grocery_list(plan),
             'workout': WorkoutTemplateSerializer(plan.workout).data if plan.workout else None,
@@ -508,7 +516,12 @@ class PlanReplaceView(APIView):
         blocked = [foods[i['id']].name for i in items if i.get('id') in excluded and i.get('id') in foods]
         if blocked:
             return Response({'error': 'excluded_foods', 'foods': blocked}, status=400)
-        tags_by_name = {t.name: t for t in Tag.objects.all()}
+        slots = clean_meal_slots(request.data.get('meal_slots'))
+        keys = {sl['key'] for sl in slots} | {m for e in items for m in (e.get('meals') or [])}
+        tags_by_name = ensure_tags(sorted(keys))
+        if slots:
+            plan.meal_slots = slots
+        plan.weekly = None  # foods changed, so the suggested week is out of date
         plan.items.all().delete()
         totals = {'protein': 0.0, 'carb': 0.0, 'fat': 0.0}
         for entry in items:
@@ -539,3 +552,253 @@ class PlanReplaceView(APIView):
         plan.missing_fat = max(0, (client.target_fat or 0) - totals['fat'])
         plan.save()
         return Response({'plan_id': plan.id})
+
+
+# -------------------------------------------------------- common foods ---
+
+class CommonFoodsView(APIView):
+    """The 3 most-used foods per group, shown ready in the plan builder."""
+
+    def get(self, request):
+        return Response(common_foods(request.user))
+
+
+# --------------------------------------------------------- weekly plan ---
+
+class PlanWeeklyView(APIView):
+    def get(self, request, plan_id):
+        plan = get_object_or_404(plan_qs(request.user), id=plan_id)
+        return Response({'weekly': describe_week(plan.weekly)})
+
+    def post(self, request, plan_id):
+        """Make (or remake) the suggested week."""
+        plan = get_object_or_404(plan_qs(request.user).select_related('client'), id=plan_id)
+        seed = request.data.get('seed')
+        plan.weekly = weekly_plan(plan, seed=int(seed) if str(seed or '').isdigit() else None)
+        plan.save(update_fields=['weekly'])
+        return Response({'weekly': describe_week(plan.weekly)})
+
+    def put(self, request, plan_id):
+        """Save the dietitian's edits to the week."""
+        plan = get_object_or_404(plan_qs(request.user).select_related('client'), id=plan_id)
+        days = request.data.get('days') or []
+        excluded = set(plan.client.excluded_foods.values_list('id', flat=True))
+        valid_ids = set(FoodItem.objects.values_list('id', flat=True))
+        clean, blocked = [], set()
+        for d in days[:7]:
+            items = []
+            for i in d.get('items', []):
+                try:
+                    fid, qty = int(i.get('food_id')), float(i.get('quantity'))
+                except (TypeError, ValueError):
+                    continue
+                if fid not in valid_ids or qty <= 0:
+                    continue
+                if fid in excluded:
+                    blocked.add(fid)
+                    continue
+                items.append({'meal': str(i.get('meal') or '')[:20], 'food_id': fid, 'quantity': round(qty, 2),
+                              'swapped': bool(i.get('swapped'))})
+            clean.append({'items': items})
+        if blocked:
+            names = list(FoodItem.objects.filter(id__in=blocked).values_list('name', flat=True))
+            return Response({'error': 'excluded_foods', 'foods': names}, status=400)
+        plan.weekly = {'days': clean, 'generated_at': (plan.weekly or {}).get('generated_at'), 'edited': True}
+        plan.save(update_fields=['weekly'])
+        return Response({'weekly': describe_week(plan.weekly)})
+
+
+# ------------------------------------------------------------ check-ins ---
+
+MAX_FILE_BYTES = 8 * 1024 * 1024
+CHECKIN_NUMBERS = ['weight', 'pbf', 'smm', 'body_fat_mass', 'visceral_fat', 'waist_hip', 'inbody_bmr']
+
+
+def checkin_json(r):
+    has_file = hasattr(r, 'file')
+    return {
+        'id': r.id, 'date': r.created_at, 'source': r.source or 'visit', 'reviewed': r.reviewed, 'note': r.note,
+        'weight': r.weight, 'pbf': r.pbf, 'smm': r.smm, 'body_fat_mass': r.body_fat_mass,
+        'visceral_fat': r.visceral_fat, 'waist_hip': r.waist_hip, 'inbody_bmr': r.inbody_bmr,
+        'calorie_target': r.calorie_target, 'bmr': r.bmr,
+        'file': {'name': r.file.name, 'content_type': r.file.content_type} if has_file else None,
+    }
+
+
+def _decode_file(payload):
+    """{'name', 'content_type', 'data' (base64)} -> (bytes, type, name) or raise ValueError."""
+    if not payload:
+        return None
+    raw = payload.get('data') or ''
+    if ',' in raw[:100]:
+        raw = raw.split(',', 1)[1]  # data URL
+    data = base64.b64decode(raw, validate=False)
+    if len(data) > MAX_FILE_BYTES:
+        raise ValueError('file_too_large')
+    ctype = str(payload.get('content_type') or 'application/octet-stream')[:100]
+    if not (ctype.startswith('image/') or ctype == 'application/pdf'):
+        raise ValueError('file_type')
+    return data, ctype, str(payload.get('name') or 'inbody')[:255]
+
+
+def _number(value, lo, hi):
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return None
+    return v if lo <= v <= hi else None
+
+
+@transaction.atomic
+def create_checkin(client, data, *, source, reviewed=True, file=None, recalculate=True):
+    """Save a check-in, update the client's current numbers and (optionally) the calorie target."""
+    weight = _number(data.get('weight'), 20, 300)
+    if weight is None:
+        raise ValueError('weight_required')
+    values = {
+        'pbf': _number(data.get('pbf'), 2, 70), 'smm': _number(data.get('smm'), 5, 80),
+        'body_fat_mass': _number(data.get('body_fat_mass'), 0, 200), 'visceral_fat': _number(data.get('visceral_fat'), 0, 60),
+        'waist_hip': _number(data.get('waist_hip'), 0.3, 2), 'inbody_bmr': _number(data.get('inbody_bmr'), 500, 5000),
+    }
+    client.weight = weight
+    if values['pbf'] is not None:
+        client.pbf = values['pbf']
+    if values['smm'] is not None:
+        client.smm = values['smm']
+    if recalculate and client.formula_name:
+        try:
+            calc = calculate_targets(
+                formula_name=client.formula_name, gender=client.gender, weight=client.weight, height=client.height,
+                age=client.age, work_style=client.work_style, adjustment=client.calorie_adjustment,
+                protein_pct=client.protein_percentage or 25, carb_pct=client.carb_percentage or 55,
+                fat_pct=client.fat_percentage or 20)
+            client.bmr, client.activity_value, client.target_calories = calc['bmr'], calc['tdee'], calc['target_calories']
+        except ValueError:
+            pass
+    client.save()
+    rev = ClientProfileRevision.objects.create(
+        client=client, age=client.age, weight=client.weight, height=client.height, gender=client.gender,
+        goal=client.goal, smm=client.smm, pbf=client.pbf, work_style=client.work_style, bmr=client.bmr,
+        calorie_target=client.target_calories, target_protein=client.target_protein, target_carb=client.target_carb,
+        target_fat=client.target_fat, source=source, reviewed=reviewed, note=str(data.get('note') or '')[:2000],
+        body_fat_mass=values['body_fat_mass'], visceral_fat=values['visceral_fat'], waist_hip=values['waist_hip'],
+        inbody_bmr=values['inbody_bmr'])
+    date = str(data.get('date') or '')
+    if len(date) == 10:
+        try:
+            when = timezone.make_aware(datetime.fromisoformat(date + 'T12:00:00'))
+            if when <= timezone.now() + timedelta(days=1):
+                ClientProfileRevision.objects.filter(pk=rev.pk).update(created_at=when)
+                rev.created_at = when
+        except ValueError:
+            pass
+    if file:
+        CheckInFile.objects.create(revision=rev, data=file[0], content_type=file[1], name=file[2])
+    return rev
+
+
+class CheckInsView(APIView):
+    def get(self, request, client_id):
+        client = get_object_or_404(client_qs(request.user), id=client_id)
+        revs = client.profile_revisions.select_related('file').order_by('created_at')
+        return Response({'checkins': [checkin_json(r) for r in revs], 'progress_change': progress_change(client)})
+
+    def post(self, request, client_id):
+        client = get_object_or_404(client_qs(request.user), id=client_id)
+        before = client.target_calories
+        try:
+            file = _decode_file(request.data.get('file'))
+            source = request.data.get('source') if request.data.get('source') in ('manual', 'inbody', 'visit') else 'manual'
+            rev = create_checkin(client, request.data, source=source, file=file,
+                                 recalculate=request.data.get('recalculate', True) is not False)
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=400)
+        rev = ClientProfileRevision.objects.select_related('file').get(pk=rev.pk)
+        return Response({'checkin': checkin_json(rev), 'calories_before': before,
+                         'calories_after': client.target_calories}, status=201)
+
+
+class CheckInDetailView(APIView):
+    def delete(self, request, checkin_id):
+        rev = get_object_or_404(ClientProfileRevision.objects.filter(client__in=client_qs(request.user)), id=checkin_id)
+        rev.delete()
+        return Response(status=204)
+
+    def post(self, request, checkin_id):
+        """Mark a client-sent check-in as seen."""
+        rev = get_object_or_404(ClientProfileRevision.objects.filter(client__in=client_qs(request.user)), id=checkin_id)
+        ClientProfileRevision.objects.filter(pk=rev.pk).update(reviewed=True)
+        return Response({'reviewed': True})
+
+
+class CheckInFileView(APIView):
+    def get(self, request, checkin_id):
+        rev = get_object_or_404(ClientProfileRevision.objects.filter(client__in=client_qs(request.user)), id=checkin_id)
+        f = getattr(rev, 'file', None)
+        if f is None:
+            return Response(status=404)
+        return Response({'name': f.name, 'content_type': f.content_type,
+                         'data': base64.b64encode(bytes(f.data)).decode()})
+
+
+class InBodyReadView(APIView):
+    """Read the numbers from an uploaded InBody sheet (AI). Nothing is saved here."""
+
+    def post(self, request, client_id):
+        client = get_object_or_404(client_qs(request.user), id=client_id)
+        try:
+            ai.check_allowed(request.user)
+            file = _decode_file(request.data.get('file'))
+            if not file:
+                return Response({'detail': 'file_required'}, status=400)
+            return Response(ai.read_inbody(file[0], file[1], client))
+        except ai.AIUnavailable as exc:
+            return _ai_error(exc)
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=400)
+
+
+class CheckInLinkView(APIView):
+    def post(self, request, client_id):
+        client = get_object_or_404(client_qs(request.user), id=client_id)
+        link, _ = CheckInLink.objects.get_or_create(client=client)
+        if request.data.get('new'):
+            link.delete()
+            link = CheckInLink.objects.create(client=client)
+        return Response({'token': str(link.token)})
+
+
+class PublicCheckInView(APIView):
+    """The client's weekly check-in page. No login; the long random token is the key."""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def _link(self, token):
+        return get_object_or_404(CheckInLink.objects.select_related('client', 'client__user'), token=token, active=True)
+
+    def get(self, request, token):
+        link = self._link(token)
+        client = link.client
+        profile = UserProfile.objects.filter(user=client.user).first()
+        last = client.profile_revisions.order_by('-created_at').first()
+        return Response({
+            'first_name': (client.name or '').split(' ')[0],
+            'clinic_name': (profile.clinic_name if profile else '') or '',
+            'logo_url': profile.logo_data if profile and profile.logo_data else None,
+            'last_date': last.created_at if last else None,
+        })
+
+    def post(self, request, token):
+        link = self._link(token)
+        client = link.client
+        recent = client.profile_revisions.filter(source='client_link', created_at__gte=timezone.now() - timedelta(hours=12))
+        if recent.count() >= 3:
+            return Response({'detail': 'too_many'}, status=429)
+        try:
+            file = _decode_file(request.data.get('file'))
+            # The client's numbers never change the plan by themselves; the dietitian reviews them.
+            create_checkin(client, {k: request.data.get(k) for k in ('weight', 'pbf', 'smm', 'note')},
+                           source='client_link', reviewed=False, file=file, recalculate=False)
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=400)
+        return Response({'ok': True})

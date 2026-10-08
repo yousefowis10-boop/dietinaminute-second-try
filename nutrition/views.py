@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from collections import defaultdict
 from decimal import Decimal, ROUND_HALF_UP
 
-from .services import client_qs, plan_qs, calculate_targets, split_plan
+from .services import client_qs, plan_qs, calculate_targets, split_plan, clean_meal_slots, ensure_tags, sync_never_foods
 from .models import ClientProfile, DietPlan, FoodItem, DietItem, ClientProfileRevision, BMRFormula, Tag, DetailedProfile, DetailedProfileRevision, UserProfile
 from .serializers import ClientProfileSerializer, DietPlanSerializer, FoodItemSerializer, BMRFormulaSerializer, DietItemTagUpdateSerializer, \
     TagSerializer, DetailedProfileSerializer, UserProfileSerializer, DetailedProfileRevisionSerializer
@@ -142,6 +142,9 @@ class ClientProfileView(APIView):
                 protein_percentage=protein_percentage,
                 fat_percentage=fat_percentage,
             )
+            if request.data.get('formula'):
+                save_kwargs['formula_name'] = str(request.data.get('formula'))[:100]
+                save_kwargs['calorie_adjustment'] = float(request.data.get('adjustment') or 0)
             if serializer.instance is None:
                 save_kwargs['user'] = request.user
             instance = serializer.save(**save_kwargs)
@@ -523,7 +526,12 @@ class CustomDietPlanCreateView(APIView):
             missing_fat=max(0, client.target_fat - total_f),
         )
 
-        tags_by_name = {t.name: t for t in Tag.objects.all()}
+        slots = clean_meal_slots(request.data.get("meal_slots"))
+        keys = {s["key"] for s in slots} | {m for it in diet_items for m in it["meals"]}
+        tags_by_name = ensure_tags(sorted(keys))
+        if slots:
+            plan.meal_slots = slots
+            plan.save(update_fields=["meal_slots"])
         for item in diet_items:
             diet_item = DietItem.objects.create(
                 plan=plan,
@@ -696,7 +704,8 @@ class ClientDetailedProfileView(APIView):
                     revision_reason="Before update",
                     **data
                 )
-            serializer.save()
+            saved = serializer.save()
+            sync_never_foods(client, saved)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
