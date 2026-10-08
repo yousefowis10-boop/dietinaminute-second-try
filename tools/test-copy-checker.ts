@@ -205,8 +205,8 @@ try {
   const waitingCi = dash3?.checkins_waiting?.find((x: any) => x.client_id === C.id);
   ok("dashboard shows new client check-in", !!waitingCi && waitingCi.weight === 68.4, dash3?.checkins_waiting);
   ok("mark check-in seen", (await post(`/nutrition/checkins/${waitingCi?.id}/`, {}, T)).body?.reviewed === true);
-  const list = (await req(`/nutrition/clients/${C.id}/checkins/`, {}, T)).body;
-  ok("check-in list has sources", list?.checkins?.some((x: any) => x.source === "client_link") && list.checkins.some((x: any) => x.source === "inbody" && x.file), list?.checkins?.map((x: any) => x.source));
+  const ciList = (await req(`/nutrition/clients/${C.id}/checkins/`, {}, T)).body;
+  ok("check-in list has sources", ciList?.checkins?.some((x: any) => x.source === "client_link") && ciList.checkins.some((x: any) => x.source === "inbody" && x.file), ciList?.checkins?.map((x: any) => x.source));
   ok("other account cannot read check-in file", (await req(`/nutrition/checkins/${ci2.body?.checkin?.id}/file/`, {}, T2)).status === 404);
 
   const link2 = (await post(`/nutrition/clients/${C.id}/interview-link/`, { new: true }, T)).body;
