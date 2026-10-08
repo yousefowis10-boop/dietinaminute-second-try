@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Badge, Card, DraftBadge, Field, Modal, PageHeader, Spinner } from "../ui";
+import { timeLabel } from "./foodUtils";
 
 const GOALS = ["fat_loss", "muscle_gain", "general_health"];
 const LEVELS = ["beginner", "intermediate"];
@@ -141,7 +142,7 @@ export default function Workouts() {
               <div key={d.title} className="rounded-xl border border-line p-3">
                 <div className="mb-2 font-bold">{ar ? d.title_ar || d.title : d.title}</div>
                 <ul className="space-y-1 text-sm">
-                  {d.exercises.map((e) => <li key={e.name} className="flex gap-3"><span className="flex-1">{ar ? e.name_ar || e.name : e.name}</span><span className="num text-muted">{e.sets} × {e.reps} · {e.rest}</span></li>)}
+                  {d.exercises.map((e) => <li key={e.name} className="flex gap-3"><span className="flex-1">{ar ? e.name_ar || e.name : e.name}</span><span className="num text-muted">{e.sets} × {timeLabel(e.reps, lang)} · {timeLabel(e.rest, lang)}</span></li>)}
                 </ul>
               </div>
             ))}

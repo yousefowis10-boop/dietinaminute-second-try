@@ -496,7 +496,9 @@ class PlanTemplate(models.Model):
     """A reusable plan. user=None means a shared template (e.g. medical starting plans)."""
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='plan_templates')
     name = models.CharField(max_length=200)
+    name_ar = models.CharField(max_length=200, blank=True, default='')
     description = models.TextField(blank=True, default='')
+    description_ar = models.TextField(blank=True, default='')
     is_medical = models.BooleanField(default=False)
     condition = models.CharField(max_length=100, blank=True, default='')
     # True until a dietitian has checked it. Shown as a warning in the app.

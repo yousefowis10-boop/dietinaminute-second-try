@@ -14,7 +14,7 @@ const STRINGS = {
     save: "حفظ", saving: "جارٍ الحفظ…", cancel: "إلغاء", delete: "حذف", edit: "تعديل", back: "رجوع", next: "التالي",
     search: "بحث…", loading: "جارٍ التحميل…", open: "فتح", close: "إغلاق", copy: "نسخ", copied: "تم النسخ",
     yes: "نعم", no: "لا", none: "لا يوجد", optional: "اختياري", kcal: "سعرة", g: "غ", servings: "حصص",
-    saved: "تم الحفظ", error: "حدث خطأ، حاول مرة أخرى", confirmDelete: "هل أنت متأكد من الحذف؟",
+    saved: "تم الحفظ", error: "حدث خطأ، حاول مرة أخرى", confirmDelete: "هل أنت متأكد من الحذف؟", deleteClient: "حذف العميل", confirmDeleteClient: "سيتم حذف {name} وكل خططه وزياراته نهائيًا. هل أنت متأكد؟",
     draftBadge: "مسودة – تحتاج مراجعة", testMode: "وضع الاختبار – ليس ذكاءً اصطناعيًا حقيقيًا",
     // auth
     login: "تسجيل الدخول", signup: "إنشاء حساب", email: "البريد الإلكتروني", password: "كلمة المرور",
@@ -114,7 +114,7 @@ const STRINGS = {
     save: "Save", saving: "Saving…", cancel: "Cancel", delete: "Delete", edit: "Edit", back: "Back", next: "Next",
     search: "Search…", loading: "Loading…", open: "Open", close: "Close", copy: "Copy", copied: "Copied",
     yes: "Yes", no: "No", none: "None", optional: "optional", kcal: "kcal", g: "g", servings: "servings",
-    saved: "Saved", error: "Something went wrong. Please try again.", confirmDelete: "Are you sure you want to delete this?",
+    saved: "Saved", error: "Something went wrong. Please try again.", confirmDelete: "Are you sure you want to delete this?", deleteClient: "Delete client", confirmDeleteClient: "This permanently deletes {name} with all their plans and visits. Are you sure?",
     draftBadge: "Draft – needs review", testMode: "Test mode – not real AI",
     login: "Log in", signup: "Create account", email: "Email", password: "Password",
     firstName: "First name", lastName: "Last name", noAccount: "No account yet?", haveAccount: "Already have an account?",

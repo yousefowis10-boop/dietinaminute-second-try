@@ -115,11 +115,16 @@ def normalized_shares(item, tags):
     return {tag_id: value / total for tag_id, value in shares.items()}
 
 
+TYPE_ORDER = {'protein': 0, 'carb': 1, 'fat': 2}
+
+
 def split_plan(plan):
     """Amounts per meal, in real units, plus foods not assigned to any meal."""
     result = defaultdict(list)
     unassigned = []
-    for item in plan.items.select_related('food').prefetch_related('tags'):
+    items = sorted(plan.items.select_related('food').prefetch_related('tags'),
+                   key=lambda i: (TYPE_ORDER.get(i.food.food_type, 9), i.id))
+    for item in items:
         tags = list(item.tags.all())
         if not tags:
             unassigned.append(item.food.name_ar or item.food.name)
@@ -135,6 +140,7 @@ def split_plan(plan):
                 'amount': float(amount),
                 'unit': item.food.unit_ar or '',
                 'unit_en': item.food.unit or '',
+                'factor': factor,
                 'quantity': f"{amount} {item.food.unit_ar or ''}".strip(),
             })
     return dict(result), unassigned
@@ -152,9 +158,10 @@ def grocery_list(plan, days=7):
             'per_week': round(item.quantity * factor * days, 1),
             'unit': item.food.unit_ar or '',
             'unit_en': item.food.unit or '',
+            'factor': factor,
             'type': item.food.food_type,
         })
-    return sorted(rows, key=lambda r: (r['type'], r['food_en']))
+    return sorted(rows, key=lambda r: (TYPE_ORDER.get(r['type'], 9), r['food_en']))
 
 
 # -------------------------------------------------------- plan totals ---

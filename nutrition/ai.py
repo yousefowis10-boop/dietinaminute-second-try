@@ -135,6 +135,14 @@ def interview_summary(client, language='ar'):
 
 # --------------------------------------------------------- draft plan ---
 
+# Test mode only: everyday foods to pick first, so the sample draft looks like a real plan.
+EVERYDAY = {
+    'protein': ['chicken breast', 'salmon', 'whole egg boiled', 'steak', 'turkey'],
+    'carb': ['white rice', 'oats', 'sweet potato', 'potato', 'banana', 'pasta'],
+    'fat': ['olive oil', 'avocado', 'walnuts'],
+}
+
+
 def draft_plan(client, meals=4, language='ar'):
     """AI picks foods and rough servings; the app then fits servings to the targets."""
     targets = {'protein': client.target_protein or 0, 'carb': client.target_carb or 0, 'fat': client.target_fat or 0}
@@ -151,10 +159,12 @@ def draft_plan(client, meals=4, language='ar'):
             def purity(f, m=food_type):
                 kcal = f.protein * 4 + f.carb * 4 + f.fat * 9
                 return (getattr(f, m) * (9 if m == 'fat' else 4)) / kcal if kcal else 0
-            options = sorted([f for f in allowed if f.food_type == food_type and getattr(f, food_type) > 0],
-                             key=lambda f: -purity(f))[:2]
+            everyday = [f for f in allowed if f.food_type == food_type and f.name.strip().lower() in EVERYDAY[food_type]]
+            everyday.sort(key=lambda f: EVERYDAY[food_type].index(f.name.strip().lower()))
+            options = everyday[:2] or sorted(
+                [f for f in allowed if f.food_type == food_type and getattr(f, food_type) > 0], key=lambda f: -purity(f))[:2]
             for food in options:
-                picks.append({'food_id': food.id, 'servings': 1, 'meals': meal_tags[::2][:2]})
+                picks.append({'food_id': food.id, 'servings': 1, 'meals': meal_tags[::2] if food_type != 'fat' else meal_tags[::2][:2]})
     else:
         _, context = _client_context(client)
         catalogue = [{'id': f.id, 'name': f.name, 'name_ar': f.name_ar, 'type': f.food_type, 'unit': f.unit,
@@ -164,6 +174,7 @@ def draft_plan(client, meals=4, language='ar'):
             f"Food list - use ONLY these ids: {json.dumps(catalogue, ensure_ascii=False)}\n\n"
             f"Meals to use: {meal_tags}. Choose foods this client will enjoy and that suit their answers "
             "(dislikes, culture, schedule, medical notes). Pick 2-4 protein, 2-4 carb and 1-2 fat foods. "
+            "Prefer everyday whole foods; use supplements, bars, sweets or chips only if the client asked for them. "
             "Rough servings are fine; the app recalculates them. Return JSON: "
             '{"items": [{"food_id": int, "servings": number, "meals": [meal names]}], '
             f'"notes": [short reasons in {"Arabic" if language == "ar" else "English"}]}}'

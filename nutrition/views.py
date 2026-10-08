@@ -59,6 +59,12 @@ class ClientProfileDetailView(APIView):
         serializer = ClientProfileSerializer(client)
         return Response(serializer.data)
 
+    def delete(self, request, pk):
+        deleted, _ = client_qs(request.user).filter(pk=pk).delete()
+        if not deleted:
+            return Response({"detail": "Client not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class ClientProfileHistoryView(APIView):
     permission_classes = [IsAuthenticated]
 

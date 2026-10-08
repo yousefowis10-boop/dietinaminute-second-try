@@ -80,27 +80,27 @@ WORKOUTS = [
 
 # Starting plans built from foods already in the database. Quantities are servings.
 MEDICAL_TEMPLATES = [
-    dict(name='Type 2 diabetes - starting plan', condition='diabetes',
+    dict(name='Type 2 diabetes - starting plan', name_ar='سكري النوع الثاني - خطة مبدئية', description_ar='نشويات قليلة السكر موزعة على الوجبات وبروتين في كل وجبة. راجعها مع أدوية العميل وقراءات السكر.', condition='diabetes',
          description='Lower-sugar carbs spread across meals, protein at every meal. Check against the client\'s medication and glucose readings.',
          items=[('Oats', 0.5, ['meal1']), ('whole Egg boiled', 2, ['meal1']), ('Chicken Breast', 1.5, ['meal2']),
                 ('white rice', 1, ['meal2']), ('Green Salad', 1, ['meal2']), ('Greek yogurt, plain, Al mareaei', 1, ['snack1']),
                 ('apple', 1, ['snack2']), ('salmon', 1.5, ['meal3']), ('Broccli', 1, ['meal3']), ('olive oil', 2, ['meal2', 'meal3'])]),
-    dict(name='PCOS - starting plan', condition='pcos',
+    dict(name='PCOS - starting plan', name_ar='تكيس المبايض - خطة مبدئية', description_ar='بروتين أعلى، نشويات معتدلة قليلة السكر، ودهون صحية.', condition='pcos',
          description='Higher protein, moderate low-sugar carbs, healthy fats.',
          items=[('whole Egg boiled', 2, ['meal1']), ('Alreef Oat Bread', 1, ['meal1']), ('Turkey', 1, ['meal2']),
                 ('sweet potato', 1, ['meal2']), ('Green Salad', 1, ['meal2']), ('Walnuts', 1, ['snack1']),
                 ('blueberries', 1, ['snack1']), ('salmon', 1.5, ['meal3']), ('Broccli', 1, ['meal3']), ('olive oil', 2, ['meal3'])]),
-    dict(name='High blood pressure - starting plan', condition='hypertension',
+    dict(name='High blood pressure - starting plan', name_ar='ضغط الدم المرتفع - خطة مبدئية', description_ar='أطعمة قليلة الملح فقط (بدون أجبان أو شيبس أو معلبات)، وخضار وفواكه أكثر.', condition='hypertension',
          description='Low-salt foods only (no cheese, chips or canned items), more vegetables and fruit.',
          items=[('Oats', 0.5, ['meal1']), ('banana', 1, ['meal1']), ('full fat milk', 2, ['meal1']), ('Chicken Breast', 1.5, ['meal2']),
                 ('potato', 1.5, ['meal2']), ('Green Salad', 1, ['meal2']), ('apple', 1, ['snack1']), ('salmon', 1.5, ['meal3']),
                 ('Broccli', 1, ['meal3']), ('olive oil', 2, ['meal2', 'meal3'])]),
-    dict(name='High cholesterol - starting plan', condition='cholesterol',
+    dict(name='High cholesterol - starting plan', name_ar='الكوليسترول المرتفع - خطة مبدئية', description_ar='شوفان وسمك ومكسرات وزيت زيتون؛ القليل من اللحوم الدهنية والأجبان كاملة الدسم.', condition='cholesterol',
          description='Oats, fish, nuts and olive oil; few fatty meats and full-fat cheese.',
          items=[('Oats', 0.5, ['meal1']), ('blueberries', 1, ['meal1']), ('egg white 1 large', 4, ['meal1']), ('salmon', 1.5, ['meal2']),
                 ('white rice', 1, ['meal2']), ('Green Salad', 1, ['meal2']), ('Walnuts', 1, ['snack1']), ('Chicken Breast', 1.5, ['meal3']),
                 ('sweet potato', 1, ['meal3']), ('olive oil', 2, ['meal2', 'meal3'])]),
-    dict(name='Pregnancy - starting plan', condition='pregnancy',
+    dict(name='Pregnancy - starting plan', name_ar='الحمل - خطة مبدئية', description_ar='بدون عجز في السعرات. لا سمك نيء ولا مأكولات بحرية قشرية ولا أسماك عالية الزئبق ولا أجبان غير مبسترة. أكّدها مع طبيب العميلة.', condition='pregnancy',
          description='No calorie deficit. No raw fish or shellfish, no high-mercury fish, no unpasteurised cheese. Confirm with the client\'s doctor.',
          items=[('Oats', 0.5, ['meal1']), ('full fat milk', 2, ['meal1']), ('Dates', 0.3, ['meal1']), ('Chicken Breast', 1.5, ['meal2']),
                 ('white rice', 1.5, ['meal2']), ('Green Salad', 1, ['meal2']), ('Greek yogurt, plain, Al mareaei', 1, ['snack1']),
@@ -129,9 +129,12 @@ class Command(BaseCommand):
                               if food.food_type in ('protein', 'carb', 'fat') else 'carb', 'meals': meals, 'shares': {}})
             if not items:
                 continue
-            _, created = PlanTemplate.objects.get_or_create(
+            tpl, created = PlanTemplate.objects.get_or_create(
                 user=None, name=spec['name'],
                 defaults={'description': spec['description'], 'condition': spec['condition'], 'is_medical': True,
-                          'is_draft': True, 'items': items})
+                          'is_draft': True, 'items': items, 'name_ar': spec['name_ar'],
+                          'description_ar': spec['description_ar']})
+            if not created and not tpl.name_ar:  # add the Arabic text to templates made before it existed
+                PlanTemplate.objects.filter(pk=tpl.pk).update(name_ar=spec['name_ar'], description_ar=spec['description_ar'])
             added += created
         self.stdout.write(self.style.SUCCESS(f'Library ready ({added} new items).'))

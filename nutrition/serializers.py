@@ -148,7 +148,7 @@ class PlanTemplateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlanTemplate
-        fields = ['id', 'name', 'description', 'is_medical', 'condition', 'is_draft', 'items', 'created_at', 'is_shared']
+        fields = ['id', 'name', 'name_ar', 'description', 'description_ar', 'is_medical', 'condition', 'is_draft', 'items', 'created_at', 'is_shared']
         read_only_fields = ['is_draft', 'created_at']
 
     def get_is_shared(self, obj):

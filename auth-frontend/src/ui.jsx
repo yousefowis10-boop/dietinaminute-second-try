@@ -168,15 +168,15 @@ export function CalorieRing({ value, target, size = 120 }) {
   );
 }
 
-export function MacroBar({ label, value, target, unit = "g" }) {
-  const { num } = useI18n();
+export function MacroBar({ label, value, target, unit }) {
+  const { t, num } = useI18n();
   const status = targetStatus(value, target);
   const width = target ? Math.min((value / target) * 100, 100) : 0;
   return (
     <div className="mt-3">
       <div className="mb-1 flex justify-between text-xs">
         <b>{label}</b>
-        <span className="num text-muted">{num(value)} / {num(target)} {unit}</span>
+        <span className="num text-muted">{num(value)} / {num(target)} {unit || t("g")}</span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-[#edf0ee]">
         <i className="block h-full rounded-full transition-all" style={{ width: `${width}%`, background: STATUS_COLOR[status] }} />

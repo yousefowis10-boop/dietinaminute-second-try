@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { Pencil, Plus } from "lucide-react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Avatar, Badge, Spinner, Tabs } from "../ui";
@@ -16,6 +17,7 @@ export default function ClientPage() {
   const tab = params.get("tab") || "overview";
   const [data, setData] = useState(null);
   const [failed, setFailed] = useState(false);
+  const navigate = useNavigate();
 
   const load = useCallback(() => {
     API.get(`/nutrition/clients/${id}/overview/`).then((r) => setData(r.data)).catch(() => setFailed(true));
@@ -25,6 +27,15 @@ export default function ClientPage() {
   if (failed) return <p className="text-muted">{t("error")}</p>;
   if (!data) return <Spinner label={t("loading")} />;
   const c = data.client;
+  const removeClient = async () => {
+    if (!window.confirm(t("confirmDeleteClient", { name: c.name }))) return;
+    try {
+      await API.delete(`/nutrition/clients/${c.id}/`);
+      navigate("/dashboard/clients");
+    } catch {
+      toast.error(t("error"));
+    }
+  };
 
   return (
     <>
@@ -60,6 +71,13 @@ export default function ClientPage() {
       {tab === "interview" && <InterviewTab data={data} reload={load} />}
       {tab === "plans" && <PlansTab data={data} reload={load} />}
       {tab === "progress" && <ProgressTab data={data} />}
+      {tab === "overview" && (
+        <div className="mt-8 border-t border-line pt-4">
+          <button type="button" className="btn-ghost text-sm text-muted hover:text-bad" onClick={removeClient}>
+            <Trash2 className="h-4 w-4" />{t("deleteClient")}
+          </button>
+        </div>
+      )}
     </>
   );
 }

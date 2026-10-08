@@ -133,4 +133,13 @@ class Command(BaseCommand):
                 calorie_target=target, target_protein=client.target_protein, target_carb=client.target_carb,
                 target_fat=client.target_fat)
 
+        # One client overdue for a follow-up, so the home screen shows that list (moved back once only).
+        omar = ClientProfile.objects.filter(user=user, name='Omar Nasser').first()
+        if omar:
+            revisions = omar.profile_revisions.all()
+            first = revisions.order_by('created_at').first()
+            if first and first.created_at > timezone.now() - timedelta(weeks=10):
+                for rev in revisions:
+                    ClientProfileRevision.objects.filter(pk=rev.pk).update(created_at=rev.created_at - timedelta(weeks=4))
+
         self.stdout.write(self.style.SUCCESS('Demo data ready.'))

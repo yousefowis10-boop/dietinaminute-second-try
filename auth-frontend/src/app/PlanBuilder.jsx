@@ -9,7 +9,7 @@ import {
   TestModeBadge, apiError,
 } from "../ui";
 import { AIUnavailableNote, useAIBlocker } from "./client/AIPanel";
-import { amountOf, kcalOf, roundHalf, sharesFor, totalsOf, unitLabel } from "./foodUtils";
+import { amountOf, kcalOf, roundHalf, sharesFor, totalsOf, tplDesc, tplName, unitLabel } from "./foodUtils";
 
 const TYPES = ["protein", "carb", "fat", "mixed"];
 
@@ -458,8 +458,8 @@ export default function PlanBuilder() {
                 <button type="button" className="flex w-full items-center gap-3 px-1 py-3 text-start hover:bg-page" onClick={() => applyTemplate(tpl)}>
                   <Copy className="h-4 w-4 shrink-0 text-brand" />
                   <span className="min-w-0 flex-1">
-                    <span className="block font-medium">{tpl.name}</span>
-                    {tpl.description && <span className="block truncate text-xs text-muted">{tpl.description}</span>}
+                    <span className="block font-medium">{tplName(tpl, lang)}</span>
+                    {tplDesc(tpl, lang) && <span className="block truncate text-xs text-muted">{tplDesc(tpl, lang)}</span>}
                   </span>
                   {tpl.is_draft && <DraftBadge />}
                   <span className="text-xs text-muted">{t("foodsCount", { n: tpl.items.length })}</span>

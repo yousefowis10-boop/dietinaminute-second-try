@@ -4,12 +4,12 @@ import toast from "react-hot-toast";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Card, DraftBadge, Empty, PageHeader, Spinner } from "../ui";
+import { tplDesc, tplName } from "./foodUtils";
 
 export default function Templates() {
-  const { t, fmtDate } = useI18n();
+  const { t, lang, fmtDate, foodName } = useI18n();
   const [templates, setTemplates] = useState(null);
   const [foods, setFoods] = useState({});
-  const { foodName } = useI18n();
 
   const load = () => API.get("/nutrition/templates/").then((r) => setTemplates(r.data));
   useEffect(() => {
@@ -28,10 +28,10 @@ export default function Templates() {
   const list = (items, canDelete) => (
     <div className="grid gap-3 md:grid-cols-2">
       {items.map((tpl) => (
-        <Card key={tpl.id} title={tpl.name} icon={tpl.is_medical ? <Stethoscope className="h-4 w-4 text-brand" /> : null}
+        <Card key={tpl.id} title={tplName(tpl, lang)} icon={tpl.is_medical ? <Stethoscope className="h-4 w-4 text-brand" /> : null}
           actions={canDelete && <button type="button" className="btn-ghost p-1.5 hover:text-bad" onClick={() => remove(tpl)}><Trash2 className="h-4 w-4" /></button>}>
           {tpl.is_draft && <div className="mb-2"><DraftBadge /></div>}
-          {tpl.description && <p className="mb-2 text-sm text-muted">{tpl.description}</p>}
+          {tplDesc(tpl, lang) && <p className="mb-2 text-sm text-muted">{tplDesc(tpl, lang)}</p>}
           <p className="text-sm leading-relaxed">{tpl.items.map((i) => foodName(foods[i.food_id]) || "?").join(" · ")}</p>
           {!tpl.is_shared && <p className="mt-2 text-xs text-muted">{fmtDate(tpl.created_at)}</p>}
         </Card>

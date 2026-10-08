@@ -15,12 +15,25 @@ export function totalsOf(items) {
 }
 
 const UNIT_EN = { "غرام": "g", "جرام": "g", "مل": "ml" };
+const EN_FIX = [
+  [/^(tea ?spoon|tra spoon|teaspoon|tsp)$/, "tsp"], [/^(table ?spoon|tbs|tbsp)$/, "tbsp"],
+  [/^scoo+p$/, "scoop"], [/^medium egg$/, "medium egg"],
+];
+
+// Clean English unit for an amount: "1 scoop" -> "scoop", "Tra spoon" -> "tsp", "100 G" (factor 100) -> "g".
+export function englishUnit(unit, unitAr, factor) {
+  if (UNIT_EN[(unitAr || "").trim()] && (factor || 1) !== 1) return UNIT_EN[unitAr.trim()];
+  let u = String(unit || "").trim().toLowerCase().replace(/\s+/g, " ");
+  if (/[\u0600-\u06FF]/.test(u)) return UNIT_EN[(unitAr || "").trim()] || u; // unit typed in Arabic in the database
+  u = u.replace(/^(1|one|a)\s+/, "");
+  const fix = EN_FIX.find(([re]) => re.test(u));
+  return fix ? fix[1] : u;
+}
 
 // Real-world unit for an amount (servings × factor). Arabic names come from the database.
 export function unitLabel(food, lang) {
   if (lang === "ar") return food.unit_ar || food.unit || "";
-  if (UNIT_EN[food.unit_ar]) return UNIT_EN[food.unit_ar];
-  return (food.multiplying_factor || 1) === 1 ? food.unit || "" : food.unit_ar || food.unit || "";
+  return englishUnit(food.unit, food.unit_ar, food.multiplying_factor);
 }
 
 export function amountOf(food, servings) {
@@ -38,3 +51,10 @@ export function sharesFor(item) {
 }
 
 export const roundHalf = (n) => Math.max(0, Math.round(n * 2) / 2);
+
+// "60s" -> "60 ث" in Arabic; other text unchanged.
+export const timeLabel = (value, lang) =>
+  lang === "ar" ? String(value ?? "").replace(/(\d)\s*s\b/g, "$1 ث").replace(/(\d)\s*min\b/g, "$1 د") : value;
+
+export const tplName = (tpl, lang) => (lang === "ar" && tpl.name_ar) || tpl.name;
+export const tplDesc = (tpl, lang) => (lang === "ar" && tpl.description_ar) || tpl.description;

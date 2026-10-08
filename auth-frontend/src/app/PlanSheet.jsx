@@ -7,9 +7,10 @@ import API from "../hooks/useApi";
 import { MEAL_ORDER, useI18n } from "../i18n";
 import { Card, DraftBadge, Modal, Spinner, TestModeBadge } from "../ui";
 import { AIUnavailableNote, useAIBlocker } from "./client/AIPanel";
+import { englishUnit, timeLabel } from "./foodUtils";
 
 // English unit for an amount: grams/ml when the Arabic unit says so, else the English serving name.
-const enUnit = (row) => (row.unit === "غرام" || row.unit === "جرام" ? "g" : row.unit === "مل" ? "ml" : row.unit_en);
+const enUnit = (row) => englishUnit(row.unit_en, row.unit, row.factor ?? 100);
 
 function WorkoutBlock({ workout }) {
   const { t, lang } = useI18n();
@@ -28,7 +29,7 @@ function WorkoutBlock({ workout }) {
                 {day.exercises.map((ex) => (
                   <tr key={ex.name} className="border-t border-line">
                     <td className="py-1.5">{ar ? ex.name_ar || ex.name : ex.name}</td>
-                    <td className="num text-center">{ex.sets}</td><td className="num text-center">{ex.reps}</td><td className="num text-center">{ex.rest}</td>
+                    <td className="num text-center">{ex.sets}</td><td className="num text-center">{timeLabel(ex.reps, lang)}</td><td className="num text-center">{timeLabel(ex.rest, lang)}</td>
                   </tr>
                 ))}
               </tbody>
