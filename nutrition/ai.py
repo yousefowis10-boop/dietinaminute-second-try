@@ -87,6 +87,14 @@ def _client_context(client):
             value = getattr(detailed, field, None)
             if value not in (None, '', [], {}):
                 answers[field] = str(value) if not isinstance(value, (list, bool, int, float)) else value
+        # Food choices are stored as ids; give the AI the names.
+        names = dict(FoodItem.objects.values_list('id', 'name'))
+        for field, key in (('liked_foods', 'foods_liked'), ('never_foods', 'foods_never_eaten'), ('less_foods', 'foods_to_eat_less')):
+            ids = getattr(detailed, field, None) or []
+            if ids:
+                answers[key] = [names[i] for i in ids if i in names]
+        if detailed.drinks:
+            answers['drinks'] = detailed.drinks
     return detailed, {
         'name': client.name, 'age': client.age, 'gender': client.gender, 'weight_kg': client.weight,
         'height_cm': client.height, 'goal': client.goal, 'work_style': client.work_style,
@@ -159,8 +167,9 @@ def draft_plan(client, meals=4, language='ar'):
             def purity(f, m=food_type):
                 kcal = f.protein * 4 + f.carb * 4 + f.fat * 9
                 return (getattr(f, m) * (9 if m == 'fat' else 4)) / kcal if kcal else 0
-            everyday = [f for f in allowed if f.food_type == food_type and f.name.strip().lower() in EVERYDAY[food_type]]
-            everyday.sort(key=lambda f: EVERYDAY[food_type].index(f.name.strip().lower()))
+            liked = set((DetailedProfile.objects.filter(client=client).values_list('liked_foods', flat=True).first()) or [])
+            everyday = [f for f in allowed if f.food_type == food_type and (f.name.strip().lower() in EVERYDAY[food_type] or f.id in liked)]
+            everyday.sort(key=lambda f: (f.id not in liked, EVERYDAY[food_type].index(f.name.strip().lower()) if f.name.strip().lower() in EVERYDAY[food_type] else 99))
             options = everyday[:2] or sorted(
                 [f for f in allowed if f.food_type == food_type and getattr(f, food_type) > 0], key=lambda f: -purity(f))[:2]
             for food in options:

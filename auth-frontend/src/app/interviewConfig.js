@@ -41,18 +41,22 @@ export const INTERVIEW_STEPS = [
     ],
   },
   {
-    key: "eating", ar: "طعامك الحالي", en: "How you eat now",
+    key: "food", ar: "الطعام والمشروبات", en: "Food & drinks",
+    note: { ar: "اختر من قائمة الأطعمة — الخطة والذكاء الاصطناعي يقرآن هذه الإجابات", en: "Pick from the food list — the plan and the AI read these answers" },
     fields: [
-      { name: "protein", type: "option", options: ["High", "Moderate", "Low"], ar: "البروتين (لحوم، دجاج، بيض)", en: "Protein (meat, chicken, eggs)" },
-      { name: "carbs", type: "option", options: ["High", "Moderate", "Low"], ar: "النشويات (خبز، رز، معكرونة)", en: "Carbs (bread, rice, pasta)" },
-      { name: "fat", type: "option", options: ["High", "Moderate", "Low"], ar: "الدهون والمقالي", en: "Fats and fried food" },
-      { name: "vegetables", type: "option", options: ["High", "Moderate", "Low"], ar: "الخضار", en: "Vegetables" },
-      { name: "fruit", type: "option", options: ["High", "Moderate", "Low"], ar: "الفواكه", en: "Fruit" },
-      { name: "dairy", type: "option", options: ["High", "Moderate", "Low"], ar: "الألبان", en: "Dairy" },
-      { name: "grains", type: "option", options: ["High", "Moderate", "Low"], ar: "الحبوب الكاملة", en: "Whole grains" },
-      { name: "food_to_eat_more", type: "long", ar: "أطعمة تحبها وتريدها في خطتك", en: "Foods you love and want in your plan" },
-      { name: "food_to_eat_less", type: "long", ar: "أطعمة تريد التقليل منها", en: "Foods you want to eat less" },
-      { name: "food_to_avoid", type: "long", ar: "أطعمة لا تأكلها أبدًا", en: "Foods you never eat" },
+      { name: "liked_foods", type: "foods", tone: "ok", ar: "أطعمة يحبها ويريدها في خطته", en: "Foods they like and want in the plan", hint: { ar: "من قاعدة الأطعمة", en: "from your food list" } },
+      { name: "never_foods", type: "foods", tone: "bad", ar: "أطعمة لا يأكلها أبدًا", en: "Foods they never eat", hint: { ar: "تُستبعد من الخطة", en: "removed from the plan" } },
+      { name: "less_foods", type: "foods", tone: "warn", ar: "أطعمة يريد التقليل منها", en: "Foods they want to eat less" },
+      { name: "food_to_eat_more", type: "short", ar: "ملاحظات عن الطعام", en: "Food notes", hint: { ar: "اختياري", en: "optional" }, placeholder: { ar: "مثلًا: لا يفطر عادة، يحب الأكل الحار…", en: "e.g. usually skips breakfast, likes spicy food…" } },
+      { name: "food_to_eat_less", type: "long", legacy: true, ar: "أطعمة يريد التقليل منها (نص قديم)", en: "Foods to eat less (old text)", wide: true },
+      { name: "food_to_avoid", type: "long", legacy: true, ar: "أطعمة لا يأكلها (نص قديم)", en: "Foods never eaten (old text)", wide: true },
+      { name: "protein", type: "option", options: ["Low", "Moderate", "High"], ar: "البروتين في أكله الحالي", en: "Protein in current diet" },
+      { name: "carbs", type: "option", options: ["Low", "Moderate", "High"], ar: "النشويات (خبز، رز، معكرونة)", en: "Carbs (bread, rice, pasta)" },
+      { name: "fat", type: "option", options: ["Low", "Moderate", "High"], ar: "الدهون والمقالي", en: "Fats and fried food" },
+      { name: "vegetables", type: "option", options: ["Low", "Moderate", "High"], ar: "الخضار", en: "Vegetables" },
+      { name: "fruit", type: "option", options: ["Low", "Moderate", "High"], ar: "الفواكه", en: "Fruit" },
+      { name: "dairy", type: "option", options: ["Low", "Moderate", "High"], ar: "الألبان", en: "Dairy" },
+      { name: "drinks", type: "drinks", wide: true, ar: "المشروبات", en: "Drinks", hint: { ar: "كم مرة يشرب كل نوع؟", en: "How often for each?" } },
     ],
   },
   {
@@ -61,12 +65,6 @@ export const INTERVIEW_STEPS = [
       { name: "smoke_cigarettes", type: "boolean", ar: "هل تدخن؟", en: "Do you smoke?" },
       { name: "how_many_smoke_a_day", type: "option", options: ["1/2 Pack", "1 Pack", "1.5 Pack", "2 Pack"], ar: "كم يوميًا؟", en: "How much a day?", showIf: "smoke_cigarettes" },
       { name: "smoking_duration", type: "option", options: ["Months", "Years"], ar: "منذ متى؟", en: "For how long?", showIf: "smoke_cigarettes" },
-      { name: "alcohol", type: "boolean", ar: "هل تشرب الكحول؟", en: "Do you drink alcohol?" },
-      { name: "how_many_drinks_a_day", type: "option", options: ["1", "2", "3", "4 or more"], ar: "كم مشروبًا يوميًا؟", en: "Drinks a day", showIf: "alcohol" },
-      { name: "alcohol_duration", type: "option", options: ["Months", "Years"], ar: "منذ متى؟", en: "For how long?", showIf: "alcohol" },
-      { name: "caffeine", type: "boolean", ar: "هل تشرب القهوة أو الشاي أو مشروبات الطاقة؟", en: "Coffee, tea or energy drinks?" },
-      { name: "how_many_caffeine_a_day", type: "option", options: ["1", "2", "3", "4 or more"], ar: "كم كوبًا يوميًا؟", en: "Cups a day", showIf: "caffeine" },
-      { name: "caffeine_duration", type: "option", options: ["Months", "Years"], ar: "منذ متى؟", en: "For how long?", showIf: "caffeine", public: false },
       { name: "sleep_time", type: "time", ar: "متى تنام عادةً؟", en: "What time do you usually sleep?" },
       { name: "sleep_duration", type: "number", ar: "كم ساعة تنام؟", en: "Hours of sleep" },
       { name: "overall_energy_levels", type: "option", options: ["Low", "Moderate", "High"], ar: "مستوى طاقتك خلال اليوم", en: "Your energy during the day" },
@@ -116,3 +114,18 @@ export const MEASUREMENT_LABELS = {
   right_forearm: ["الساعد الأيمن", "Right forearm"], left_forearm: ["الساعد الأيسر", "Left forearm"], right_thigh: ["الفخذ الأيمن", "Right thigh"],
   left_thigh: ["الفخذ الأيسر", "Left thigh"], right_calve: ["الساق الأيمن", "Right calf"], left_calve: ["الساق الأيسر", "Left calf"],
 };
+
+// Drinks table rows and how often (stored in English keys).
+export const DRINKS = [
+  ["coffee_tea", "قهوة / شاي", "Coffee / tea"], ["energy", "مشروبات طاقة", "Energy drinks"], ["soft", "مشروبات غازية", "Soft drinks"],
+  ["juice", "عصائر محلاة", "Sweet juices"], ["alcohol", "كحول", "Alcohol"],
+];
+export const FREQS = [["never", "لا يشرب", "Never"], ["rarely", "نادرًا", "Rarely"], ["monthly", "مرة شهريًا", "Monthly"], ["weekly", "أسبوعيًا", "Weekly"], ["daily", "يوميًا", "Daily"]];
+export const FREQ_UNIT = { daily: ["كوب / يوم", "cups / day"], weekly: ["/ أسبوع", "/ week"], monthly: ["/ شهر", "/ month"] };
+
+// How many questions of a section have an answer.
+export function answeredIn(step, answers) {
+  const fields = step.fields.filter((f) => !f.legacy && !f.showIf);
+  const has = (v) => v !== null && v !== undefined && v !== "" && !(Array.isArray(v) && !v.length) && !(typeof v === "object" && !Array.isArray(v) && !Object.keys(v).length);
+  return [fields.filter((f) => has(answers[f.name])).length, fields.length];
+}

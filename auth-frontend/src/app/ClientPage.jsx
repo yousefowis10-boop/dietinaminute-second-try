@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Link2, Pencil, Plus, Trash2, Upload, UserCheck } from "lucide-react";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
-import { Avatar, Badge, Spinner, Tabs } from "../ui";
+import { Avatar, Badge, Modal, Spinner, Tabs } from "../ui";
+import { CheckInLinkBox } from "./client/CheckIn";
 import OverviewTab from "./client/OverviewTab";
 import InterviewTab from "./client/InterviewTab";
 import PlansTab from "./client/PlansTab";
@@ -17,6 +18,8 @@ export default function ClientPage() {
   const tab = params.get("tab") || "overview";
   const [data, setData] = useState(null);
   const [failed, setFailed] = useState(false);
+  const [checkin, setCheckin] = useState(null); // null | "manual" | "inbody"
+  const [linkOpen, setLinkOpen] = useState(false);
   const navigate = useNavigate();
 
   const load = useCallback(() => {
@@ -52,8 +55,11 @@ export default function ClientPage() {
             <Badge tone="brand">{t("goal")}: {t(`goal_${c.goal || ""}`)}</Badge>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link to={`/dashboard/clients/${c.id}/edit`} className="btn-secondary"><Pencil className="h-4 w-4" />{t("edit")}</Link>
+          <button type="button" className="btn-secondary" onClick={() => { setCheckin("manual"); setParams({ tab: "progress" }); }}><UserCheck className="h-4 w-4" />{t("newCheckin")}</button>
+          <button type="button" className="btn-secondary" onClick={() => setLinkOpen(true)}><Link2 className="h-4 w-4" />{t("checkinLink")}</button>
+          <button type="button" className="btn-secondary" onClick={() => { setCheckin("inbody"); setParams({ tab: "progress" }); }}><Upload className="h-4 w-4" />{t("uploadInbody")}</button>
           <Link to={`/dashboard/clients/${c.id}/plans/new`} className="btn-primary"><Plus className="h-4 w-4" />{t("newPlan")}</Link>
         </div>
       </div>
@@ -64,13 +70,14 @@ export default function ClientPage() {
           { value: "overview", label: t("tabOverview") },
           { value: "interview", label: t("tabInterview"), badge: c.interview_status === "submitted" ? "!" : null },
           { value: "plans", label: `${t("tabPlans")} (${data.plans.length})` },
-          { value: "progress", label: t("tabProgress") },
+          { value: "progress", label: t("tabProgressCi"), badge: data.progress.some((p) => !p.reviewed) ? "!" : null },
         ]}
       />
       {tab === "overview" && <OverviewTab data={data} reload={load} />}
       {tab === "interview" && <InterviewTab data={data} reload={load} />}
       {tab === "plans" && <PlansTab data={data} reload={load} />}
-      {tab === "progress" && <ProgressTab data={data} />}
+      {tab === "progress" && <ProgressTab data={data} reload={load} checkin={checkin} setCheckin={setCheckin} />}
+      <Modal open={linkOpen} onClose={() => setLinkOpen(false)} title={t("checkinLink")}><CheckInLinkBox client={c} /></Modal>
       {tab === "overview" && (
         <div className="mt-8 border-t border-line pt-4">
           <button type="button" className="btn-ghost text-sm text-muted hover:text-bad" onClick={removeClient}>

@@ -17,6 +17,7 @@ import Workouts from "./app/Workouts";
 import Foods from "./app/Foods";
 import Settings from "./app/Settings";
 import PublicInterview from "./app/PublicInterview";
+import PublicCheckIn from "./app/PublicCheckIn";
 
 // Old links (bookmarks, shared sheets) keep working.
 function OldPlanLink() {
@@ -37,6 +38,7 @@ export default function App() {
           <Routes>
             {/* The client's interview link: public, no login. */}
             <Route path="/i/:token" element={<PublicInterview />} />
+            <Route path="/c/:token" element={<PublicCheckIn />} />
 
             <Route element={<GuestGuard />}>
               <Route path="/login" element={<Login />} />

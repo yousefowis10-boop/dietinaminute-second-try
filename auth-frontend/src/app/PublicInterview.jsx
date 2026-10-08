@@ -13,7 +13,6 @@ export default function PublicInterview() {
   const { t, lang } = useI18n();
   const [info, setInfo] = useState(null);
   const [state, setState] = useState("loading"); // loading | intro | form | done | notfound | already
-  const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -25,7 +24,6 @@ export default function PublicInterview() {
   }, [token]);
 
   const steps = useMemo(() => INTERVIEW_STEPS.filter((s) => !s.onlyFor || s.onlyFor === info?.gender), [info]);
-  const step = steps[stepIndex];
   const setAnswer = (name) => (value) => setAnswers((a) => ({ ...a, [name]: value }));
 
   const submit = async () => {
@@ -56,7 +54,7 @@ export default function PublicInterview() {
 
   return (
     <div className="min-h-screen bg-page px-4 py-6">
-      <div className="mx-auto max-w-xl">
+      <div className="mx-auto max-w-3xl">
         {header}
         {state === "loading" && <Spinner label={t("loading")} />}
         {state === "notfound" && <div className="card p-8 text-center text-muted">{t("piNotFound")}</div>}
@@ -75,26 +73,25 @@ export default function PublicInterview() {
             <button type="button" className="btn-primary mt-6 w-full py-3" onClick={() => setState("form")}>{t("piStart")}</button>
           </div>
         )}
-        {state === "form" && step && (
-          <div className="card p-6">
-            <div className="mb-1 text-xs font-semibold text-muted">{t("piStep", { n: stepIndex + 1, total: steps.length })}</div>
-            <div className="mb-5 h-1.5 overflow-hidden rounded-full bg-page">
-              <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }} />
-            </div>
-            <h2 className="mb-5 text-lg font-bold">{step[lang] || step.en}</h2>
-            <div className="space-y-6">
-              {visibleFields(step, answers, { publicOnly: true }).map((field) => (
-                <Question key={field.name} field={field} value={answers[field.name]} onChange={setAnswer(field.name)} />
-              ))}
-            </div>
-            {error && <p className="mt-4 text-sm font-semibold text-bad">{error}</p>}
-            <div className="mt-8 flex gap-2">
-              {stepIndex > 0 && <button type="button" className="btn-secondary" onClick={() => { setStepIndex(stepIndex - 1); window.scrollTo(0, 0); }}>{t("back")}</button>}
-              {stepIndex < steps.length - 1 ? (
-                <button type="button" className="btn-primary ms-auto px-8" onClick={() => { setStepIndex(stepIndex + 1); window.scrollTo(0, 0); }}>{t("next")}</button>
-              ) : (
-                <button type="button" className="btn-primary ms-auto px-8" disabled={busy} onClick={submit}>{busy ? t("saving") : t("piSubmit")}</button>
-              )}
+        {state === "form" && (
+          <div className="space-y-4">
+            {steps.map((st, i) => (
+              <section key={st.key} className="card overflow-hidden">
+                <div className="flex items-center gap-3 border-b border-line bg-[#fafbfa] px-5 py-3.5">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-sm font-bold text-white">{i + 1}</span>
+                  <h2 className="text-base font-bold">{st[lang] || st.en}</h2>
+                </div>
+                <div className="grid gap-x-6 gap-y-5 p-5 sm:grid-cols-2">
+                  {visibleFields(st, answers, { publicOnly: true }).map((field) => (
+                    <Question key={field.name} field={field} value={answers[field.name]} onChange={setAnswer(field.name)} foods={info?.foods || []}
+                      blockedFoods={field.type === "foods" ? ["liked_foods", "never_foods", "less_foods"].filter((n) => n !== field.name).flatMap((n) => answers[n] || []) : []} />
+                  ))}
+                </div>
+              </section>
+            ))}
+            {error && <p className="text-sm font-semibold text-bad">{error}</p>}
+            <div className="sticky bottom-3 rounded-2xl border border-line bg-white p-3 shadow-lg">
+              <button type="button" className="btn-primary w-full py-3" disabled={busy} onClick={submit}>{busy ? t("saving") : t("piSendAll")}</button>
             </div>
           </div>
         )}

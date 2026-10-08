@@ -44,6 +44,21 @@ export default function Home() {
             <Stat icon={ClipboardList} label={t("statInterviews")} value={data.counts.interviews_waiting} tone="warn" />
             <Stat icon={CalendarClock} label={t("statFollowUps")} value={data.counts.follow_ups_due} tone="ai" />
           </div>
+          {data.checkins_waiting?.length > 0 && (
+            <Card title={t("newCheckins")} className="mb-4">
+              <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                {data.checkins_waiting.map((c) => (
+                  <li key={c.id}>
+                    <Link to={`/dashboard/clients/${c.client_id}?tab=progress`} className="flex items-center gap-3 rounded-xl border border-line px-3 py-2.5 hover:border-brand">
+                      <Avatar name={c.name} size={30} />
+                      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{c.name}</span><span className="text-xs text-muted">{fmtDate(c.date)}</span></span>
+                      <span className="num text-sm font-bold">{c.weight} {t("kg")}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
           <div className="grid gap-4 lg:grid-cols-3">
             <Card title={t("interviewsWaiting")}>
               {data.interviews_waiting.length ? (
