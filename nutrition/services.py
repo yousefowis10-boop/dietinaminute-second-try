@@ -245,6 +245,19 @@ def within(totals, targets, tolerance=0.05):
 
 # ------------------------------------------------------------- safety ---
 
+# Arabic names for interview options (stored in English).
+OPTION_AR = {
+    'Peanuts': 'فول سوداني', 'Shellfish': 'مأكولات بحرية قشرية', 'Dairy': 'ألبان', 'Eggs': 'بيض', 'Wheat': 'قمح',
+    'Soy': 'صويا', 'Gluten': 'غلوتين', 'Other': 'أخرى', 'Asthma': 'ربو', 'Diabetes': 'سكري',
+    'Heart Disease': 'أمراض قلب', 'High Blood Pressure': 'ضغط مرتفع', 'Cancer': 'سرطان',
+    'Thyroid Disease': 'أمراض الغدة الدرقية',
+}
+
+
+def _ar_list(values):
+    return '، '.join(OPTION_AR.get(v, v) for v in values)
+
+
 def safety_flags(client, detailed):
     """Rule-based warnings. Always on, on every plan, with or without AI."""
     flags = []
@@ -256,10 +269,10 @@ def safety_flags(client, detailed):
         diseases = [d for d in (detailed.diseases or []) if d]
         if diseases:
             add('diseases', f"Medical conditions reported: {', '.join(diseases)}",
-                f"أمراض مذكورة: {', '.join(diseases)}")
+                f"أمراض مذكورة: {_ar_list(diseases)}")
         if detailed.food_allergies:
             add('allergies', f"Food allergies: {', '.join(detailed.food_allergies)}. Confirm excluded foods.",
-                f"حساسية طعام: {', '.join(detailed.food_allergies)}. تأكد من استبعاد الأطعمة.")
+                f"حساسية طعام: {_ar_list(detailed.food_allergies)}. تأكد من استبعاد الأطعمة.")
         if (detailed.current_medications or '').strip():
             add('medications', 'Takes medication. Check for food interactions.', 'يتناول أدوية. تحقق من التداخلات مع الطعام.')
         if detailed.pregnant:
