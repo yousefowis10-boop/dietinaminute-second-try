@@ -19,6 +19,8 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
 - DONE: added foods start empty (no default 1); 6 most-used foods per group; water + new check-in notice on client file;
   client file refreshes when you come back to the window. (Check-in was saved — it showed only in Today + Progress tab.)
 - Picture r11 waiting for OK: simpler plan builder (same 3 columns), client file split into pages, clear workout table.
+  Yousef on r11 builder: KEEP the +/− buttons. Not sure the side-by-side (horizontal) 3 columns is better — he will test
+  before deciding. Client file pages + workout table: no answer yet.
 
 ## Approved — build next (in this order unless Yousef changes it)
 1. **Interview exercise questions** → works out? where + own level / if not: gym? level / if not: home? level / else walking goal. Mockup r10.
