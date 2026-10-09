@@ -557,8 +557,9 @@ class PlanTemplate(models.Model):
 
 class WorkoutTemplate(models.Model):
     """A ready workout guide picked by goal, level and place. user=None = shared library."""
-    GOALS = [('fat_loss', 'Fat loss'), ('muscle_gain', 'Muscle gain'), ('general_health', 'General health')]
-    LEVELS = [('beginner', 'Beginner'), ('intermediate', 'Intermediate')]
+    GOALS = [('fat_loss', 'Fat loss'), ('muscle_gain', 'Muscle gain'), ('general_health', 'General health'),
+             ('muscle_focus', 'Muscle focus')]
+    LEVELS = [('beginner', 'Beginner'), ('intermediate', 'Intermediate'), ('advanced', 'Advanced'), ('all_levels', 'All levels')]
     PLACES = [('home', 'Home'), ('gym', 'Gym')]
 
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name='workout_templates')

@@ -28,6 +28,9 @@ function useSlots(data, t) {
   }, [data, t]);
 }
 
+// Client goal -> workout goal, so matching workouts are listed first.
+const GOAL_TO_WORKOUT = { loss: "fat_loss", gain: "muscle_gain", maintain: "general_health" };
+
 function WorkoutBlock({ workout }) {
   const { t, lang } = useI18n();
   const ar = lang === "ar";
@@ -36,20 +39,28 @@ function WorkoutBlock({ workout }) {
       <h2 className="mb-1 flex items-center gap-2 text-lg font-bold"><Dumbbell className="h-5 w-5 text-brand" />{t("workout")}: {ar ? workout.name_ar || workout.name : workout.name}</h2>
       <p className="mb-3 text-sm text-muted">{ar ? workout.notes_ar || workout.notes : workout.notes}</p>
       <div className="grid gap-3 sm:grid-cols-2">
-        {workout.days.map((day) => (
-          <div key={day.title} className="rounded-xl border border-line p-3">
-            <div className="mb-2 font-bold">{ar ? day.title_ar || day.title : day.title}</div>
-            <table className="w-full text-sm">
-              <thead><tr className="text-xs text-muted"><th className="text-start font-medium">{t("exercise")}</th><th className="font-medium">{t("sets")}</th><th className="font-medium">{t("reps")}</th><th className="font-medium">{t("rest")}</th></tr></thead>
-              <tbody>
-                {day.exercises.map((ex) => (
-                  <tr key={ex.name} className="border-t border-line">
-                    <td className="py-1.5">{ar ? ex.name_ar || ex.name : ex.name}</td>
-                    <td className="num text-center">{ex.sets}</td><td className="num text-center">{timeLabel(ex.reps, lang)}</td><td className="num text-center">{timeLabel(ex.rest, lang)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {workout.days.map((day, di) => (
+          <div key={di} className="break-inside-avoid rounded-xl border border-line p-3">
+            <div className="mb-1 font-bold">{ar ? day.title_ar || day.title : day.title}</div>
+            {(day.note || day.note_ar) && <p className="mb-2 text-xs text-muted">{ar ? day.note_ar || day.note : day.note}</p>}
+            {day.exercises.length > 0 && (
+              <table className="w-full text-sm">
+                <thead><tr className="text-xs text-muted"><th className="text-start font-medium">{t("exercise")}</th><th className="font-medium">{t("sets")}</th><th className="font-medium">{t("reps")}</th><th className="font-medium">{t("rest")}</th></tr></thead>
+                <tbody>
+                  {day.exercises.map((ex, ei) => (
+                    <tr key={ei} className="border-t border-line align-top">
+                      <td className="py-1.5">
+                        {(ex.kind || ex.kind_ar) && <span className="me-1 rounded-full bg-brand-soft px-1.5 py-px text-[10px] font-bold text-brand">{ar ? ex.kind_ar || ex.kind : ex.kind}</span>}
+                        {ar ? ex.name_ar || ex.name : ex.name}
+                        {(ex.tip || ex.tip_ar) && <div className="text-[11px] leading-snug text-muted">{ar ? ex.tip_ar || ex.tip : ex.tip}</div>}
+                      </td>
+                      <td className="num text-center">{ex.sets}</td><td className="num text-center">{timeLabel(ex.reps, lang)}</td><td className="num text-center">{timeLabel(ex.rest, lang)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {(day.cardio || day.cardio_ar) && <p className="mt-2 text-xs"><b>{t("workoutCardio")}:</b> {ar ? day.cardio_ar || day.cardio : day.cardio}</p>}
           </div>
         ))}
       </div>
@@ -389,7 +400,12 @@ export default function PlanSheet() {
           <Card title={t("attachWorkout")} icon={<Dumbbell className="h-4 w-4 text-brand" />}>
             <select className="input" value={data.workout?.id || ""} onChange={(e) => attachWorkout(e.target.value)}>
               <option value="">{t("noWorkout")}</option>
-              {workouts.map((w) => <option key={w.id} value={w.id}>{ar ? w.name_ar || w.name : w.name}{w.is_safe_version ? " ⚕" : ""}</option>)}
+              {[["suggestedWorkouts", workouts.filter((w) => w.goal === GOAL_TO_WORKOUT[data.client.goal])],
+                ["otherWorkouts", workouts.filter((w) => w.goal !== GOAL_TO_WORKOUT[data.client.goal])]].map(([label, list]) => list.length > 0 && (
+                <optgroup key={label} label={t(label)}>
+                  {list.map((w) => <option key={w.id} value={w.id}>{ar ? w.name_ar || w.name : w.name} · {t(`level_${w.level}`)} · {t(`place_${w.place}`)}{w.is_safe_version ? " ⚕" : ""}</option>)}
+                </optgroup>
+              ))}
             </select>
             {data.workout?.is_draft && <div className="mt-2"><DraftBadge /></div>}
           </Card>

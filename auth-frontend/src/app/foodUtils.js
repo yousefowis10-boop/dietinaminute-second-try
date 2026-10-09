@@ -56,7 +56,10 @@ export const roundHalf = (n) => Math.max(0, Math.round(n * 2) / 2);
 
 // "60s" -> "60 ث" in Arabic; other text unchanged.
 export const timeLabel = (value, lang) =>
-  lang === "ar" ? String(value ?? "").replace(/(\d)\s*s\b/g, "$1 ث").replace(/(\d)\s*min\b/g, "$1 د") : value;
+  lang === "ar"
+    ? String(value ?? "").replace(/(\d)\s*(?:sec|s)\b/g, "$1 ث").replace(/(\d)\s*min\b/g, "$1 د")
+      .replace(/\beach side\b/g, "لكل جهة").replace(/\beach\b/g, "لكل حركة").replace(/\btotal\b/g, "بالمجموع")
+    : value;
 
 export const tplName = (tpl, lang) => (lang === "ar" && tpl.name_ar) || tpl.name;
 export const tplDesc = (tpl, lang) => (lang === "ar" && tpl.description_ar) || tpl.description;

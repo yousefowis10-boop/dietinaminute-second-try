@@ -28,7 +28,9 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
 - Approved mockups: docs/mockups/. Deferred: docs/LATER.md.
 
 ## Waiting on Yousef / next steps
-1. Workouts: Yousef will send a Google Drive link to ~290 workout schedules → import some, suggest by client goal/level/place.
+1. Workouts: DONE on test. 133 Yousef Owis Academy programs (EN+AR, tips, targets, cardio) read from his PDFs
+   (~/Downloads/programs) into nutrition/academy_workouts.json; `add_academy_workouts` runs in seed_library.
+   Added levels advanced/all_levels and goal muscle_focus. Sheet lists workouts matching the client goal first.
    (Existing design he likes: Claude design artifact "Workout Schedule Design" – navy/gold, Tajawal.)
 2. Appointment system + "daily-use" features – proposal given, NOT agreed yet. Proposal: calendar with working hours and
    appointment types, status (attended/no-show), public booking link, reminders, link to interview/check-ins;

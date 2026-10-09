@@ -89,7 +89,8 @@ const STRINGS = {
     foodsCount: "{n} أطعمة", draftWarn: "قالب مبدئي يحتاج مراجعة أخصائي قبل الاستخدام.",
     // workouts
     workoutsTitle: "برامج التمارين", goal_fat_loss: "حرق الدهون", goal_muscle_gain: "بناء العضلات", goal_general_health: "صحة عامة",
-    level_beginner: "مبتدئ", level_intermediate: "متوسط", place_home: "المنزل", place_gym: "النادي", safeVersion: "نسخة آمنة لأصحاب الحالات الطبية",
+    level_beginner: "مبتدئ", level_intermediate: "متوسط", level_advanced: "متقدم", level_all_levels: "كل المستويات", goal_muscle_focus: "تركيز على عضلة",
+    workoutCardio: "كارديو", suggestedWorkouts: "مقترح لهذا العميل", otherWorkouts: "برامج أخرى", searchWorkouts: "ابحث عن برنامج", place_home: "المنزل", place_gym: "النادي", safeVersion: "نسخة آمنة لأصحاب الحالات الطبية",
     allGoals: "كل الأهداف", allLevels: "كل المستويات", allPlaces: "كل الأماكن", newWorkout: "برنامج جديد", dayTitle: "اسم اليوم",
     addDay: "أضف يومًا", addExercise: "أضف تمرينًا", exercise: "التمرين", workoutSaved: "تم حفظ البرنامج", sharedLibrary: "من المكتبة",
     // foods
@@ -375,7 +376,8 @@ const STRINGS = {
     templatesTitle: "Plan templates", medicalTemplates: "Medical templates", myTemplates: "My templates", noTemplates: "No templates yet. Save any plan as a template from its client sheet.",
     foodsCount: "{n} foods", draftWarn: "Starting draft. Needs review by a dietitian before use.",
     workoutsTitle: "Workout plans", goal_fat_loss: "Fat loss", goal_muscle_gain: "Muscle gain", goal_general_health: "General health",
-    level_beginner: "Beginner", level_intermediate: "Intermediate", place_home: "Home", place_gym: "Gym", safeVersion: "Safe version for medical limits",
+    level_beginner: "Beginner", level_intermediate: "Intermediate", level_advanced: "Advanced", level_all_levels: "All levels", goal_muscle_focus: "Muscle focus",
+    workoutCardio: "Cardio", suggestedWorkouts: "Suggested for this client", otherWorkouts: "Other workouts", searchWorkouts: "Search workouts", place_home: "Home", place_gym: "Gym", safeVersion: "Safe version for medical limits",
     allGoals: "All goals", allLevels: "All levels", allPlaces: "All places", newWorkout: "New workout", dayTitle: "Day name",
     addDay: "Add day", addExercise: "Add exercise", exercise: "Exercise", workoutSaved: "Workout saved", sharedLibrary: "Library",
     foodsTitle: "Food database", perServing: "per serving", unit: "Serving", foodsHint: "Values are per one serving. Foods are changed from the admin panel.",

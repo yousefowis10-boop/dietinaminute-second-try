@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Copy, Dumbbell, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
+import { Copy, Dumbbell, Pencil, Plus, Search, ShieldCheck, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Badge, Card, DraftBadge, Field, Modal, PageHeader, Spinner } from "../ui";
 import { timeLabel } from "./foodUtils";
 
-const GOALS = ["fat_loss", "muscle_gain", "general_health"];
-const LEVELS = ["beginner", "intermediate"];
+const GOALS = ["fat_loss", "muscle_gain", "muscle_focus", "general_health"];
+const LEVELS = ["beginner", "intermediate", "advanced", "all_levels"];
 const PLACES = ["home", "gym"];
 const blankExercise = () => ({ name: "", name_ar: "", sets: "3", reps: "12", rest: "60s" });
 const blankWorkout = () => ({ name: "", name_ar: "", goal: "fat_loss", level: "beginner", place: "home", is_safe_version: false, notes: "", notes_ar: "", days: [{ title: "Day 1", title_ar: "اليوم 1", exercises: [blankExercise()] }] });
@@ -83,13 +83,18 @@ export default function Workouts() {
   const { t, lang } = useI18n();
   const [workouts, setWorkouts] = useState(null);
   const [filter, setFilter] = useState({ goal: "", level: "", place: "" });
+  const [query, setQuery] = useState("");
   const [editing, setEditing] = useState(null);
   const [open, setOpen] = useState(null);
 
   const load = () => API.get("/nutrition/workouts/").then((r) => setWorkouts(r.data));
   useEffect(() => { load(); }, []);
 
-  const shown = useMemo(() => (workouts || []).filter((w) => Object.entries(filter).every(([k, v]) => !v || w[k] === v)), [workouts, filter]);
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (workouts || []).filter((w) => Object.entries(filter).every(([k, v]) => !v || w[k] === v)
+      && (!q || (w.name || "").toLowerCase().includes(q) || (w.name_ar || "").includes(q)));
+  }, [workouts, filter, query]);
   const ar = lang === "ar";
   const remove = async (w) => {
     if (!window.confirm(t("confirmDelete"))) return;
@@ -101,6 +106,10 @@ export default function Workouts() {
     <>
       <PageHeader title={t("workoutsTitle")} actions={<button type="button" className="btn-primary" onClick={() => setEditing(blankWorkout())}><Plus className="h-4 w-4" />{t("newWorkout")}</button>} />
       <div className="mb-4 flex flex-wrap gap-2">
+        <div className="relative min-w-[14rem] flex-1">
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <input className="input ps-9" placeholder={t("searchWorkouts")} value={query} onChange={(e) => setQuery(e.target.value)} />
+        </div>
         {[["goal", GOALS, "allGoals", "goal_"], ["level", LEVELS, "allLevels", "level_"], ["place", PLACES, "allPlaces", "place_"]].map(([key, opts, all, prefix]) => (
           <select key={key} className="input w-auto" value={filter[key]} onChange={(e) => setFilter((f) => ({ ...f, [key]: e.target.value }))}>
             <option value="">{t(all)}</option>
@@ -137,13 +146,29 @@ export default function Workouts() {
       <Modal open={!!open} onClose={() => setOpen(null)} title={open ? (ar ? open.name_ar || open.name : open.name) : ""} wide>
         {open && (
           <div className="space-y-3">
-            <p className="text-sm text-muted">{ar ? open.notes_ar || open.notes : open.notes}</p>
-            {open.days.map((d) => (
-              <div key={d.title} className="rounded-xl border border-line p-3">
-                <div className="mb-2 font-bold">{ar ? d.title_ar || d.title : d.title}</div>
-                <ul className="space-y-1 text-sm">
-                  {d.exercises.map((e) => <li key={e.name} className="flex gap-3"><span className="flex-1">{ar ? e.name_ar || e.name : e.name}</span><span className="num text-muted">{e.sets} × {timeLabel(e.reps, lang)} · {timeLabel(e.rest, lang)}</span></li>)}
+            <p className="whitespace-pre-line text-sm text-muted">{ar ? open.notes_ar || open.notes : open.notes}</p>
+            {open.days.map((d, di) => (
+              <div key={di} className="rounded-xl border border-line p-3">
+                <div className="mb-1 font-bold">{ar ? d.title_ar || d.title : d.title}</div>
+                {(d.note || d.note_ar) && <p className="mb-2 text-xs text-muted">{ar ? d.note_ar || d.note : d.note}</p>}
+                <ul className="space-y-2 text-sm">
+                  {d.exercises.map((e, ei) => (
+                    <li key={ei} className="flex gap-3">
+                      <div className="flex-1">
+                        {(e.kind || e.kind_ar) && <span className="me-1 rounded-full bg-brand-soft px-1.5 py-px text-[10px] font-bold text-brand">{ar ? e.kind_ar || e.kind : e.kind}</span>}
+                        {ar ? e.name_ar || e.name : e.name}
+                        {(e.target || e.target_ar || e.tip || e.tip_ar) && (
+                          <div className="text-xs text-muted">
+                            {[ar ? e.equipment_ar || e.equipment : e.equipment, ar ? e.target_ar || e.target : e.target].filter(Boolean).join(" · ")}
+                            {(e.tip || e.tip_ar) && <> — {ar ? e.tip_ar || e.tip : e.tip}</>}
+                          </div>
+                        )}
+                      </div>
+                      <span className="num whitespace-nowrap text-muted">{e.sets} × {timeLabel(e.reps, lang)} · {timeLabel(e.rest, lang)}</span>
+                    </li>
+                  ))}
                 </ul>
+                {(d.cardio || d.cardio_ar) && <p className="mt-2 text-xs"><b>{t("workoutCardio")}:</b> {ar ? d.cardio_ar || d.cardio : d.cardio}</p>}
               </div>
             ))}
           </div>
