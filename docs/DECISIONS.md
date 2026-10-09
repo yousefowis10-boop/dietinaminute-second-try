@@ -1,6 +1,6 @@
 # Yousef's decisions and wishes (kept up to date) — last update 9 Oct 2026
 
-Rule for now: **no new code until Yousef finishes testing the test site** and says go.
+Testing round 1 done (9 Oct): Today, appointments, calendars, booking link all OK.
 New screens always get a picture (mockup) first. Everything Arabic + English.
 
 ## Done on the test site (waiting for Yousef's test)
@@ -15,7 +15,12 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
 | Packages | per client, visits used / left, paid / owed |
 | Client phone number | on the client form, used for WhatsApp |
 
-## Approved — build after testing (in this order unless Yousef changes it)
+## Feedback from testing (9 Oct)
+- DONE: added foods start empty (no default 1); 6 most-used foods per group; water + new check-in notice on client file;
+  client file refreshes when you come back to the window. (Check-in was saved — it showed only in Today + Progress tab.)
+- Picture r11 waiting for OK: simpler plan builder (same 3 columns), client file split into pages, clear workout table.
+
+## Approved — build next (in this order unless Yousef changes it)
 1. **Interview exercise questions** → works out? where + own level / if not: gym? level / if not: home? level / else walking goal. Mockup r10.
 2. **Workout suggestion after the diet plan** → 3 best matches by goal + level + place (from #1), one-tap add. Mockup r8.
 3. **Smart grocery list** → grouped by store section (vegetables, fruit, meat & fish, dairy & eggs, bread & grains, oils & nuts, other), amounts for the week, tick off, share on WhatsApp. (Picture first.)
@@ -34,4 +39,4 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
 - Later ideas: health-watch sync (needs a real phone app), company wellness, own branded app in the stores.
 
 ## Mockups
-r6 appointments · r7 client app + Today · r8 workout suggestion · r9 blood tests · r10 interview exercise (docs/mockups/)
+r6 appointments · r7 client app + Today · r8 workout suggestion · r9 blood tests · r10 interview exercise · r11 builder / client file / workout view (docs/mockups/)

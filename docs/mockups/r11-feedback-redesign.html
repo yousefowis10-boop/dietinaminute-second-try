@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feedback redesign mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --brand:#1f6f5c; --brand-soft:#e5f1ed; --ink:#16211d; --muted:#6b7570; --line:#e3e7e5; --page:#f4f5f3;
+          --carb:#b7791f; --carb-soft:#fdf4e3; --pro:#2563a8; --pro-soft:#e8eefa; --fat:#8a4fb0; --fat-soft:#f3ebf8;
+          --ok:#1d7a46; --ok-soft:#e3f4ea; --navy:#13213a; --navy2:#1c2c4a; --gold:#d4a62a; --ai:#5b4bd6; --ai-soft:#efedfc; --bad:#c2410c; --bad-soft:#fdece4; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#dfe3e1; font-family:Inter, system-ui, sans-serif; color:var(--ink); }
+  .cap { font:600 15px Inter; color:#4b5551; margin:28px auto 10px; max-width:1300px; padding:0 16px; }
+  .frame { max-width:1300px; margin:0 auto 34px; background:var(--page); border-radius:14px; padding:22px 26px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+  .ar { font-family:Tajawal, sans-serif; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:16px; }
+  .btn { border:1px solid var(--line); background:#fff; border-radius:10px; padding:7px 12px; font:600 13px Inter; white-space:nowrap; display:inline-block; }
+  .btn.p { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .muted { color:var(--muted); font-size:12.5px; }
+
+  /* A: plan builder */
+  .bar { display:flex; align-items:center; gap:14px; padding:12px 16px; margin-bottom:14px; flex-wrap:wrap; }
+  .steps { display:flex; gap:6px; flex:1; } .steps span { padding:6px 12px; border-radius:999px; font-size:13px; color:var(--muted); }
+  .steps span.on { background:var(--brand-soft); color:var(--brand); font-weight:600; }
+  .kcal { font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; } .kcal small { font-size:12px; color:var(--muted); font-weight:500; }
+  .cols { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .col h3 { margin:0; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .colhead { padding:12px 14px 10px; border-bottom:1px solid var(--line); }
+  .meter { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:13px; font-variant-numeric:tabular-nums; }
+  .meter .b { flex:1; height:6px; border-radius:99px; background:#eef1ef; overflow:hidden; } .meter .b i { display:block; height:100%; border-radius:99px; }
+  .search { margin:10px 14px; border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-size:13px; color:var(--muted); }
+  .frow { display:grid; grid-template-columns:1fr 70px 70px; align-items:center; gap:8px; padding:7px 14px; border-top:1px solid #f0f2f1; font-size:13.5px; }
+  .frow small { display:block; color:var(--muted); font-size:11.5px; }
+  .qty { border:1px solid var(--line); border-radius:8px; height:34px; display:grid; place-items:center; font-weight:700; font-variant-numeric:tabular-nums; }
+  .qty.empty { color:#c3c9c6; font-weight:500; border-style:dashed; }
+  .qty.focus { border:2px solid var(--brand); }
+  .amt { text-align:end; font-weight:700; color:var(--brand); font-variant-numeric:tabular-nums; } .amt.none { color:#c3c9c6; font-weight:500; }
+  .dim { color:var(--muted); }
+  .foot { display:flex; justify-content:space-between; align-items:center; margin-top:14px; }
+
+  /* B: client file */
+  .cf { display:grid; grid-template-columns:220px 1fr; gap:16px; }
+  .side { padding:14px; }
+  .who { display:flex; gap:10px; align-items:center; margin-bottom:14px; } .av { width:44px; height:44px; border-radius:50%; background:var(--brand-soft); color:var(--brand); display:grid; place-items:center; font-weight:700; }
+  .who b { display:block; } .who small { color:var(--muted); font-size:12px; }
+  .snav a { display:flex; justify-content:space-between; align-items:center; padding:9px 10px; border-radius:10px; font-size:14px; color:#3b4541; text-decoration:none; margin-bottom:2px; }
+  .snav a.on { background:var(--brand-soft); color:var(--brand); font-weight:600; }
+  .badge { border-radius:999px; padding:1px 7px; font-size:11px; font-weight:700; background:var(--ai); color:#fff; } .badge.g { background:var(--page); color:var(--muted); }
+  .ov { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:12px; }
+  .tile { padding:13px 14px; } .tile small { color:var(--muted); font-size:12px; } .tile b { display:block; font-size:20px; margin-top:3px; font-variant-numeric:tabular-nums; }
+  .act { display:flex; gap:10px; align-items:center; padding:11px 14px; border-radius:12px; font-size:13.5px; font-weight:600; margin-bottom:8px; }
+  .act.ai { background:var(--ai-soft); color:var(--ai); } .act.bad { background:var(--bad-soft); color:var(--bad); } .act.g { background:var(--ok-soft); color:var(--ok); }
+  .act span:last-child { margin-inline-start:auto; }
+
+  /* C: workout */
+  .wk { display:grid; grid-template-columns:260px 1fr; gap:16px; }
+  .wnav { background:var(--navy); color:#fff; border-radius:16px; padding:16px; }
+  .wnav small { color:var(--gold); font-size:10.5px; letter-spacing:.14em; font-weight:700; }
+  .wnav h3 { margin:4px 0 12px; font-size:17px; }
+  .stat2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; } .stat2 div { background:var(--navy2); border-radius:10px; padding:7px 9px; font-size:11px; color:#aab4c8; } .stat2 b { display:block; color:var(--gold); font-size:15px; }
+  .day { display:flex; gap:8px; align-items:center; padding:8px 9px; border-radius:10px; font-size:13px; margin-bottom:3px; color:#d6dbe6; }
+  .day.on { background:#fff; color:var(--navy); font-weight:700; } .day i { font-style:normal; font-size:10px; font-weight:700; color:var(--gold); width:42px; }
+  .day.rest { opacity:.55; }
+  .dayhead { display:flex; align-items:flex-end; gap:12px; padding:16px 18px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .dayhead h2 { margin:0; font-size:22px; flex:1; } .dayhead .chips span { background:var(--page); border-radius:999px; padding:4px 10px; font-size:12px; font-weight:600; margin-inline-start:4px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th { text-align:start; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); padding:9px 12px; border-bottom:1px solid var(--line); }
+  td { padding:11px 12px; border-bottom:1px solid #f0f2f1; vertical-align:top; }
+  td.n { color:var(--gold); font-weight:800; font-size:16px; width:36px; }
+  td.big { font-weight:800; font-size:16px; text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .ex b { display:block; font-size:14.5px; } .ex small { color:var(--muted); font-size:12px; }
+  .ss { display:inline-block; background:var(--navy); color:var(--gold); border-radius:6px; padding:1px 7px; font-size:10.5px; font-weight:800; margin-bottom:3px; }
+  .tgt { display:inline-block; background:var(--brand-soft); color:var(--brand); border-radius:999px; padding:1px 8px; font-size:11px; font-weight:700; margin-bottom:3px; }
+  .how { color:#4b5551; font-size:12.5px; }
+  .cardio { margin:12px 18px 18px; border:1px solid var(--gold); border-radius:12px; padding:10px 13px; font-size:13px; } .cardio b { color:var(--gold); }
+  .notes { max-width:1300px; margin:0 auto 40px; padding:0 16px; } .notes .card { padding:16px 18px; font-size:14px; line-height:1.7; } .notes ul { margin:6px 0; padding-inline-start:20px; }
+  @media (max-width:1000px) { .cols, .cf, .wk, .ov { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div class="cap">A · Plan builder — same 3 columns, less on screen. 6 favourite foods ready, boxes start empty, just type the servings.</div>
+<div class="frame">
+  <div class="card bar">
+    <div class="steps"><span class="on">1 Foods & servings</span><span>2 Split into meals</span><span>3 Client sheet</span></div>
+    <div class="kcal">1,912 <small>/ 2,393 kcal</small></div>
+    <span class="btn">◎ Fit to target</span>
+    <span class="btn">⋯</span>
+  </div>
+  <div class="cols">
+    <div class="card col">
+      <div class="colhead"><h3><span style="color:var(--carb)">■</span> Carbs</h3>
+        <div class="meter"><b>241</b><span class="dim">/ 329 g</span><div class="b"><i style="width:73%;background:var(--carb)"></i></div><span class="dim">−88 g</span></div></div>
+      <div class="search">⌕ Search any food…</div>
+      <div class="frow"><span>White rice<small>1 = 100 g</small></span><span class="qty">1.5</span><span class="amt">150 g</span></div>
+      <div class="frow"><span>Oats<small>1 = 100 g</small></span><span class="qty">0.5</span><span class="amt">50 g</span></div>
+      <div class="frow"><span>Brown bread<small>1 = 1 loaf</small></span><span class="qty focus">2</span><span class="amt">2 loaf</span></div>
+      <div class="frow"><span>Potato<small>1 = 100 g</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+      <div class="frow"><span>Sweet potato<small>1 = 100 g</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+      <div class="frow"><span>Banana<small>1 = 1 pc</small></span><span class="qty">1</span><span class="amt">1 pc</span></div>
+      <div class="frow" style="background:#fbfcfb"><span>Dates <span class="dim" style="font-size:11px">· added</span><small>1 = 100 g</small></span><span class="qty empty">type…</span><span class="amt none">—</span></div>
+    </div>
+    <div class="card col">
+      <div class="colhead"><h3><span style="color:var(--pro)">■</span> Protein</h3>
+        <div class="meter"><b>146</b><span class="dim">/ 150 g</span><div class="b"><i style="width:97%;background:var(--ok)"></i></div><span style="color:var(--ok);font-weight:700">✓</span></div></div>
+      <div class="search">⌕ Search any food…</div>
+      <div class="frow"><span>Chicken breast<small>1 = 100 g</small></span><span class="qty">3</span><span class="amt">300 g</span></div>
+      <div class="frow"><span>Boiled egg<small>1 = 1 pc</small></span><span class="qty">2</span><span class="amt">2 pc</span></div>
+      <div class="frow"><span>Tuna in olive oil<small>1 = 1 can</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+      <div class="frow"><span>Steak<small>1 = 100 g</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+      <div class="frow"><span>Salmon<small>1 = 100 g</small></span><span class="qty">1</span><span class="amt">100 g</span></div>
+      <div class="frow"><span>Ground beef<small>1 = 100 g</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+    </div>
+    <div class="card col">
+      <div class="colhead"><h3><span style="color:var(--fat)">■</span> Fats</h3>
+        <div class="meter"><b>38</b><span class="dim">/ 53 g</span><div class="b"><i style="width:72%;background:var(--fat)"></i></div><span class="dim">−15 g</span></div></div>
+      <div class="search">⌕ Search any food…</div>
+      <div class="frow"><span>Olive oil<small>1 = 1 tsp</small></span><span class="qty">3</span><span class="amt">3 tsp</span></div>
+      <div class="frow"><span>Avocado<small>1 = 100 g</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+      <div class="frow"><span>Walnuts<small>1 = 30 g</small></span><span class="qty">1</span><span class="amt">30 g</span></div>
+      <div class="frow"><span>Almond<small>1 = 30 g</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+      <div class="frow"><span>Peanut butter<small>1 = 1 tbsp</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+      <div class="frow"><span>Tahini<small>1 = 1 tbsp</small></span><span class="qty empty">—</span><span class="amt none">—</span></div>
+    </div>
+  </div>
+  <div class="foot"><span class="muted">Type a number and press Enter to jump to the next food. Empty = not in the plan.</span><span class="btn p">Next: split into meals →</span></div>
+</div>
+
+<div class="cap">B · Client file split into pages — the left list replaces the long single page (Overview shows only what needs you)</div>
+<div class="frame">
+  <div class="cf">
+    <div class="card side">
+      <div class="who"><div class="av">AK</div><div><b>Ahmad Khalil</b><small>34 y · 92 kg · weight loss</small></div></div>
+      <div class="snav">
+        <a class="on">Overview</a>
+        <a>Plans <span class="badge g">2</span></a>
+        <a>Progress & check-ins <span class="badge">1 new</span></a>
+        <a>Appointments & payments</a>
+        <a>Phone page <span class="badge g">83%</span></a>
+        <a>Interview</a>
+        <a>Blood tests</a>
+        <a>Notes & files</a>
+      </div>
+      <div style="margin-top:12px;display:grid;gap:6px"><span class="btn p" style="text-align:center">+ New plan</span><span class="btn" style="text-align:center">⋯ More actions</span></div>
+    </div>
+    <div>
+      <div class="ov">
+        <div class="card tile"><small>Calorie target</small><b>2,395 kcal</b></div>
+        <div class="card tile"><small>Next appointment</small><b>Mon 10:00</b></div>
+        <div class="card tile"><small>Followed this week</small><b style="color:var(--ok)">83%</b></div>
+        <div class="card tile"><small>Weight change</small><b>−3.5 kg</b></div>
+      </div>
+      <div class="act ai">📥 1 new check-in from the client (weight 90.5 kg) <span>Open →</span></div>
+      <div class="act bad">⚠ Package ends in 9 days · 1 visit left <span>Renew →</span></div>
+      <div class="act g">💧 Water today 1.5 L · meals 3 / 5 <span>Phone page →</span></div>
+      <div class="card" style="padding:14px 16px;margin-top:4px"><b style="font-size:14px">Current plan</b> <span class="muted">· Ahmad – weight loss · 2,394 kcal · made 30 Sep</span><span class="btn" style="float:inline-end">Open sheet</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="cap">C · Workouts — one day at a time, a clear table: exercise · sets · reps · rest · how to do it (your navy & gold style)</div>
+<div class="frame">
+  <div class="wk">
+    <div class="wnav">
+      <small>WEIGHT GAIN · BEGINNER · WG-BEG-PPL-01</small>
+      <h3>Push Pull Legs – Week 1</h3>
+      <div class="stat2"><div>Training days<b>3</b></div><div>Sets × reps<b>3 × 15</b></div><div>Tempo<b>2-1-2</b></div><div>Rest<b>45 sec</b></div></div>
+      <div class="day on"><i>DAY 1</i>Push</div>
+      <div class="day"><i>DAY 2</i>Pull</div>
+      <div class="day"><i>DAY 3</i>Legs</div>
+      <div class="day rest"><i>DAY 4</i>Active rest · swim / light cardio</div>
+      <div class="day"><i>DAY 5</i>Push (repeat day 1)</div>
+      <div class="day"><i>DAY 6</i>Pull (repeat day 2)</div>
+      <div class="day rest"><i>DAY 7</i>Legs or rest</div>
+      <div style="margin-top:12px;font-size:12px;color:#aab4c8;line-height:1.6"><b style="color:var(--gold)">Warm-up</b> 5 min fast walk · <b style="color:var(--gold)">Activation</b> 10 light reps per move · <b style="color:var(--gold)">Cool-down</b> stretch 10 min</div>
+    </div>
+    <div class="card">
+      <div class="dayhead"><h2>Day 1 · Push</h2><div class="chips"><span>7 exercises</span><span>~55 min</span></div><span class="btn">⬇ PDF</span></div>
+      <table>
+        <tr><th>#</th><th>Exercise</th><th style="text-align:center">Sets</th><th style="text-align:center">Reps</th><th style="text-align:center">Rest</th><th>How to do it</th></tr>
+        <tr><td class="n">01</td><td class="ex"><b>Incline Press</b><small>Dumbbell</small></td><td class="big">3</td><td class="big">15</td><td class="big">45s</td><td><span class="tgt">Upper chest</span><div class="how">Bench at 30–45°, elbows at about 45°</div></td></tr>
+        <tr><td class="n">02</td><td class="ex"><b>Flat Chest Press</b><small>Dumbbell</small></td><td class="big">3</td><td class="big">15</td><td class="big">45s</td><td><span class="tgt">Middle chest</span><div class="how">Pin shoulder blades back and down</div></td></tr>
+        <tr><td class="n">03</td><td class="ex"><b>Chest Fly</b><small>Machine</small></td><td class="big">3</td><td class="big">15</td><td class="big">45s</td><td><span class="tgt">Middle chest</span><div class="how">Hug a big tree, squeeze hard at the top</div></td></tr>
+        <tr><td class="n">04</td><td class="ex"><span class="ss">SUPERSET</span><b>Rope Push Down</b><b>+ Overhead Rope Extension</b><small>Cable · no rest between the two</small></td><td class="big">3</td><td class="big">15<br><small class="muted">each</small></td><td class="big">60s</td><td><span class="tgt">Triceps</span><div class="how">Elbows locked at your sides, full lockout</div></td></tr>
+        <tr><td class="n">05</td><td class="ex"><b>Triceps Dips</b><small>Machine or bench</small></td><td class="big">3</td><td class="big">15</td><td class="big">45s</td><td><span class="tgt">Lower chest + triceps</span><div class="how">Lean forward to load the chest</div></td></tr>
+      </table>
+      <div class="cardio"><b>CARDIO</b> · HIIT once a week: 10 min fast walk, then 30 sec sprint / 1.5 min walk × 5, then 15 min walk.</div>
+    </div>
+  </div>
+</div>
+
+<div class="cap">C · Same workout in Arabic (client phone page)</div>
+<div class="frame ar" dir="rtl" style="max-width:480px">
+  <div class="card">
+    <div class="dayhead"><h2>اليوم 1 · دفع</h2></div>
+    <table>
+      <tr><th>التمرين</th><th style="text-align:center">مجموعات</th><th style="text-align:center">تكرار</th><th style="text-align:center">راحة</th></tr>
+      <tr><td class="ex"><b>ضغط – مائل</b><small>دمبل · البنش على 30–45°</small></td><td class="big">3</td><td class="big">15</td><td class="big">45ث</td></tr>
+      <tr><td class="ex"><b>ضغط صدر – مستوي</b><small>دمبل · ثبّت لوحي الكتف للخلف</small></td><td class="big">3</td><td class="big">15</td><td class="big">45ث</td></tr>
+      <tr><td class="ex"><span class="ss">سوبر سِت</span><b>ترايسبس حبل + ترايسبس خلف الرأس</b><small>كيبل · بدون راحة بين التمرينين</small></td><td class="big">3</td><td class="big">15</td><td class="big">60ث</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="notes"><div class="card">
+  <b>What changes</b>
+  <ul>
+    <li><b>Plan builder:</b> no +/− buttons (type the number, Enter moves down), empty boxes instead of 1, one search box per column that finds any food, one thin bar per column instead of the big totals, “Fit to target” and the calorie total in one top bar. Templates / AI draft move into “⋯”.</li>
+    <li><b>Client file:</b> a left list of pages. Overview = 4 numbers + only the things that need you (new check-in, package ending, unpaid…). Everything else has its own page with a count badge so you see where something new is.</li>
+    <li><b>Workouts:</b> days on the left, one day at a time on the right as a real table — big sets / reps / rest numbers, the target muscle and a short “how to”. Supersets and giant sets are clearly grouped. Same layout in the PDF and on the client's phone.</li>
+  </ul>
+</div></div>
+</body>
+</html>
