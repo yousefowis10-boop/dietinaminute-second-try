@@ -20,7 +20,10 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
   client file refreshes when you come back to the window. (Check-in was saved — it showed only in Today + Progress tab.)
 - Picture r11 waiting for OK: simpler plan builder (same 3 columns), client file split into pages, clear workout table.
   Yousef on r11 builder: KEEP the +/− buttons. Not sure the side-by-side (horizontal) 3 columns is better — he will test
-  before deciding. Client file pages + workout table: no answer yet.
+  before deciding. Client file pages: no answer yet.
+- DONE 9 Oct: meal names on 'Split into meals' fold into one line (Edit names & times); workout shown as instructions box
+  + day buttons + table (sets / reps / rest / how to) everywhere (sheet, PDF all days, phone page, Workouts page).
+  Yousef: 'over all looks okay'.
 
 ## Approved — build next (in this order unless Yousef changes it)
 1. ✅ DONE 9 Oct · **Interview exercise questions** → works out? where + own level / if not: gym? level / if not: home? level / else walking goal. Mockup r10.

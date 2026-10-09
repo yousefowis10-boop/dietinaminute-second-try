@@ -151,6 +151,7 @@ export default function PlanBuilder() {
   const [mainMeals, setMainMeals] = useState(3);
   const [withSnacks, setWithSnacks] = useState(true);
   const [slots, setSlots] = useState([]);
+  const [namesOpen, setNamesOpen] = useState(false);
   const [templates, setTemplates] = useState(null);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [busy, setBusy] = useState("");
@@ -489,8 +490,20 @@ export default function PlanBuilder() {
             <span className="num font-bold">{num(totals.kcal)} <small className="font-medium text-muted">{t("kcalPerDay")}</small></span>
           </div>
 
-          <div className="card mb-4 p-5">
-            <h4 className="mb-3 text-[13px] font-semibold text-muted">{t("mealNamesTitle")}</h4>
+          <div className="card mb-4 px-5 py-3">
+            <button type="button" className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 text-start" onClick={() => setNamesOpen((o) => !o)} aria-expanded={namesOpen}>
+              <span className="text-[13px] font-semibold text-muted">{t("mealNamesShort")}</span>
+              {!namesOpen && slots.map((s) => (
+                <span key={s.key} className="text-[13px]"><b>{s.name}</b>{s.time && <span className="num text-muted"> {s.time}</span>}</span>
+              ))}
+              <span className="ms-auto inline-flex items-center gap-1 text-xs font-semibold text-brand">
+                {namesOpen ? t("doneEditing") : <><Pencil className="h-3.5 w-3.5" />{t("editMealNames")}</>}
+                <ChevronDown className={`h-4 w-4 transition ${namesOpen ? "rotate-180" : ""}`} />
+              </span>
+            </button>
+            {namesOpen && (
+            <>
+            <p className="mb-3 mt-2 text-xs text-muted">{t("mealNamesTitle")}</p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {slots.map((s) => (
                 <div key={s.key}>
@@ -512,6 +525,8 @@ export default function PlanBuilder() {
                 <div className="mt-1.5 text-xs text-muted">{t("addMealHint")}</div>
               </div>
             </div>
+            </>
+            )}
           </div>
 
           <div className="card overflow-hidden">

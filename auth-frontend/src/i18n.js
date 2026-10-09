@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 const STRINGS = {
   ar: {
     // appointments, client app, Today
+    mealNamesShort: "الوجبات:", editMealNames: "تعديل الأسماء والأوقات", doneEditing: "تم", howToDoIt: "طريقة الأداء", eachMove: "لكل حركة", workoutInstructions: "تعليمات البرنامج", wDay: "اليوم", howToReadTitle: "كيف تقرأ الجدول", howToRead: "نفّذ عدد المجموعات المكتوب، وفي كل مجموعة عدد التكرارات، وارتاح المدة المكتوبة بين المجموعات. ابدأ بوزن تقدر تكمّل فيه كل التكرارات بشكل صحيح.", supersetTitle: "سوبر سِت / جاينت سِت", supersetHow: "نفّذ التمارين المجمّعة ورا بعض بدون راحة، ثم ارتاح بعد آخر تمرين وابدأ المجموعة التالية.", wProgressTitle: "التطور", progressHow: "لما تصير التكرارات سهلة في كل المجموعات، زيد الوزن قليلًا في المرة الجاية. توقف إذا حسيت بألم.",
     suggestedWorkoutsFor: "برامج تمارين مقترحة لـ{name}", fromInterview: "حسب إجابات المقابلة", changedByYou: "حسب اختيارك", guessed: "تقدير — عدّله إذا لزم", wplace_gym: "النادي", wplace_home: "المنزل", wplace_none: "لا يريد التمرين", walkingGoal: "العميل لا يريد التمرين حاليًا. اقترح هدف مشي يومي: 30 دقيقة أو 7,000 خطوة.", noWorkoutMatch: "لا يوجد برنامج مطابق. غيّر المستوى أو المكان.", bestMatch: "الأنسب", trainingDays: "أيام التمرين", setsReps: "مجموعات × تكرارات", level: "المستوى", preview: "عرض", addToPlan: "أضف للخطة", noWorkoutYet: "لا يوجد برنامج تمارين في هذه الخطة بعد — شوف الاقتراحات",
     newCheckinsBanner: "وصلك {n} قياس جديد من العميل — افتح القياسات", waterToday: "الماء اليوم",
     today: "اليوم",
@@ -470,6 +471,7 @@ const STRINGS = {
   },
   en: {
     // appointments, client app, Today
+    mealNamesShort: "Meals:", editMealNames: "Edit names & times", doneEditing: "Done", howToDoIt: "How to do it", eachMove: "each move", workoutInstructions: "Workout instructions", wDay: "Day", howToReadTitle: "How to read it", howToRead: "Do the number of sets shown, with the reps in each set, and rest the time shown between sets. Start with a weight you can finish all reps with good form.", supersetTitle: "Supersets / giant sets", supersetHow: "Do the grouped moves back to back with no rest, then rest after the last one and start the next round.", wProgressTitle: "Progress", progressHow: "When all reps feel easy in every set, add a little weight next time. Stop if you feel pain.",
     suggestedWorkoutsFor: "Suggested workouts for {name}", fromInterview: "from the interview answers", changedByYou: "your choice", guessed: "a guess — change it if needed", wplace_gym: "Gym", wplace_home: "Home", wplace_none: "Doesn't want to train", walkingGoal: "The client doesn't want to train for now. Suggest a daily walking goal: 30 minutes or 7,000 steps.", noWorkoutMatch: "No matching workout. Change the level or place.", bestMatch: "BEST MATCH", trainingDays: "Training days", setsReps: "Sets × reps", level: "Level", preview: "Preview", addToPlan: "Add to plan", noWorkoutYet: "No workout in this plan yet — see suggestions",
     newCheckinsBanner: "{n} new check-in from the client — open Progress & check-ins", waterToday: "Water today",
     today: "Today",

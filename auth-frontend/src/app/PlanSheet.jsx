@@ -8,8 +8,9 @@ import { MEAL_ORDER, useI18n } from "../i18n";
 import { Card, DraftBadge, Modal, Spinner, TestModeBadge, apiError } from "../ui";
 import { AIUnavailableNote, useAIBlocker } from "./client/AIPanel";
 import { StepsBar, colOf } from "./PlanBuilder";
-import { englishUnit, niceAmount, timeLabel } from "./foodUtils";
+import { englishUnit, niceAmount } from "./foodUtils";
 import WorkoutSuggestions from "./WorkoutSuggestions";
+import WorkoutView from "./WorkoutView";
 
 const enUnit = (row) => englishUnit(row.unit_en, row.unit, row.factor ?? 100);
 
@@ -32,42 +33,8 @@ function useSlots(data, t) {
 // Client goal -> workout goal, so matching workouts are listed first.
 const GOAL_TO_WORKOUT = { loss: "fat_loss", gain: "muscle_gain", maintain: "general_health" };
 
-export function WorkoutBlock({ workout }) {
-  const { t, lang } = useI18n();
-  const ar = lang === "ar";
-  return (
-    <section className="break-inside-avoid">
-      <h2 className="mb-1 flex items-center gap-2 text-lg font-bold"><Dumbbell className="h-5 w-5 text-brand" />{t("workout")}: {ar ? workout.name_ar || workout.name : workout.name}</h2>
-      <p className="mb-3 whitespace-pre-line text-sm text-muted">{ar ? workout.notes_ar || workout.notes : workout.notes}</p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {workout.days.map((day, di) => (
-          <div key={di} className="break-inside-avoid rounded-xl border border-line p-3">
-            <div className="mb-1 font-bold">{ar ? day.title_ar || day.title : day.title}</div>
-            {(day.note || day.note_ar) && <p className="mb-2 text-xs text-muted">{ar ? day.note_ar || day.note : day.note}</p>}
-            {day.exercises.length > 0 && (
-              <table className="w-full text-sm">
-                <thead><tr className="text-xs text-muted"><th className="text-start font-medium">{t("exercise")}</th><th className="font-medium">{t("sets")}</th><th className="font-medium">{t("reps")}</th><th className="font-medium">{t("rest")}</th></tr></thead>
-                <tbody>
-                  {day.exercises.map((ex, ei) => (
-                    <tr key={ei} className="border-t border-line align-top">
-                      <td className="py-1.5">
-                        {(ex.kind || ex.kind_ar) && <span className="me-1 rounded-full bg-brand-soft px-1.5 py-px text-[10px] font-bold text-brand">{ar ? ex.kind_ar || ex.kind : ex.kind}</span>}
-                        {ar ? ex.name_ar || ex.name : ex.name}
-                        {(ex.tip || ex.tip_ar) && <div className="text-[11px] leading-snug text-muted">{ar ? ex.tip_ar || ex.tip : ex.tip}</div>}
-                      </td>
-                      <td className="num text-center">{ex.sets}</td><td className="num text-center">{timeLabel(ex.reps, lang)}</td><td className="num text-center">{timeLabel(ex.rest, lang)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            {(day.cardio || day.cardio_ar) && <p className="mt-2 text-xs"><b>{t("workoutCardio")}:</b> {ar ? day.cardio_ar || day.cardio : day.cardio}</p>}
-          </div>
-        ))}
-      </div>
-      <p className="mt-2 text-xs text-muted">{t("activityGuide")}</p>
-    </section>
-  );
+export function WorkoutBlock({ workout, allDays = false }) {
+  return <WorkoutView workout={workout} allDays={allDays} />;
 }
 
 function Grocery({ rows }) {
@@ -440,7 +407,7 @@ export default function PlanSheet() {
               <Grocery rows={data.grocery} />
             </>
           )}
-          {data.workout && (<><div className="html2pdf__page-break" /><WorkoutBlock workout={data.workout} /></>)}
+          {data.workout && (<><div className="html2pdf__page-break" /><WorkoutBlock workout={data.workout} allDays /></>)}
           <footer className="mt-6 flex text-[11px] text-muted" dir="ltr"><span>Diet in a Minute</span><span className="ms-auto">{fmtDate(data.plan.created_at)}</span></footer>
         </div>
       </div>

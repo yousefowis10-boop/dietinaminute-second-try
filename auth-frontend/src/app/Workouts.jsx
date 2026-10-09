@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Badge, Card, DraftBadge, Field, Modal, PageHeader, Spinner } from "../ui";
-import { timeLabel } from "./foodUtils";
+import WorkoutView from "./WorkoutView";
 
 const GOALS = ["fat_loss", "muscle_gain", "muscle_focus", "general_health"];
 const LEVELS = ["beginner", "intermediate", "advanced", "all_levels"];
@@ -144,35 +144,7 @@ export default function Workouts() {
       )}
       {editing && <WorkoutEditor initial={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />}
       <Modal open={!!open} onClose={() => setOpen(null)} title={open ? (ar ? open.name_ar || open.name : open.name) : ""} wide>
-        {open && (
-          <div className="space-y-3">
-            <p className="whitespace-pre-line text-sm text-muted">{ar ? open.notes_ar || open.notes : open.notes}</p>
-            {open.days.map((d, di) => (
-              <div key={di} className="rounded-xl border border-line p-3">
-                <div className="mb-1 font-bold">{ar ? d.title_ar || d.title : d.title}</div>
-                {(d.note || d.note_ar) && <p className="mb-2 text-xs text-muted">{ar ? d.note_ar || d.note : d.note}</p>}
-                <ul className="space-y-2 text-sm">
-                  {d.exercises.map((e, ei) => (
-                    <li key={ei} className="flex gap-3">
-                      <div className="flex-1">
-                        {(e.kind || e.kind_ar) && <span className="me-1 rounded-full bg-brand-soft px-1.5 py-px text-[10px] font-bold text-brand">{ar ? e.kind_ar || e.kind : e.kind}</span>}
-                        {ar ? e.name_ar || e.name : e.name}
-                        {(e.target || e.target_ar || e.tip || e.tip_ar) && (
-                          <div className="text-xs text-muted">
-                            {[ar ? e.equipment_ar || e.equipment : e.equipment, ar ? e.target_ar || e.target : e.target].filter(Boolean).join(" · ")}
-                            {(e.tip || e.tip_ar) && <> — {ar ? e.tip_ar || e.tip : e.tip}</>}
-                          </div>
-                        )}
-                      </div>
-                      <span className="num whitespace-nowrap text-muted">{e.sets} × {timeLabel(e.reps, lang)} · {timeLabel(e.rest, lang)}</span>
-                    </li>
-                  ))}
-                </ul>
-                {(d.cardio || d.cardio_ar) && <p className="mt-2 text-xs"><b>{t("workoutCardio")}:</b> {ar ? d.cardio_ar || d.cardio : d.cardio}</p>}
-              </div>
-            ))}
-          </div>
-        )}
+        {open && <WorkoutView workout={open} />}
       </Modal>
     </>
   );
