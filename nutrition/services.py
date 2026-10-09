@@ -530,3 +530,87 @@ def sync_never_foods(client, detailed):
     ids = [int(i) for i in (getattr(detailed, 'never_foods', None) or []) if str(i).isdigit()]
     if ids:
         client.excluded_foods.add(*FoodItem.objects.filter(id__in=ids))
+
+
+# ------------------------------------------------------------ smart grocery ---
+
+SHOP_SECTIONS = ['vegetables', 'fruit', 'meat_fish', 'dairy_eggs', 'bread_grains', 'oils_nuts', 'other']
+# First match wins, so more specific words come first (e.g. "peanut butter" before "butter", "sweet potato" before "potato").
+_SECTION_WORDS = [
+    ('oils_nuts', ['peanut butter', 'almond butter', 'olive oil', 'canola oil', 'coconut oil', ' oil', 'butter', 'ghee', 'avocado',
+                   'almond', 'walnut', 'cashew', 'pistachio', 'peanut', 'hazelnut', 'seed', 'chia', 'flax', 'tahini', 'hummus', 'olive']),
+    ('bread_grains', ['corn flakes', 'rice cake', 'rice', 'bread', 'toast', 'oat', 'pasta', 'bulgur', 'couscous', 'quinoa',
+                      'tortilla', 'sandwich', 'lentil', 'chickpea', 'kidney bean', 'fava', 'foul']),
+    ('vegetables', ['sweet potato', 'potato', 'cucumber', 'tomato', 'lettuce', 'salad', 'spinach', 'carrot', 'pepper', 'zucchini',
+                    'eggplant', 'cauliflower', 'cabbage', 'mushroom', 'green bean', 'okra', 'beet', 'broccoli', 'broccli', 'onion',
+                    'corn', 'peas']),
+    ('fruit', ['banana', 'apple', 'orange', 'mandarin', 'pear', 'peach', 'kiwi', 'plum', 'fig', 'date', 'strawberr', 'mango',
+               'pineapple', 'cantaloupe', 'pomegranate', 'apricot', 'cherr', 'raspberr', 'guava', 'grape', 'raisin', 'watermelon',
+               'blueberr', 'melon']),
+    ('meat_fish', ['chicken', 'beef', 'steak', 'lamb', 'turkey', 'liver', 'salmon', 'tilapia', 'sea bass', 'cod', 'mackerel',
+                   'tuna', 'sardine', 'shrimp', 'fish', 'meat']),
+    ('dairy_eggs', ['egg', 'milk', 'yogurt', 'youghret', 'cheese', 'labneh', 'cottage', 'ricotta', 'mozzarella', 'feta',
+                    'parmesan', 'hallomi', 'halloumi', 'laban']),
+]
+# Cooked weight in the plan -> dry weight to buy.
+_RAW_FACTOR = [('rice', 0.36), ('pasta', 0.4), ('bulgur', 0.4), ('couscous', 0.35), ('quinoa', 0.38), ('lentil', 0.4),
+               ('chickpea', 0.4), ('kidney bean', 0.4)]
+
+
+def shop_section(food):
+    name = f' {(food.name or "").lower()} '
+    for section, words in _SECTION_WORDS:
+        if any(w in name for w in words):
+            return section
+    return 'other'
+
+
+def _raw_factor(food):
+    name = (food.name or '').lower()
+    cooked = '(cooked)' in name or name.strip() in ('white rice', 'pasta') or 'مسلوق' in (food.name_ar or '')
+    if not cooked or any(w in name for w in ('chicken', 'beef', 'lamb', 'fish', 'salmon', 'turkey', 'egg', 'potato')):
+        return None
+    return next((f for w, f in _RAW_FACTOR if w in name), None)
+
+
+def smart_grocery(plan, weeks=1):
+    """What to buy for 1 or 2 weeks: uses the weekly plan (with its swaps) when there is one,
+    cooked grains turned into dry weight, grams rounded up to shop sizes, pieces rounded up."""
+    import math
+    from .models import FoodItem
+    servings = defaultdict(float)
+    week_days = (plan.weekly or {}).get('days') or []
+    if week_days:
+        for day in week_days:
+            for i in day.get('items', []):
+                servings[i['food_id']] += float(i.get('quantity') or 0) * 7 / len(week_days)
+    else:
+        for item in plan.items.all():
+            servings[item.food_id] += float(item.quantity or 0) * 7
+    foods = {f.id: f for f in FoodItem.objects.filter(id__in=servings)}
+    rows = []
+    for food_id, n in servings.items():
+        food = foods.get(food_id)
+        if food is None or n <= 0:
+            continue
+        n *= weeks
+        factor = food.multiplying_factor or 1
+        unit_l = (food.unit or '').lower()
+        row = {'food_id': food_id, 'food': food.name_ar or food.name, 'food_en': food.name, 'section': shop_section(food),
+               'unit': food.unit_ar or '', 'unit_en': food.unit or '', 'factor': factor, 'note': '', 'per_day': round(n * factor / (7 * weeks), 1)}
+        if factor >= 10:  # weighed foods: grams or ml
+            amount = n * factor
+            raw = _raw_factor(food)
+            if raw:
+                amount, row['note'] = amount * raw, 'dry'
+            step = 50 if amount >= 200 else 10
+            row.update(kind='ml' if 'ml' in unit_l else 'g', amount=int(math.ceil(amount / step) * step))
+        else:
+            count = n * factor
+            spoon = any(w in unit_l for w in ('spoon', 'tsp', 'tbs'))
+            row.update(kind='unit', amount=round(count, 1) if spoon else int(math.ceil(count - 1e-9)))
+            if spoon and row['section'] == 'oils_nuts':
+                row['ml'] = int(math.ceil(count * (15 if ('table' in unit_l or 'tbs' in unit_l) else 5) / 10) * 10)
+        rows.append(row)
+    order = {s: i for i, s in enumerate(SHOP_SECTIONS)}
+    return sorted(rows, key=lambda r: (order[r['section']], r['food_en'].lower()))

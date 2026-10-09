@@ -11,6 +11,8 @@ import { StepsBar, colOf } from "./PlanBuilder";
 import { englishUnit, niceAmount } from "./foodUtils";
 import WorkoutSuggestions from "./WorkoutSuggestions";
 import WorkoutView from "./WorkoutView";
+import SmartGrocery from "./SmartGrocery";
+import { openWhatsApp } from "./schedule";
 
 const enUnit = (row) => englishUnit(row.unit_en, row.unit, row.factor ?? 100);
 
@@ -35,28 +37,6 @@ const GOAL_TO_WORKOUT = { loss: "fat_loss", gain: "muscle_gain", maintain: "gene
 
 export function WorkoutBlock({ workout, allDays = false }) {
   return <WorkoutView workout={workout} allDays={allDays} />;
-}
-
-function Grocery({ rows }) {
-  const { t, lang, num } = useI18n();
-  const ar = lang === "ar";
-  return (
-    <table className="w-full table-fixed text-sm">
-      <colgroup><col style={{ width: "50%" }} /><col style={{ width: "25%" }} /><col style={{ width: "25%" }} /></colgroup>
-      <thead><tr className="border-b border-line bg-[#fafbfa] text-xs text-muted">
-        <th className="px-3 py-2 text-start font-semibold">{t("colFood")}</th><th className="px-3 py-2 text-start font-semibold">{t("perDayShort")}</th><th className="px-3 py-2 text-start font-semibold">{t("perWeekShort")}</th>
-      </tr></thead>
-      <tbody>
-        {rows.map((g) => (
-          <tr key={g.food_en} className="border-b border-[#f0f2f0]">
-            <td className="px-3 py-2">☐ {ar ? g.food : g.food_en}</td>
-            <td className="num px-3 py-2 text-muted">{num(niceAmount(g.per_day, g.factor), 1)} {ar ? g.unit : enUnit(g)}</td>
-            <td className="num px-3 py-2 font-semibold">{num(niceAmount(g.per_week, g.factor), 1)} {ar ? g.unit : enUnit(g)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
 }
 
 // The day plan exactly as the client receives it.
@@ -357,9 +337,8 @@ export default function PlanSheet() {
       )}
 
       {tab === "shop" && (
-        <div className="card overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-4"><ShoppingCart className="h-5 w-5 text-brand" /><h3 className="font-bold">{t("groceryList")}</h3></div>
-          <Grocery rows={data.grocery} />
+        <div className="card p-5">
+          <SmartGrocery rows={data.grocery} rows2={data.grocery2} onShare={(text) => openWhatsApp(data.client.phone, text)} />
         </div>
       )}
 
@@ -404,7 +383,7 @@ export default function PlanSheet() {
             <>
               <div className="html2pdf__page-break" />
               <h2 className="mb-3 flex items-center gap-2 text-lg font-bold"><ShoppingCart className="h-5 w-5 text-brand" />{t("groceryList")}</h2>
-              <Grocery rows={data.grocery} />
+              <SmartGrocery rows={data.grocery} printMode />
             </>
           )}
           {data.workout && (<><div className="html2pdf__page-break" /><WorkoutBlock workout={data.workout} allDays /></>)}

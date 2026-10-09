@@ -24,7 +24,7 @@ from .serializers import (
 )
 from .services import (
     calculate_targets, clean_meal_slots, client_qs, common_foods, describe_week, ensure_tags, follow_up_due,
-    grocery_list, plan_qs, progress_change, safety_flags, split_plan, sync_never_foods, team_user_ids, weekly_plan,
+    plan_qs, progress_change, safety_flags, smart_grocery, split_plan, sync_never_foods, team_user_ids, weekly_plan,
 )
 
 # Questions a client may answer through the public link. Admin fields are not included.
@@ -294,12 +294,13 @@ class PlanSheetView(APIView):
             'plan': {'id': plan.id, 'name': plan.name, 'created_at': plan.created_at, 'notes': plan.notes,
                      'kcal': round(plan.total_protein * 4 + plan.total_carb * 4 + plan.total_fat * 9),
                      'protein': round(plan.total_protein), 'carb': round(plan.total_carb), 'fat': round(plan.total_fat)},
-            'client': {'id': plan.client.id, 'name': plan.client.name, 'goal': plan.client.goal},
+            'client': {'id': plan.client.id, 'name': plan.client.name, 'goal': plan.client.goal, 'phone': plan.client.phone},
             'meals': split,
             'meal_slots': plan.meal_slots or [],
             'weekly': describe_week(plan.weekly),
             'unassigned': unassigned,
-            'grocery': grocery_list(plan),
+            'grocery': smart_grocery(plan),
+            'grocery2': smart_grocery(plan, weeks=2),
             'workout': WorkoutTemplateSerializer(plan.workout).data if plan.workout else None,
             'branding': {'clinic_name': account['clinic_name'], 'logo_url': account['logo_url']},
         })

@@ -6,6 +6,7 @@ import { useI18n } from "../i18n";
 import { Spinner } from "../ui";
 import { LanguageSwitch } from "./AppLayout";
 import { WorkoutBlock } from "./PlanSheet";
+import SmartGrocery from "./SmartGrocery";
 import { englishUnit, niceAmount } from "./foodUtils";
 import { dayLabel, fromIso, isoDay } from "./schedule";
 
@@ -205,19 +206,8 @@ export default function ClientApp() {
         )}
 
         {tab === "shop" && plan && (
-          <div className="card px-4 py-2">
-            <div className="py-2 text-xs text-muted">{t("shoppingWeek")}</div>
-            {plan.grocery.map((g) => {
-              const key = g.food_en;
-              return (
-                <button key={key} type="button" onClick={() => toggleShop(key)} className="flex w-full items-center gap-3 border-t border-line py-2.5 text-start text-sm">
-                  <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 ${shop[key] ? "border-brand bg-brand text-white" : "border-[#c4ccc8]"}`}>{shop[key] && <Check className="h-3 w-3" />}</span>
-                  <span className={`flex-1 ${shop[key] ? "text-muted line-through" : ""}`}>{ar ? g.food : g.food_en}</span>
-                  <span className="num text-muted">{niceAmount(g.per_week, g.factor)} {ar ? g.unit : englishUnit(g.unit_en, g.unit, g.factor ?? 100)}</span>
-                </button>
-              );
-            })}
-          </div>
+          <SmartGrocery rows={plan.grocery} rows2={plan.grocery2} ticks={shop} onTick={toggleShop} compact
+            onShare={(text) => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener")} />
         )}
 
         {tab === "workout" && (

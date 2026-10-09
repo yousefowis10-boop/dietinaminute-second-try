@@ -20,7 +20,7 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
   client file refreshes when you come back to the window. (Check-in was saved — it showed only in Today + Progress tab.)
 - Picture r11 waiting for OK: simpler plan builder (same 3 columns), client file split into pages, clear workout table.
   Yousef on r11 builder: KEEP the +/− buttons. Not sure the side-by-side (horizontal) 3 columns is better — he will test
-  before deciding. Client file pages: no answer yet.
+  before deciding. Client file: Yousef says it's fine as it is — do NOT split it into pages.
 - DONE 9 Oct: meal names on 'Split into meals' fold into one line (Edit names & times); workout shown as instructions box
   + day buttons + table (sets / reps / rest / how to) everywhere (sheet, PDF all days, phone page, Workouts page).
   Yousef: 'over all looks okay'.
@@ -28,7 +28,7 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
 ## Approved — build next (in this order unless Yousef changes it)
 1. ✅ DONE 9 Oct · **Interview exercise questions** → works out? where + own level / if not: gym? level / if not: home? level / else walking goal. Mockup r10.
 2. ✅ DONE 9 Oct · **Workout suggestion after the diet plan** → 3 best matches by goal + level + place (from #1), one-tap add. Mockup r8.
-3. (picture r12 sent, waiting OK) **Smart grocery list** → grouped by store section (vegetables, fruit, meat & fish, dairy & eggs, bread & grains, oils & nuts, other), amounts for the week, tick off, share on WhatsApp. (Picture first.)
+3. ✅ DONE 9 Oct (Yousef: works, make it look nicer — done) · **Smart grocery list** → grouped by store section (vegetables, fruit, meat & fish, dairy & eggs, bread & grains, oils & nuts, other), amounts for the week, tick off, share on WhatsApp. (Picture first.)
 4. (picture r12 sent, waiting OK) **Vitamins & minerals in plans** → iron, calcium, vitamin D, B12, folate, magnesium, zinc, potassium, fibre, sodium per plan vs daily needs (age/sex); USDA values for foods. (Picture first.)
 5. **Blood tests** → upload photo/PDF, AI reads results, record with trends, food advice per low/high result, "refer to doctor" for extreme values, share with client. Mockup r9. Links to #4.
 
