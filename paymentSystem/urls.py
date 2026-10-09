@@ -20,6 +20,7 @@ from authapp.admin import custom_admin_site
 from django.conf import settings
 from django.conf.urls.static import static
 from nutrition.views_v2 import PublicInterviewView, PublicCheckInView
+from nutrition.views_v3 import PublicBookingSlotsView, PublicBookingView, PublicClientAppView
 
 
 urlpatterns = [
@@ -30,6 +31,9 @@ urlpatterns = [
     # Public: the client's interview link (no login, protected by a long random token).
     path("api/public/interview/<uuid:token>/", PublicInterviewView.as_view()),
     path("api/public/checkin/<uuid:token>/", PublicCheckInView.as_view()),
+    path("api/public/app/<uuid:token>/", PublicClientAppView.as_view()),
+    path("api/public/book/<slug:slug>/", PublicBookingView.as_view()),
+    path("api/public/book/<slug:slug>/slots/", PublicBookingSlotsView.as_view()),
 ]
 
 if settings.DEBUG:

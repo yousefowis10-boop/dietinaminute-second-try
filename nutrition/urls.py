@@ -19,6 +19,7 @@ from .views import ClientProfileView, \
     ClientProfileRevisionsListView
 
 from . import views_v2 as v2
+from . import views_v3 as v3
 
 urlpatterns = [
     # --- upgrade ---
@@ -52,6 +53,18 @@ urlpatterns = [
     path('ai/clients/<int:client_id>/draft-plan/', v2.AIDraftPlanView.as_view()),
     path('ai/clients/<int:client_id>/follow-up/', v2.AIFollowUpView.as_view()),
     path('ai/plans/<int:plan_id>/client-message/', v2.AIClientMessageView.as_view()),
+    path('today/', v3.TodayView.as_view()),
+    path('calendars/', v3.CalendarListView.as_view()),
+    path('calendars/<int:calendar_id>/', v3.CalendarDetailView.as_view()),
+    path('calendars/<int:calendar_id>/types/', v3.AppointmentTypeListView.as_view()),
+    path('calendars/<int:calendar_id>/free-slots/', v3.FreeSlotsView.as_view()),
+    path('appointment-types/<int:type_id>/', v3.AppointmentTypeDetailView.as_view()),
+    path('appointments/', v3.AppointmentListView.as_view()),
+    path('appointments/<int:appointment_id>/', v3.AppointmentDetailView.as_view()),
+    path('appointments/<int:appointment_id>/reminder/', v3.AppointmentReminderView.as_view()),
+    path('clients/<int:client_id>/packages/', v3.PackageListView.as_view()),
+    path('packages/<int:package_id>/', v3.PackageDetailView.as_view()),
+    path('clients/<int:client_id>/app/', v3.ClientAppLinkView.as_view()),
     # --- existing ---
     path('profile/', UserProfileView.as_view(), name='user-profile'),
 

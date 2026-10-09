@@ -121,6 +121,8 @@ class ClientProfile(models.Model):
     age = models.PositiveIntegerField()
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     goal = models.CharField(max_length=10, choices=GOAL_CHOICES, blank=True, default='')
+    # Mobile number for WhatsApp messages (any format; digits are taken when sending).
+    phone = models.CharField(max_length=30, blank=True, default='')
     work_style = models.CharField(max_length=20, choices=WORK_STYLE_CHOICES)
 
     # Computed fields
@@ -601,3 +603,126 @@ class AIResult(models.Model):
     kind = models.CharField(max_length=20, choices=KINDS)
     content = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+# ------------------------------------------------------------ appointments ---
+
+def default_hours():
+    """Working hours per weekday (0 = Monday ... 6 = Sunday), clinic local time."""
+    day = {'on': True, 'start': '10:00', 'end': '17:00'}
+    return {str(d): dict(day, on=d != 4) for d in range(7)}  # Friday off
+
+
+class Calendar(models.Model):
+    """A named calendar, usually one per dietitian. Everyone in the same clinic sees all its calendars."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='calendars')
+    name = models.CharField(max_length=100)
+    color = models.CharField(max_length=20, default='#1f6f5c')
+    # Public booking link: /book/<slug>
+    slug = models.SlugField(max_length=60, unique=True)
+    timezone = models.CharField(max_length=50, default='Asia/Amman')
+    hours = models.JSONField(default=default_hours)
+    break_start = models.CharField(max_length=5, blank=True, default='13:00')
+    break_end = models.CharField(max_length=5, blank=True, default='14:00')
+    slot_minutes = models.PositiveIntegerField(default=30)
+    currency = models.CharField(max_length=10, default='JOD')
+    pay_online = models.BooleanField(default=False)
+    pay_at_clinic = models.BooleanField(default=True)
+    booking_open = models.BooleanField(default=True)
+    reminders = models.BooleanField(default=True)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class AppointmentType(models.Model):
+    calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE, related_name='types')
+    name = models.CharField(max_length=100)
+    name_ar = models.CharField(max_length=100, blank=True, default='')
+    minutes = models.PositiveIntegerField(default=30)
+    price = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+    color = models.CharField(max_length=20, default='#2f5fb3')
+    online = models.BooleanField(default=False, help_text='Video call instead of a clinic visit')
+    order = models.PositiveIntegerField(default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.name
+
+
+class ClientPackage(models.Model):
+    """A bundle of visits the client paid for, e.g. 'Monthly - 4 visits'."""
+    client = models.ForeignKey(ClientProfile, on_delete=models.CASCADE, related_name='packages')
+    name = models.CharField(max_length=100)
+    visits = models.PositiveIntegerField(default=4)
+    start = models.DateField()
+    end = models.DateField(null=True, blank=True)
+    price = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+    paid_amount = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.client.name} - {self.name}'
+
+
+class Appointment(models.Model):
+    STATUS = [('booked', 'Booked'), ('attended', 'Attended'), ('no_show', 'No-show'), ('cancelled', 'Cancelled')]
+    PAY_METHODS = [('', 'Not set'), ('clinic', 'Pay at clinic'), ('online', 'Online')]
+    PAID_VIA = [('', ''), ('cash', 'Cash'), ('card', 'Card'), ('transfer', 'Transfer'), ('online', 'Online'),
+                ('package', 'Package')]
+
+    calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE, related_name='appointments')
+    type = models.ForeignKey(AppointmentType, null=True, blank=True, on_delete=models.SET_NULL, related_name='appointments')
+    client = models.ForeignKey(ClientProfile, null=True, blank=True, on_delete=models.SET_NULL, related_name='appointments')
+    # For people who booked by link and are not clients yet.
+    guest_name = models.CharField(max_length=100, blank=True, default='')
+    guest_phone = models.CharField(max_length=30, blank=True, default='')
+    # Clinic local date and time (no time zone maths needed).
+    date = models.DateField()
+    time = models.TimeField()
+    minutes = models.PositiveIntegerField(default=30)
+    status = models.CharField(max_length=10, choices=STATUS, default='booked')
+    source = models.CharField(max_length=20, default='dietitian')  # dietitian / booking_link
+    price = models.DecimalField(max_digits=9, decimal_places=2, default=0)
+    pay_method = models.CharField(max_length=10, choices=PAY_METHODS, blank=True, default='')
+    paid = models.BooleanField(default=False)
+    paid_via = models.CharField(max_length=10, choices=PAID_VIA, blank=True, default='')
+    package = models.ForeignKey(ClientPackage, null=True, blank=True, on_delete=models.SET_NULL, related_name='appointments')
+    notes = models.TextField(blank=True, default='')
+    reminder_sent_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['date', 'time']
+
+    @property
+    def display_name(self):
+        return self.client.name if self.client_id else self.guest_name
+
+    @property
+    def phone(self):
+        return (self.client.phone if self.client_id else '') or self.guest_phone
+
+    def __str__(self):
+        return f'{self.display_name} {self.date} {self.time}'
+
+
+# ------------------------------------------------------------- client app ---
+
+class DayLog(models.Model):
+    """What the client ticked in their phone page for one day."""
+    client = models.ForeignKey(ClientProfile, on_delete=models.CASCADE, related_name='day_logs')
+    date = models.DateField()
+    # {"<meal key>": 1 (ate it) or 0.5 (ate half)}
+    meals = models.JSONField(default=dict, blank=True)
+    water = models.PositiveIntegerField(default=0, help_text='Glasses of 250 ml')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('client', 'date')]
+        ordering = ['-date']
