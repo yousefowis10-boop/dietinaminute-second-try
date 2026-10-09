@@ -46,5 +46,9 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
 3. Old foods: DONE on test (Yousef approved). `fix_old_foods` corrects 27 generic foods to USDA SR28 (total carbs), brands untouched;
    runs in seed_demo + seed_library. At go-live run it ONCE on the live DB, after the backup.
 4. Hummus: stays in Fats (Yousef). Already found from every food search (plan columns, interview pickers, foods page).
-5. Before go-live: database BACKUP of live DB (required), AI key, prices (Basic/Pro), switch-over plan,
+5. Workout suggestion after the diet plan: Yousef wants it. Mockup docs/mockups/r8-workout-suggestion.html.
+   DO NOT CODE until Yousef says his review of the test site is finished.
+   Also offered (no answer yet): per-client "Send booking link" (prefilled name, optional chosen times).
+   Stripe: Yousef has an account; connect online payment later.
+6. Before go-live: database BACKUP of live DB (required), AI key, prices (Basic/Pro), switch-over plan,
    recommendations after check-ins and nicer sheet design are deferred.

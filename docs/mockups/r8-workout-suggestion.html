@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workout suggestion mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --brand:#1f6f5c; --brand-soft:#e5f1ed; --ink:#16211d; --muted:#6b7570; --line:#e3e7e5; --page:#f4f5f3; --ok:#2f9e6e; --ok-soft:#e4f5ec; --navy:#13213a; --gold:#d4a62a; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#dfe3e1; font-family:Inter, system-ui, sans-serif; color:var(--ink); }
+  .cap { font:600 15px Inter; color:#4b5551; margin:28px auto 10px; max-width:1200px; padding:0 16px; }
+  .frame { max-width:1200px; margin:0 auto 30px; background:var(--page); border-radius:14px; padding:24px 28px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+  .ar { font-family:Tajawal, sans-serif; }
+  .crumb { color:var(--muted); font-size:13px; } h1 { margin:4px 0 14px; font-size:24px; }
+  .tabs { display:flex; gap:6px; border-bottom:1px solid var(--line); margin-bottom:16px; }
+  .tabs span { padding:9px 14px; font-size:14px; color:var(--muted); } .tabs span.on { color:var(--brand); font-weight:600; border-bottom:2px solid var(--brand); }
+  .card { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px 20px; }
+  .done { display:flex; align-items:center; gap:10px; background:var(--ok-soft); color:#1d7a46; border-radius:12px; padding:10px 14px; font-size:14px; font-weight:600; margin-bottom:14px; }
+  .head { display:flex; align-items:center; gap:10px; margin-bottom:4px; } .head h3 { margin:0; font-size:16px; flex:1; }
+  .muted { color:var(--muted); font-size:13px; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 14px; }
+  .chip { border:1px solid var(--line); border-radius:999px; padding:4px 11px; font-size:12px; background:#fff; } .chip b { color:var(--brand); }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .w { border:1px solid var(--line); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+  .w.best { border:2px solid var(--brand); }
+  .top { background:var(--navy); color:#fff; padding:12px 14px; }
+  .top small { color:var(--gold); font-size:10.5px; letter-spacing:.12em; font-weight:700; } .top b { display:block; font-size:16px; margin-top:3px; }
+  .body { padding:12px 14px; font-size:13px; flex:1; }
+  .why { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px; } .why span { background:var(--brand-soft); color:var(--brand); border-radius:999px; padding:2px 8px; font-size:11px; font-weight:600; }
+  .row { display:flex; justify-content:space-between; padding:3px 0; color:#4b5551; }
+  .btns { display:flex; gap:6px; padding:0 14px 14px; }
+  .btn { flex:1; text-align:center; border-radius:10px; padding:8px; font-size:13px; font-weight:600; border:1px solid var(--line); background:#fff; }
+  .btn.p { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .foot { display:flex; gap:10px; align-items:center; margin-top:14px; font-size:13px; }
+  .link { color:var(--brand); font-weight:600; }
+  .notes { max-width:1200px; margin:0 auto 40px; padding:0 16px; }
+  .notes .card { font-size:14px; line-height:1.7; } .notes ul { margin:6px 0; padding-inline-start:20px; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div class="cap">Client sheet → Workout tab, right after the diet plan is finished (English)</div>
+<div class="frame">
+  <div class="crumb">Clients › Ahmad Khalil › Plan</div>
+  <h1>Ahmad – weight loss</h1>
+  <div class="tabs"><span>Day plan</span><span>Weekly plan</span><span>Shopping list</span><span class="on">Workout</span></div>
+  <div class="done">✓ Diet plan saved. Add a workout to finish the client's sheet.</div>
+  <div class="card">
+    <div class="head"><h3>Suggested workouts for Ahmad</h3><span class="muted">from Yousef Owis Academy</span></div>
+    <div class="muted">Picked from the client's goal and interview answers. You can change any of these before adding.</div>
+    <div class="chips">
+      <span class="chip">Goal: <b>Fat loss</b></span>
+      <span class="chip">Level: <b>Beginner</b> <span class="muted">(trains 2× a week)</span></span>
+      <span class="chip">Place: <b>Gym</b></span>
+      <span class="chip" style="border-style:dashed">Change ▾</span>
+    </div>
+    <div class="grid">
+      <div class="w best">
+        <div class="top"><small>BEST MATCH · WL-BEG-01</small><b>Beginner Fat Burning Gym – Program 1</b></div>
+        <div class="body">
+          <div class="why"><span>Fat loss</span><span>Beginner</span><span>Gym</span></div>
+          <div class="row"><span>Training days</span><b>4 / week</b></div>
+          <div class="row"><span>Format</span><b>Giant sets + cardio</b></div>
+          <div class="row"><span>Sets × reps</span><b>3 × 15</b></div>
+        </div>
+        <div class="btns"><span class="btn">Preview</span><span class="btn p">Add to plan</span></div>
+      </div>
+      <div class="w">
+        <div class="top"><small>WL-BEG-02</small><b>Beginner Fat Burning Gym – Program 2</b></div>
+        <div class="body">
+          <div class="why"><span>Fat loss</span><span>Beginner</span><span>Gym</span></div>
+          <div class="row"><span>Training days</span><b>4 / week</b></div>
+          <div class="row"><span>Format</span><b>Giant sets + cardio</b></div>
+          <div class="row"><span>Sets × reps</span><b>3 × 15</b></div>
+        </div>
+        <div class="btns"><span class="btn">Preview</span><span class="btn p">Add to plan</span></div>
+      </div>
+      <div class="w">
+        <div class="top"><small>AH-FB-01</small><b>At Home Fat Burning – Phase 1</b></div>
+        <div class="body">
+          <div class="why"><span>Fat loss</span><span>Beginner</span><span style="background:#fbf1df;color:#b9770e">Home</span></div>
+          <div class="row"><span>Sessions</span><b>4 / week</b></div>
+          <div class="row"><span>Format</span><b>Full-body circuits</b></div>
+          <div class="row"><span>Equipment</span><b>Dumbbells</b></div>
+        </div>
+        <div class="btns"><span class="btn">Preview</span><span class="btn p">Add to plan</span></div>
+      </div>
+    </div>
+    <div class="foot"><span class="link">See all 49 fat-loss workouts</span><span class="muted">·</span><span class="link">No workout for this client</span></div>
+  </div>
+</div>
+
+<div class="cap">Same card in Arabic</div>
+<div class="frame ar" dir="rtl">
+  <div class="done">✓ تم حفظ خطة الأكل. أضف برنامج تمارين لإكمال ملف العميل.</div>
+  <div class="card">
+    <div class="head"><h3>برامج تمارين مقترحة لأحمد</h3><span class="muted">من أكاديمية يوسف عويس</span></div>
+    <div class="chips">
+      <span class="chip">الهدف: <b>حرق الدهون</b></span>
+      <span class="chip">المستوى: <b>مبتدئ</b></span>
+      <span class="chip">المكان: <b>الجيم</b></span>
+      <span class="chip" style="border-style:dashed">تغيير ▾</span>
+    </div>
+    <div class="grid">
+      <div class="w best">
+        <div class="top"><small>الأنسب · WL-BEG-01</small><b>حرق الدهون في الجيم – مبتدئ – البرنامج 1</b></div>
+        <div class="body"><div class="row"><span>أيام التمرين</span><b>4 بالأسبوع</b></div><div class="row"><span>النظام</span><b>جاينت سِت + كارديو</b></div></div>
+        <div class="btns"><span class="btn">عرض</span><span class="btn p">أضف للخطة</span></div>
+      </div>
+      <div class="w">
+        <div class="top"><small>WL-BEG-02</small><b>حرق الدهون في الجيم – مبتدئ – البرنامج 2</b></div>
+        <div class="body"><div class="row"><span>أيام التمرين</span><b>4 بالأسبوع</b></div><div class="row"><span>النظام</span><b>جاينت سِت + كارديو</b></div></div>
+        <div class="btns"><span class="btn">عرض</span><span class="btn p">أضف للخطة</span></div>
+      </div>
+      <div class="w">
+        <div class="top"><small>AH-FB-01</small><b>حرق الدهون في البيت – المرحلة 1</b></div>
+        <div class="body"><div class="row"><span>الجلسات</span><b>4 بالأسبوع</b></div><div class="row"><span>المعدات</span><b>دمبل</b></div></div>
+        <div class="btns"><span class="btn">عرض</span><span class="btn p">أضف للخطة</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notes"><div class="card">
+  <b>How the 3 are picked</b>
+  <ul>
+    <li><b>Goal</b> from the client file: weight loss → fat-loss programs, weight gain → muscle-gain programs.</li>
+    <li><b>Level</b> from the interview: no exercise or under 2× a week → beginner, 3–4× → intermediate, 5×+ with high intensity → advanced.</li>
+    <li><b>Place</b> from the interview (types of workout mentions home / gym). If unknown: gym first, and one home option as the third card.</li>
+    <li>Programs already given to this client before are skipped, so the next plan gets the next program.</li>
+    <li>“Change ▾” lets you switch goal, level or place and the cards update at once.</li>
+  </ul>
+</div></div>
+</body>
+</html>
