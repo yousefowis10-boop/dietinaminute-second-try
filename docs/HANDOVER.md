@@ -28,6 +28,12 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
 - Collapsible sidebar. 103 USDA (SR28) foods added (nutrition/usda_foods.csv, Arabic names, servings).
 - Approved mockups: docs/mockups/. Deferred: docs/LATER.md.
 
+## Built 9 Oct (evening)
+- Blood tests tab (upload/AI read/type by hand, advice, refer-to-doctor, share), Full history tab (body + blood),
+  vitamins & minerals (nutrition/bloodwork.py, views_v4.py, food_micros.json from USDA SR Legacy), smart grocery list,
+  interview exercise questions + workout suggestions, clearer workout view, folding meal names.
+  At go-live: run add_food_micros on the live DB (seed_library does it).
+
 ## Waiting on Yousef / next steps (full list of his decisions: docs/DECISIONS.md)
 1. Workouts: DONE on test. 133 Yousef Owis Academy programs (EN+AR, tips, targets, cardio) read from his PDFs
    (~/Downloads/programs) into nutrition/academy_workouts.json; `add_academy_workouts` runs in seed_library.

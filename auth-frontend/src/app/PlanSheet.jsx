@@ -12,6 +12,7 @@ import { englishUnit, niceAmount } from "./foodUtils";
 import WorkoutSuggestions from "./WorkoutSuggestions";
 import WorkoutView from "./WorkoutView";
 import SmartGrocery from "./SmartGrocery";
+import MicrosPanel from "./MicrosPanel";
 import { openWhatsApp } from "./schedule";
 
 const enUnit = (row) => englishUnit(row.unit_en, row.unit, row.factor ?? 100);
@@ -34,6 +35,15 @@ function useSlots(data, t) {
 
 // Client goal -> workout goal, so matching workouts are listed first.
 const GOAL_TO_WORKOUT = { loss: "fat_loss", gain: "muscle_gain", maintain: "general_health" };
+
+function PlanMicros({ planId }) {
+  const { t } = useI18n();
+  const [d, setD] = useState(null);
+  useEffect(() => { API.get(`/nutrition/plan/${planId}/micros/`).then((r) => setD(r.data)).catch(() => setD({ error: true })); }, [planId]);
+  if (!d) return <Spinner label={t("loading")} />;
+  if (d.error) return null;
+  return <MicrosPanel rows={d.rows} missing={d.missing.length} bloodLow={d.blood_low} />;
+}
 
 export function WorkoutBlock({ workout, allDays = false }) {
   return <WorkoutView workout={workout} allDays={allDays} />;
@@ -257,7 +267,7 @@ export default function PlanSheet() {
   };
   const lo = week ? Math.min(...week.days.map((d) => d.kcal)) : 0;
   const hi = week ? Math.max(...week.days.map((d) => d.kcal)) : 0;
-  const tabs = [["day", t("tabDayPlan")], ["week", t("tabWeekly")], ["shop", t("tabShopping")], ["workout", t("tabWorkout")]];
+  const tabs = [["day", t("tabDayPlan")], ["week", t("tabWeekly")], ["shop", t("tabShopping")], ["workout", t("tabWorkout")], ["micros", t("tabMicros")]];
 
   return (
     <>
@@ -342,6 +352,7 @@ export default function PlanSheet() {
         </div>
       )}
 
+      {tab === "micros" && <PlanMicros planId={planId} />}
       {tab !== "workout" && !data.workout && (
         <button type="button" onClick={() => setTab("workout")} className="mb-4 flex w-full items-center gap-2 rounded-xl border border-brand/20 bg-brand-soft px-4 py-3 text-start text-sm font-semibold text-brand">
           <Dumbbell className="h-4 w-4" />{t("noWorkoutYet")}<span className="ms-auto">→</span>

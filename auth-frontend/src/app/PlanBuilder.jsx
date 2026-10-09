@@ -6,6 +6,7 @@ import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { CalorieRing, DraftBadge, Empty, Modal, SafetyFlags, Spinner, apiError, targetStatus } from "../ui";
 import { useAIBlocker } from "./client/AIPanel";
+import MicrosPanel, { microRows } from "./MicrosPanel";
 import { amountOf, kcalOf, niceAmount, roundHalf, totalsOf, tplDesc, tplName, unitLabel } from "./foodUtils";
 
 const COLS = ["carb", "protein", "fat"];
@@ -157,6 +158,12 @@ export default function PlanBuilder() {
   const [busy, setBusy] = useState("");
   const [loading, setLoading] = useState(true);
   const [editAmount, setEditAmount] = useState(null); // {food_id, meal}
+
+  // Daily vitamin & mineral needs for this client (and which ones their blood test shows low).
+  const [microInfo, setMicroInfo] = useState(null);
+  useEffect(() => {
+    API.get(`/nutrition/clients/${clientId}/micro-needs/`).then((r) => setMicroInfo(r.data)).catch(() => {});
+  }, [clientId]);
 
   // ---------------------------------------------------------------- load
   useEffect(() => {
@@ -458,6 +465,12 @@ export default function PlanBuilder() {
               );
             })}
           </div>
+          {microInfo && (
+            <div className="mt-4">
+              <MicrosPanel collapsible {...microRows(items, foods, microInfo.needs, microInfo.nutrients, excludedIds)} bloodLow={microInfo.blood_low}
+                onAdd={(f) => setItems((list) => (list.some((i) => i.food_id === f.id) ? list.map((i) => (i.food_id === f.id && !(i.quantity > 0) ? { ...i, quantity: 1 } : i)) : [...list, foodToItem(f, { quantity: 1 })]))} />
+            </div>
+          )}
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <p className="flex-1 text-[13px] text-muted">{t("builderHint")}</p>
             <button type="button" className="btn-primary h-11" disabled={!active.length} onClick={() => setStep(1)}>{t("nextSplit")}</button>

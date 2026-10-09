@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Link2, Pencil, Plus, Trash2, Upload, UserCheck } from "lucide-react";
+import { Droplet, Link2, Pencil, Plus, Trash2, Upload, UserCheck } from "lucide-react";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Avatar, Badge, Modal, Spinner, Tabs } from "../ui";
@@ -10,6 +10,8 @@ import OverviewTab from "./client/OverviewTab";
 import InterviewTab from "./client/InterviewTab";
 import PlansTab from "./client/PlansTab";
 import ProgressTab from "./client/ProgressTab";
+import BloodTab from "./client/BloodTab";
+import HistoryTab from "./client/HistoryTab";
 
 export default function ClientPage() {
   const { id } = useParams();
@@ -20,6 +22,7 @@ export default function ClientPage() {
   const [failed, setFailed] = useState(false);
   const [checkin, setCheckin] = useState(null); // null | "manual" | "inbody"
   const [linkOpen, setLinkOpen] = useState(false);
+  const [bloodUpload, setBloodUpload] = useState(false);
   const navigate = useNavigate();
 
   const load = useCallback(() => {
@@ -65,6 +68,7 @@ export default function ClientPage() {
           <button type="button" className="btn-secondary" onClick={() => { setCheckin("manual"); setParams({ tab: "progress" }); }}><UserCheck className="h-4 w-4" />{t("newCheckin")}</button>
           <button type="button" className="btn-secondary" onClick={() => setLinkOpen(true)}><Link2 className="h-4 w-4" />{t("checkinLink")}</button>
           <button type="button" className="btn-secondary" onClick={() => { setCheckin("inbody"); setParams({ tab: "progress" }); }}><Upload className="h-4 w-4" />{t("uploadInbody")}</button>
+          <button type="button" className="btn-secondary" onClick={() => { setBloodUpload(true); setParams({ tab: "blood" }); }}><Droplet className="h-4 w-4" />{t("btUpload")}</button>
           <Link to={`/dashboard/clients/${c.id}/plans/new`} className="btn-primary"><Plus className="h-4 w-4" />{t("newPlan")}</Link>
         </div>
       </div>
@@ -76,12 +80,16 @@ export default function ClientPage() {
           { value: "interview", label: t("tabInterview"), badge: c.interview_status === "submitted" ? "!" : null },
           { value: "plans", label: `${t("tabPlans")} (${data.plans.length})` },
           { value: "progress", label: t("tabProgressCi"), badge: data.progress.some((p) => !p.reviewed) ? "!" : null },
+          { value: "blood", label: t("tabBlood") },
+          { value: "history", label: t("tabHistory") },
         ]}
       />
       {tab === "overview" && <OverviewTab data={data} reload={load} />}
       {tab === "interview" && <InterviewTab data={data} reload={load} />}
       {tab === "plans" && <PlansTab data={data} reload={load} />}
       {tab === "progress" && <ProgressTab data={data} reload={load} checkin={checkin} setCheckin={setCheckin} />}
+      {tab === "blood" && <BloodTab client={c} startUpload={bloodUpload} onUploadStarted={() => setBloodUpload(false)} />}
+      {tab === "history" && <HistoryTab client={c} />}
       <Modal open={linkOpen} onClose={() => setLinkOpen(false)} title={t("checkinLink")}><CheckInLinkBox client={c} /></Modal>
       {tab === "overview" && (
         <div className="mt-8 border-t border-line pt-4">

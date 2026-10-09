@@ -7,6 +7,7 @@ import { Spinner } from "../ui";
 import { LanguageSwitch } from "./AppLayout";
 import { WorkoutBlock } from "./PlanSheet";
 import SmartGrocery from "./SmartGrocery";
+import { AdviceCards } from "./client/BloodTab";
 import { englishUnit, niceAmount } from "./foodUtils";
 import { dayLabel, fromIso, isoDay } from "./schedule";
 
@@ -134,6 +135,12 @@ export default function ClientApp() {
                   {nxt.online && <div className="text-xs text-muted">{t("videoCall")}</div>}
                 </div>
               </div>
+            )}
+            {data.blood_advice?.items?.length > 0 && (
+              <details className="mb-3 rounded-xl border border-[#f6c7b1] bg-white px-4 py-3 text-sm">
+                <summary className="cursor-pointer font-bold">🩸 {t("appBloodAdvice", { date: dayLabel(fromIso(data.blood_advice.date), lang, { day: "numeric", month: "short" }) })}</summary>
+                <div className="mt-3"><AdviceCards advice={data.blood_advice.items} /></div>
+              </details>
             )}
             {meals.length > 0 && (
               <>

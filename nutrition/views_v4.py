@@ -225,7 +225,8 @@ class PlanMicrosView(APIView):
         client = plan.client
         needs = _needs(client)
         totals, missing = plan_micros(plan)
-        excluded = set(client.excluded_foods.values_list('id', flat=True))
+        # Suggest foods that are allowed and not already in the plan.
+        excluded = set(client.excluded_foods.values_list('id', flat=True)) | set(plan.items.values_list('food_id', flat=True))
         foods = list(FoodItem.objects.exclude(micros={}))
         rows = []
         for key, en, ar, unit, kind in NUTRIENTS:

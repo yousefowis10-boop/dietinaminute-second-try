@@ -29,8 +29,8 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
 1. ✅ DONE 9 Oct · **Interview exercise questions** → works out? where + own level / if not: gym? level / if not: home? level / else walking goal. Mockup r10.
 2. ✅ DONE 9 Oct · **Workout suggestion after the diet plan** → 3 best matches by goal + level + place (from #1), one-tap add. Mockup r8.
 3. ✅ DONE 9 Oct (Yousef: works, make it look nicer — done) · **Smart grocery list** → grouped by store section (vegetables, fruit, meat & fish, dairy & eggs, bread & grains, oils & nuts, other), amounts for the week, tick off, share on WhatsApp. (Picture first.)
-4. (picture r12 sent, waiting OK) **Vitamins & minerals in plans** → iron, calcium, vitamin D, B12, folate, magnesium, zinc, potassium, fibre, sodium per plan vs daily needs (age/sex); USDA values for foods. (Picture first.)
-5. **Blood tests** → upload photo/PDF, AI reads results, record with trends, food advice per low/high result, "refer to doctor" for extreme values, share with client. Mockup r9. Links to #4.
+4. ✅ DONE 9 Oct · **Vitamins & minerals in plans** (USDA SR Legacy data, 140 foods; builder panel + sheet tab) → iron, calcium, vitamin D, B12, folate, magnesium, zinc, potassium, fibre, sodium per plan vs daily needs (age/sex); USDA values for foods. (Picture first.)
+5. ✅ DONE 9 Oct · **Blood tests** + ONE full-history page of everything measured (Yousef asked) → upload photo/PDF, AI reads results, record with trends, food advice per low/high result, "refer to doctor" for extreme values, share with client. Mockup r9. Links to #4.
 
 ## Wanted — not approved for building yet
 - Per-client "Send booking link" (name prefilled, optional chosen times) — offered, no answer yet.

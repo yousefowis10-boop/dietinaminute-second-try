@@ -104,7 +104,7 @@ class DietPlanSerializer(serializers.ModelSerializer):
 class FoodItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodItem
-        fields = ['id', 'name', 'name_ar', 'unit', 'unit_ar', 'food_type', 'protein', 'carb', 'fat', 'multiplying_factor']
+        fields = ['id', 'name', 'name_ar', 'unit', 'unit_ar', 'food_type', 'protein', 'carb', 'fat', 'multiplying_factor', 'micros']
 
 
 class BMRGenderFormulaSerializer(serializers.ModelSerializer):
