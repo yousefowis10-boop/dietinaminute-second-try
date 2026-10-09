@@ -12,9 +12,19 @@ const OPT_AR = {
   "30 Min": "30 دقيقة", "45 Min": "45 دقيقة", "1 Hour": "ساعة", "2+ Hours": "ساعتان أو أكثر",
   Walking: "مشي", Jogging: "هرولة", Running: "جري", Cycling: "دراجة", "Sports (Badminton, Basketball)": "رياضات (ريشة، سلة)",
   "Gym Workout (Bodybuilding, Powerlifting, Strength Training)": "تمارين نادي (حديد، قوة)",
+  Gym: "الجيم", Home: "البيت", Outdoors: "في الخارج (مشي / جري)", "Sports club": "نادي رياضي",
+  Beginner: "مبتدئ", Intermediate: "متوسط", Advanced: "متقدم",
 };
 
 export const optionLabel = (value, lang) => (lang === "ar" ? OPT_AR[value] || value : value);
+
+// "showIf" is a yes/no question name, {question: answer, ...} (all must match) or a list of those (any one).
+export function shown(cond, answers) {
+  if (!cond) return true;
+  if (typeof cond === "string") return answers[cond] === true;
+  if (Array.isArray(cond)) return cond.some((c) => shown(c, answers));
+  return Object.entries(cond).every(([k, v]) => answers[k] === v);
+}
 
 const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => String(from + i));
 
@@ -76,6 +86,12 @@ export const INTERVIEW_STEPS = [
     key: "exercise", ar: "الرياضة", en: "Exercise",
     fields: [
       { name: "exercise", type: "boolean", ar: "هل تمارس الرياضة؟", en: "Do you exercise?" },
+      { name: "exercise_place", type: "option", options: ["Gym", "Home", "Outdoors", "Sports club"], ar: "وين بتتمرن؟", en: "Where do you train?", showIf: { exercise: true } },
+      { name: "willing_gym", type: "boolean", ar: "هل أنت مستعد تروح على الجيم؟", en: "Would you be willing to go to the gym?", showIf: { exercise: false } },
+      { name: "willing_home", type: "boolean", ar: "هل أنت مستعد تتمرن في البيت؟", en: "Would you be willing to work out at home?", showIf: { exercise: false, willing_gym: false } },
+      { name: "exercise_level", type: "option", options: ["Beginner", "Intermediate", "Advanced"], ar: "ما هو مستواك برأيك؟", en: "What level do you think you are?",
+        hint: { ar: "مبتدئ: أقل من 6 أشهر أو وقفت من سنة · متوسط: 6 أشهر – سنتين · متقدم: أكثر من سنتين", en: "Beginner: under 6 months or stopped 1+ year · Intermediate: 6 months – 2 years · Advanced: 2+ years" },
+        showIf: [{ exercise: true }, { willing_gym: true }, { willing_home: true }] },
       { name: "exercise_times_per_week", type: "option", options: range(1, 7), ar: "كم مرة في الأسبوع؟", en: "Times per week", showIf: "exercise" },
       { name: "exercise_duration", type: "option", options: ["30 Min", "45 Min", "1 Hour", "2+ Hours"], ar: "مدة التمرين", en: "Session length", showIf: "exercise" },
       { name: "workout_intensity", type: "option", options: ["Low", "Medium", "High", "Very High"], ar: "شدة التمرين", en: "Intensity", showIf: "exercise" },

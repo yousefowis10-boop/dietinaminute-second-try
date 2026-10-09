@@ -65,6 +65,7 @@ urlpatterns = [
     path('clients/<int:client_id>/packages/', v3.PackageListView.as_view()),
     path('packages/<int:package_id>/', v3.PackageDetailView.as_view()),
     path('clients/<int:client_id>/app/', v3.ClientAppLinkView.as_view()),
+    path('plan/<int:plan_id>/workout-suggestions/', v3.WorkoutSuggestionsView.as_view()),
     # --- existing ---
     path('profile/', UserProfileView.as_view(), name='user-profile'),
 

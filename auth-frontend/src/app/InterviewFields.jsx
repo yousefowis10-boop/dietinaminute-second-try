@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
 import { useI18n } from "../i18n";
-import { DRINKS, FREQS, FREQ_UNIT, optionLabel } from "./interviewConfig";
+import { DRINKS, FREQS, FREQ_UNIT, optionLabel, shown } from "./interviewConfig";
 
 const CHIP = { ok: "bg-[#d7ebe4] text-[#124a3c]", bad: "bg-bad-soft text-bad", warn: "bg-warn-soft text-warn" };
 const TYPE_ORDER = ["carb", "protein", "fat", "mixed"];
@@ -203,6 +203,6 @@ export function Question({ field, value, onChange, foods = [], blockedFoods = []
 
 export function visibleFields(step, answers, { publicOnly = false } = {}) {
   const has = (v) => v !== null && v !== undefined && v !== "";
-  return step.fields.filter((f) => (!publicOnly || f.public !== false) && (!f.showIf || answers[f.showIf] === true)
+  return step.fields.filter((f) => (!publicOnly || f.public !== false) && shown(f.showIf, answers)
     && (!f.legacy || (!publicOnly && has(answers[f.name]))));
 }

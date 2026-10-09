@@ -132,3 +132,45 @@ class ClientAppTests(TestCase):
         self.assertEqual(phone_digits('079 123 4567'), '962791234567')
         self.assertEqual(phone_digits('+962 79 123 4567'), '962791234567')
         self.assertEqual(phone_digits('00962791234567'), '962791234567')
+
+
+class WorkoutSuggestionTests(TestCase):
+    def setUp(self):
+        from django.core.management import call_command
+        call_command('add_academy_workouts', verbosity=0)
+        self.user = User.objects.create_user(username='d@x.test', password='x')
+        self.client_profile = make_client(self.user)  # goal: loss
+        self.plan = make_plan(self.client_profile)
+        self.api = APIClient()
+        self.api.force_authenticate(self.user)
+
+    def interview(self, **answers):
+        from .models import DetailedProfile
+        DetailedProfile.objects.filter(client=self.client_profile).update(**answers)
+        return self.api.get(f'/api/nutrition/plan/{self.plan.id}/workout-suggestions/').json()
+
+    def test_trains_at_gym_intermediate(self):
+        r = self.interview(exercise=True, exercise_place='Gym', exercise_level='Intermediate')
+        self.assertEqual((r['profile']['place'], r['profile']['level']), ('gym', 'intermediate'))
+        self.assertEqual(len(r['workouts']), 3)
+        self.assertEqual(r['workouts'][0]['level'], 'intermediate')
+        self.assertTrue(all(w['goal'] == 'fat_loss' for w in r['workouts']))
+        self.assertEqual(r['workouts'][2]['place'], 'home')  # one home option
+
+    def test_no_gym_but_home(self):
+        r = self.interview(exercise=False, willing_gym=False, willing_home=True, exercise_level='Beginner')
+        self.assertEqual(r['profile']['place'], 'home')
+        self.assertEqual(r['workouts'][0]['place'], 'home')
+
+    def test_does_not_want_to_train(self):
+        r = self.interview(exercise=False, willing_gym=False, willing_home=False)
+        self.assertIsNone(r['profile']['place'])
+        self.assertEqual(r['workouts'], [])
+
+    def test_change_and_skip_used(self):
+        r = self.api.get(f'/api/nutrition/plan/{self.plan.id}/workout-suggestions/', {'goal': 'muscle_gain', 'level': 'advanced'}).json()
+        self.assertEqual(r['workouts'][0]['level'], 'advanced')
+        first = r['workouts'][0]['id']
+        DietPlan.objects.filter(pk=self.plan.pk).update(workout_id=first)
+        r = self.api.get(f'/api/nutrition/plan/{self.plan.id}/workout-suggestions/', {'goal': 'muscle_gain', 'level': 'advanced'}).json()
+        self.assertNotIn(first, [w['id'] for w in r['workouts']])

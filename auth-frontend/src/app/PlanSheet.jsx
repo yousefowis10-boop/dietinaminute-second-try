@@ -9,6 +9,7 @@ import { Card, DraftBadge, Modal, Spinner, TestModeBadge, apiError } from "../ui
 import { AIUnavailableNote, useAIBlocker } from "./client/AIPanel";
 import { StepsBar, colOf } from "./PlanBuilder";
 import { englishUnit, niceAmount, timeLabel } from "./foodUtils";
+import WorkoutSuggestions from "./WorkoutSuggestions";
 
 const enUnit = (row) => englishUnit(row.unit_en, row.unit, row.factor ?? 100);
 
@@ -395,8 +396,14 @@ export default function PlanSheet() {
         </div>
       )}
 
+      {tab !== "workout" && !data.workout && (
+        <button type="button" onClick={() => setTab("workout")} className="mb-4 flex w-full items-center gap-2 rounded-xl border border-brand/20 bg-brand-soft px-4 py-3 text-start text-sm font-semibold text-brand">
+          <Dumbbell className="h-4 w-4" />{t("noWorkoutYet")}<span className="ms-auto">→</span>
+        </button>
+      )}
       {tab === "workout" && (
         <div className="space-y-4">
+          {!data.workout && <WorkoutSuggestions planId={planId} clientName={data.client.name} workouts={workouts} onAttach={attachWorkout} />}
           <Card title={t("attachWorkout")} icon={<Dumbbell className="h-4 w-4 text-brand" />}>
             <select className="input" value={data.workout?.id || ""} onChange={(e) => attachWorkout(e.target.value)}>
               <option value="">{t("noWorkout")}</option>

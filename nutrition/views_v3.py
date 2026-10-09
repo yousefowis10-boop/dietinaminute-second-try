@@ -522,3 +522,32 @@ class PublicBookingSlotsView(APIView):
                 minutes=t.minutes, price=t.price, pay_method=pay, source='booking_link')
         return Response({'ok': True, 'id': a.id, 'date': a.date.isoformat(), 'time': a.time.strftime('%H:%M'),
                          'pay': pay}, status=201)
+
+
+# ------------------------------------------------------- workout suggestions ---
+
+def _workout_card(w):
+    first = next((e for d in (w.days or []) for e in d.get('exercises', [])), None)
+    return {'id': w.id, 'name': w.name, 'name_ar': w.name_ar, 'goal': w.goal, 'level': w.level, 'place': w.place,
+            'is_draft': w.is_draft, 'training_days': len(w.days or []),
+            'sets_reps': f"{first.get('sets')} × {first.get('reps')}" if first else '',
+            'kind': next((e.get('kind') for d in (w.days or []) for e in d.get('exercises', []) if e.get('kind')), '')}
+
+
+class WorkoutSuggestionsView(APIView):
+    """The 3 workouts that best fit this plan's client (goal, level, place from the interview).
+    ?goal= &level= &place= let the dietitian change the guess."""
+
+    def get(self, request, plan_id):
+        from .scheduling import suggest_workouts, training_profile
+        from .services import plan_qs
+        plan = get_object_or_404(plan_qs(request.user).select_related('client'), id=plan_id)
+        profile = training_profile(plan.client)
+        for key in ('goal', 'level', 'place'):
+            value = request.query_params.get(key)
+            if value:
+                profile[key] = None if value == 'none' else value
+                profile['source'] = 'changed'
+        picks = [] if profile['place'] is None else suggest_workouts(
+            request.user, plan.client, profile['goal'], profile['level'], profile['place'])
+        return Response({'profile': profile, 'workouts': [_workout_card(w) for w in picks]})

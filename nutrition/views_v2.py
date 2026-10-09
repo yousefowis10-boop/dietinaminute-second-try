@@ -35,7 +35,7 @@ PUBLIC_INTERVIEW_FIELDS = {
     'lifestyle_goal', 'dietary_goal', 'fitness_goal', 'additional_concerns', 'smoke_cigarettes',
     'how_many_smoke_a_day', 'smoking_duration', 'alcohol', 'how_many_drinks_a_day', 'alcohol_duration', 'caffeine',
     'how_many_caffeine_a_day', 'caffeine_duration', 'exercise', 'exercise_duration', 'exercise_times_per_week',
-    'workout_intensity', 'types_of_workout', 'sleep_time', 'sleep_duration', 'bowel_movements_per_day',
+    'workout_intensity', 'types_of_workout', 'exercise_place', 'exercise_level', 'willing_gym', 'willing_home', 'sleep_time', 'sleep_duration', 'bowel_movements_per_day',
     'urinate_frequency', 'overall_energy_levels', 'pregnant', 'weeks_pregnant', 'due_date', 'breastfeeding',
     'women_health_comments', 'liked_foods', 'less_foods', 'never_foods', 'drinks',
 }

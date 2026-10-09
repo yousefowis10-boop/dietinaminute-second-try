@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 const STRINGS = {
   ar: {
     // appointments, client app, Today
+    suggestedWorkoutsFor: "برامج تمارين مقترحة لـ{name}", fromInterview: "حسب إجابات المقابلة", changedByYou: "حسب اختيارك", guessed: "تقدير — عدّله إذا لزم", wplace_gym: "النادي", wplace_home: "المنزل", wplace_none: "لا يريد التمرين", walkingGoal: "العميل لا يريد التمرين حاليًا. اقترح هدف مشي يومي: 30 دقيقة أو 7,000 خطوة.", noWorkoutMatch: "لا يوجد برنامج مطابق. غيّر المستوى أو المكان.", bestMatch: "الأنسب", trainingDays: "أيام التمرين", setsReps: "مجموعات × تكرارات", level: "المستوى", preview: "عرض", addToPlan: "أضف للخطة", noWorkoutYet: "لا يوجد برنامج تمارين في هذه الخطة بعد — شوف الاقتراحات",
     newCheckinsBanner: "وصلك {n} قياس جديد من العميل — افتح القياسات", waterToday: "الماء اليوم",
     today: "اليوم",
     appointments: "المواعيد",
@@ -469,6 +470,7 @@ const STRINGS = {
   },
   en: {
     // appointments, client app, Today
+    suggestedWorkoutsFor: "Suggested workouts for {name}", fromInterview: "from the interview answers", changedByYou: "your choice", guessed: "a guess — change it if needed", wplace_gym: "Gym", wplace_home: "Home", wplace_none: "Doesn't want to train", walkingGoal: "The client doesn't want to train for now. Suggest a daily walking goal: 30 minutes or 7,000 steps.", noWorkoutMatch: "No matching workout. Change the level or place.", bestMatch: "BEST MATCH", trainingDays: "Training days", setsReps: "Sets × reps", level: "Level", preview: "Preview", addToPlan: "Add to plan", noWorkoutYet: "No workout in this plan yet — see suggestions",
     newCheckinsBanner: "{n} new check-in from the client — open Progress & check-ins", waterToday: "Water today",
     today: "Today",
     appointments: "Appointments",

@@ -254,3 +254,63 @@ def parse_day(value, fallback=None):
         return date.fromisoformat(str(value)[:10])
     except (TypeError, ValueError):
         return fallback
+
+
+# ------------------------------------------------------- workout suggestions ---
+
+GOAL_TO_WORKOUT = {'loss': 'fat_loss', 'gain': 'muscle_gain', 'maintain': 'muscle_gain'}
+LEVELS = ('beginner', 'intermediate', 'advanced')
+
+
+def training_profile(client):
+    """Goal, level and place for workouts, from the client file and the interview.
+    place None = the client does not want to train (suggest walking)."""
+    from .models import DetailedProfile
+    d = DetailedProfile.objects.filter(client=client).first()
+    goal = GOAL_TO_WORKOUT.get(client.goal, 'fat_loss')
+    level, place, source = None, 'gym', 'guess'
+    if d is not None:
+        own = (d.exercise_level or '').lower() or None
+        if d.exercise is True:
+            place = 'home' if d.exercise_place == 'Home' else 'gym'
+            level, source = own, 'interview'
+        elif d.exercise is False:
+            source = 'interview'
+            if d.willing_gym is True:
+                place, level = 'gym', own or 'beginner'
+            elif d.willing_home is True:
+                place, level = 'home', own or 'beginner'
+            elif d.willing_home is False:
+                place, level = None, 'beginner'
+            else:
+                level = 'beginner'
+        if level is None:  # older interviews: guess from how often and how hard they train
+            times = int(d.exercise_times_per_week or 0) if str(d.exercise_times_per_week or '').isdigit() else 0
+            hard = d.workout_intensity in ('High', 'Very High')
+            level = 'advanced' if times >= 5 and hard else 'intermediate' if times >= 3 else 'beginner'
+            if d.exercise is not True and d.exercise is not False:
+                source = 'guess'
+    return {'goal': goal, 'level': level or 'beginner', 'place': place, 'source': source}
+
+
+def suggest_workouts(user, client, goal, level, place, count=3):
+    """Best matches first: same goal, level and place; then nearby levels; one home option for gym fat-loss clients."""
+    from .models import WorkoutTemplate
+    from django.db.models import Q
+    used = set(client.diet_plans.exclude(workout=None).values_list('workout_id', flat=True))
+    pool = list(WorkoutTemplate.objects.filter(Q(user__isnull=True) | Q(user_id__in=team_user_ids(user)))
+                .filter(goal=goal).exclude(id__in=used).order_by('id'))
+    lv = LEVELS.index(level) if level in LEVELS else 0
+
+    def rank(w):
+        same_place = (w.place == place) if place else (w.place == 'home')
+        level_gap = abs((LEVELS.index(w.level) if w.level in LEVELS else lv) - lv) if w.level != 'all_levels' else 1
+        return (0 if same_place else 1, level_gap, w.id)
+
+    ranked = sorted(pool, key=rank)
+    picks = ranked[:count]
+    if place == 'gym' and goal == 'fat_loss' and count >= 3 and all(w.place == 'gym' for w in picks):
+        home = next((w for w in ranked if w.place == 'home'), None)
+        if home:
+            picks = picks[:count - 1] + [home]
+    return picks

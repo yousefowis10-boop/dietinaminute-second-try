@@ -381,6 +381,11 @@ class DetailedProfile(models.Model):
     exercise_times_per_week = models.CharField(max_length=1, choices=[("1", "1"), ("2", "2"), ("3", "3"), ("4", "4"), ("5", "5"), ("6", "6"), ("7", "7")], null=True, blank=True)
     workout_intensity = models.CharField(max_length=10, choices=[("Low", "Low"), ("Medium", "Medium"), ("High", "High"), ("Very High", "Very High")], null=True, blank=True)
     types_of_workout = models.JSONField(default=list, null=True, blank=True)
+    # Where they train / would train and the level they think they are (feeds the workout suggestions).
+    exercise_place = models.CharField(max_length=20, choices=[("Gym", "Gym"), ("Home", "Home"), ("Outdoors", "Outdoors"), ("Sports club", "Sports club")], null=True, blank=True)
+    exercise_level = models.CharField(max_length=20, choices=[("Beginner", "Beginner"), ("Intermediate", "Intermediate"), ("Advanced", "Advanced")], null=True, blank=True)
+    willing_gym = models.BooleanField(null=True, blank=True)
+    willing_home = models.BooleanField(null=True, blank=True)
     sleep_time = models.TimeField(null=True, blank=True)
     sleep_duration = models.IntegerField(null=True, blank=True)
 
@@ -499,6 +504,11 @@ class DetailedProfileRevision(models.Model):
     exercise_times_per_week = models.CharField(max_length=1, choices=[(str(i), str(i)) for i in range(1, 8)], null=True, blank=True)
     workout_intensity = models.CharField(max_length=10, choices=[("Low", "Low"), ("Medium", "Medium"), ("High", "High"), ("Very High", "Very High")], null=True, blank=True)
     types_of_workout = models.JSONField(default=list, null=True, blank=True)
+    # Where they train / would train and the level they think they are (feeds the workout suggestions).
+    exercise_place = models.CharField(max_length=20, choices=[("Gym", "Gym"), ("Home", "Home"), ("Outdoors", "Outdoors"), ("Sports club", "Sports club")], null=True, blank=True)
+    exercise_level = models.CharField(max_length=20, choices=[("Beginner", "Beginner"), ("Intermediate", "Intermediate"), ("Advanced", "Advanced")], null=True, blank=True)
+    willing_gym = models.BooleanField(null=True, blank=True)
+    willing_home = models.BooleanField(null=True, blank=True)
     sleep_time = models.TimeField(null=True, blank=True)
     sleep_duration = models.IntegerField(null=True, blank=True)
 

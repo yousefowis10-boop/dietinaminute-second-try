@@ -21,7 +21,7 @@ INTERVIEW_FIELDS = [
     'vegetables', 'fruit', 'dairy', 'food_to_eat_more', 'food_to_eat_less', 'food_to_avoid',
     'current_supplement_intake', 'current_medications', 'medicine_history', 'surgical_history', 'lifestyle_goal',
     'dietary_goal', 'fitness_goal', 'additional_concerns', 'smoke_cigarettes', 'caffeine', 'how_many_caffeine_a_day',
-    'exercise', 'exercise_times_per_week', 'workout_intensity', 'types_of_workout', 'sleep_time', 'sleep_duration',
+    'exercise', 'exercise_times_per_week', 'workout_intensity', 'types_of_workout', 'exercise_place', 'exercise_level', 'willing_gym', 'willing_home', 'sleep_time', 'sleep_duration',
     'overall_energy_levels', 'pregnant', 'breastfeeding', 'marital_status',
 ]
 
