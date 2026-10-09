@@ -300,6 +300,7 @@ const STRINGS = {
     backToEqual: "رجوع للتقسيم بالتساوي",
     sidebarOpen: "إظهار القائمة",
     sidebarClose: "تصغير القائمة",
+    otherGroups: "من مجموعات أخرى (تُضاف لعمودها)",
   },
   en: {
     appName: "Diet in a Minute",
@@ -582,6 +583,7 @@ const STRINGS = {
     backToEqual: "Back to equal split",
     sidebarOpen: "Show menu",
     sidebarClose: "Collapse menu",
+    otherGroups: "From other groups (added to their own column)",
   },
 };
 

@@ -72,7 +72,7 @@ function Stepper({ value, onChange }) {
 }
 
 // Searchable list of foods (one column's foods only).
-function FoodPicker({ options, onPick, placeholder, dashed = true }) {
+function FoodPicker({ options, others = [], onPick, placeholder, dashed = true }) {
   const { t, foodName, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -83,7 +83,20 @@ function FoodPicker({ options, onPick, placeholder, dashed = true }) {
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
   }, [open]);
-  const list = options.filter((f) => !q || (f.name || "").toLowerCase().includes(q.toLowerCase()) || (f.name_ar || "").includes(q)).slice(0, 40);
+  const match = (f) => !q || (f.name || "").toLowerCase().includes(q.trim().toLowerCase()) || (f.name_ar || "").includes(q.trim());
+  const list = options.filter(match).slice(0, 40);
+  // While searching, also show foods from the other groups (they go to their own column).
+  const extra = q.trim() ? others.filter(match).slice(0, 20) : [];
+  const row = (f, tag) => (
+    <li key={f.id}>
+      <button type="button" className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-start text-sm hover:bg-page"
+        onClick={() => { onPick(f); setOpen(false); setQ(""); }}>
+        <span className="flex-1">{foodName(f)}</span>
+        {tag && <span className={`rounded-full px-2 py-px text-[11px] font-semibold ${HEAD[colOf(f)] || "bg-page"}`}>{tag}</span>}
+        <span className="num text-xs text-muted">{amountOf(f, 1)} {unitLabel(f, lang)}</span>
+      </button>
+    </li>
+  );
   return (
     <div className="relative" ref={ref}>
       <button type="button" onClick={() => setOpen((o) => !o)}
@@ -93,16 +106,11 @@ function FoodPicker({ options, onPick, placeholder, dashed = true }) {
       {open && (
         <div className="absolute z-30 mt-1 w-full rounded-xl border border-line bg-white p-2 shadow-xl">
           <input autoFocus className="input mb-1 h-9 text-sm" placeholder={t("searchFood")} value={q} onChange={(e) => setQ(e.target.value)} />
-          <ul className="max-h-64 overflow-y-auto">
-            {list.length ? list.map((f) => (
-              <li key={f.id}>
-                <button type="button" className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-start text-sm hover:bg-page"
-                  onClick={() => { onPick(f); setOpen(false); setQ(""); }}>
-                  <span className="flex-1">{foodName(f)}</span>
-                  <span className="num text-xs text-muted">{amountOf(f, 1)} {unitLabel(f, lang)}</span>
-                </button>
-              </li>
-            )) : <li className="px-2 py-3 text-sm text-muted">{t("noMatch")}</li>}
+          <ul className="max-h-72 overflow-y-auto">
+            {list.map((f) => row(f))}
+            {extra.length > 0 && <li className="px-2 pb-1 pt-2.5 text-[11px] font-bold text-muted">{t("otherGroups")}</li>}
+            {extra.map((f) => row(f, t(colOf(f) === "carb" ? "carbs" : colOf(f))))}
+            {!list.length && !extra.length && <li className="px-2 py-3 text-sm text-muted">{t("noMatch")}</li>}
           </ul>
         </div>
       )}
@@ -444,7 +452,7 @@ export default function PlanBuilder() {
                       ))}
                     </tbody>
                   </table>
-                  <div className="px-5 pb-4 pt-3"><FoodPicker options={options} onPick={addFood} placeholder={t(`addAnother_${col}`)} /></div>
+                  <div className="px-5 pb-4 pt-3"><FoodPicker options={options} others={foods.filter((f) => colOf(f) !== col && !used.has(f.id) && !excludedIds.has(f.id))} onPick={addFood} placeholder={t(`addAnother_${col}`)} /></div>
                 </section>
               );
             })}
