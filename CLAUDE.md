@@ -8,4 +8,5 @@
 - Do not delete Railway services without asking.
 - Never type passwords into websites; Yousef signs in himself.
 - Don't change code until Yousef agrees on the change. For new screens, show a mockup picture first.
+- His decisions and the build order live in docs/DECISIONS.md — read it and keep it updated.
 - Keep everything Arabic + English, neat and symmetrical.

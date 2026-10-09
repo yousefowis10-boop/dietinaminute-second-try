@@ -28,7 +28,7 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
 - Collapsible sidebar. 103 USDA (SR28) foods added (nutrition/usda_foods.csv, Arabic names, servings).
 - Approved mockups: docs/mockups/. Deferred: docs/LATER.md.
 
-## Waiting on Yousef / next steps
+## Waiting on Yousef / next steps (full list of his decisions: docs/DECISIONS.md)
 1. Workouts: DONE on test. 133 Yousef Owis Academy programs (EN+AR, tips, targets, cardio) read from his PDFs
    (~/Downloads/programs) into nutrition/academy_workouts.json; `add_academy_workouts` runs in seed_library.
    Added levels advanced/all_levels and goal muscle_focus. Sheet lists workouts matching the client goal first.
