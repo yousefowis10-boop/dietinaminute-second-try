@@ -53,5 +53,7 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
 6. Blood tests (Yousef asked 9 Oct): upload photo/PDF, AI reads values, record with trends, micronutrient food advice,
    share with client. Mockup docs/mockups/r9-blood-tests.html. Waiting for OK; no code before his test review.
    Ideas from Nutrium comparison offered (chat, photo food log, micronutrients in plans, recipes, invoices, video link).
-7. Before go-live: database BACKUP of live DB (required), AI key, prices (Basic/Pro), switch-over plan,
+7. Interview exercise questions (Yousef 9 Oct): works out? where + self level; if not: gym? level; if not: home? -> feeds
+   workout suggestions (r8). Mockup docs/mockups/r10-interview-exercise.html. NO CODE until Yousef says so.
+8. Before go-live: database BACKUP of live DB (required), AI key, prices (Basic/Pro), switch-over plan,
    recommendations after check-ins and nicer sheet design are deferred.
