@@ -35,8 +35,8 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
    features: client app (daily meal ticks), Today screen, packages & payments, automatic follow-ups, visit notes,
    results report. Open questions: WhatsApp reminders free (one-tap) vs automatic (paid API); online payment or not;
    multi-dietitian clinics now or later; which features are Pro. Make mockups before any code.
-3. Offer: fix wrong old foods against USDA (ground beef carb/fat swapped, almond typed carb, white rice fat 2.7,
-   salmon fat low, egg white unit) – send change list first.
-4. Hummus is in Fats (ask if he prefers Carbs).
+3. Old foods: DONE on test (Yousef approved). `fix_old_foods` corrects 27 generic foods to USDA SR28 (total carbs), brands untouched;
+   runs in seed_demo + seed_library. At go-live run it ONCE on the live DB, after the backup.
+4. Hummus: stays in Fats (Yousef). Already found from every food search (plan columns, interview pickers, foods page).
 5. Before go-live: database BACKUP of live DB (required), AI key, prices (Basic/Pro), switch-over plan,
    recommendations after check-ins and nicer sheet design are deferred.

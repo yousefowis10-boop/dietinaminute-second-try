@@ -1,45 +1,45 @@
 Name,Unit,protein,carb,fat,Unit Arabic,Name Arabic,Multiplying Factor,Food Type
 olive oil,Tea spoon,0,0,4.5,ملعقة شاي,زيت زيتون,1,fat
-youghret,100 G,3,5,3,غرام,لبن,100,fat
+Yogurt (full fat),100 G,3.5,4.7,3.3,غرام,لبن,100,fat
 butter unsalted,tea spoon,0,0,3.8,ملعقة شاي,زبدة غير مملحه,1,fat
 American Garden Peanut butter,table spoon,3.5,4,7.5,ملعقة طعام,بينت بتر,1,fat
-avocado,100 g,2,1.8,14.7,غرام,افوكادو,100,fat
+avocado,100 g,2,8.5,14.7,غرام,افوكادو,100,fat
 tuna in olive,1 can,20,0,11,علبة,تونا بالزيت,1,protein
 iso 100,one scoop,25,0,1,سكوب,ايزو 100,1,protein
-ground beef,100 G,17.9,15,0,غرام,لحمة مفرومه,100,protein
+ground beef,100 G,18.6,0,15,غرام,لحمة مفرومه,100,protein
 Grenade protein bar,1 bar,22,15,9,حبة,بروتين بار,1,protein
 steak,100 G,21,0,9,غرام,ستيك,100,protein
-salmon,100 G,18.9,0,0.9,غرام,سالمون,100,protein
+salmon,100 G,20.4,0,13.4,غرام,سالمون,100,protein
 shrimp,100 g,24.7,0,0,غرام,شريمب,100,protein
-full fat milk,100 ml,3.4,4.8,3.5,مل,حليب كامل الدسم,100,protein
-egg white 1 large,بياض بيضه,3.6,0.2,0.1,غرام,بياض بيضه,1,protein
-Chicken Breast,100 G,23.5,2.4,2.9,غرام,صدر دجاج,100,protein
-whole Egg boiled,1 Medium Egg,6.3,0.4,4.8,بيضة متوسطة,بيضة مسلوقة,1,protein
-potato,100 g,2.7,14.7,0,غرام,بطاطا مسلوقة,100,carb
-almond,30G,6.3,2.7,15,جرام,لوز,30,carb
-apple,medium,0.5,20.8,0.3,تفاحه متوسطه,تفاحه,1,carb
+full fat milk,100 ml,3.2,4.8,3.3,مل,حليب كامل الدسم,100,protein
+egg white 1 large,1 large,3.6,0.2,0.1,بياض بيضة كبيرة,بياض بيضه,1,protein
+Chicken Breast,100 G,22.5,0,2.6,غرام,صدر دجاج,100,protein
+whole Egg boiled,1 Medium Egg,5.5,0.5,4.7,بيضة متوسطة,بيضة مسلوقة,1,protein
+potato,100 g,1.7,20,0.1,غرام,بطاطا مسلوقة,100,carb
+almond,30G,6.4,6.5,15,غرام,لوز,30,fat
+apple,medium,0.5,25.1,0.3,تفاحه متوسطه,تفاحه,1,carb
 Vitargo,1 scoop,0,23,0,سكوب,فيتارجو,1,carb
-blueberries,50 G,0.4,6,0.2,غرام,توت ازرق,50,carb
-honey teaspoon,Tra spoon,0,5.8,0,ملعقة شاي,عسل,1,carb
-sweet potato,100G,1.8,25.6,0,غرام,بطاطا حلوة,100,carb
-banana,Medium Banana,1.3,23.9,0.4,متوسطة الحجم,موز ة متوسطة الحجم,1,carb
+blueberries,50 G,0.4,7.2,0.2,غرام,توت ازرق,50,carb
+honey teaspoon,tea spoon,0,5.8,0,ملعقة شاي,عسل,1,carb
+sweet potato,100G,2,20.7,0.2,غرام,بطاطا حلوة,100,carb
+banana,Medium Banana,1.3,27,0.4,متوسطة الحجم,موز ة متوسطة الحجم,1,carb
 toast bread - white,one slice,2.6,14.8,1,شريحة,خبز توست ابيض,1,carb
-white rice,100 G,2.7,27.6,2.7,غرام,رز ابيض مسلوق,100,carb
-Oats,100 G,16.9,55.7,6.9,غرام,شوفان,100,carb
-Dates,100 G,2.5,67,0.4,غرام,تمر,100,carb
+white rice,100 G,2.7,28.2,0.3,غرام,رز ابيض مسلوق,100,carb
+Oats,100 G,16.9,66.3,6.9,غرام,شوفان,100,carb
+Dates,100 G,2.5,75,0.4,غرام,تمر,100,carb
 sweet corn,100 G,2.3,17,1,غرام,ذرة معلبة,100,carb
 white cheese,100 G,18,3,23,غرام,جبنه بيضاء,100,fat
 Cheddar cheese,100 G,23.3,2.4,34,غرام,جبنة شيدر,100,fat
-Mozarella cheese,100 G,30.9,0,26.5,غرام,جبنة موزيريلا,100,protein
-Cucumber,1 medium ,2,9.4,0.3,حبة متوسطه,خيار,1,carb
-tomato,1 medium ,1.1,3.3,1.1,حبة متوسطه,بندوره,1,carb
-Watermelon,100 G,0.6,7.2,0.2,غرام,بطيخ,100,carb
+Mozzarella cheese,100 G,22.2,2.2,22.4,غرام,جبنة موزيريلا,100,protein
+Cucumber,1 medium ,1.3,7.3,0.2,حبة متوسطه,خيار,1,carb
+tomato,1 medium ,1.1,4.8,0.2,حبة متوسطه,بندوره,1,carb
+Watermelon,100 G,0.6,7.6,0.2,غرام,بطيخ,100,carb
 Green Salad,100 G,2,1.5,0.1,غرام,سلطة خضراء,100,carb
 Turkey,100 G,19.4,0.9,7.1,غرام,تيركي,100,protein
-Pasta,100 G,5.8,28.9,0.9,غرام,باستا,100,carb
-Broccli,100 G,2.8,4,0.4,غرام,بروكلي,100,carb
-onion,1 medium,1.2,8.4,0.1,غرام,بصل,100,carb
-Grapes,100 G,0.7,17.2,0.2,غرام,عنب,100,carb
+Pasta,100 G,5.8,30.9,0.9,غرام,باستا,100,carb
+Broccoli,100 G,2.8,6.6,0.4,غرام,بروكلي,100,carb
+onion,1 medium,1.2,10.3,0.1,حبة متوسطة,بصل,1,carb
+Grapes,100 G,0.7,18.1,0.2,غرام,عنب,100,carb
 "Greek yogurt, plain, Al mareaei",150 G,10.3,13,13,غرام,"لبن يوناني, بدون طعم , المراعي",100,fat
 Rice Cake,1 medium,1,7.7,0.3,حبة,رايس كيك صافي,1,carb
 Belmont ChocoBreak,1 Bar,1.2,13,6.2,حبة,شوكو بريك,1,carb
@@ -50,7 +50,7 @@ Serious Mass,1 Scoop,25,127,2.5,سكووب,سيريوس ماس,1,carb
 Nitrotech,1 Scoop,30,4,3,سكووب,نايتروتيك ,1,protein
 Mr.Chips Paprika,100 G,6.6,53.3,28,غرام,مستر شيبس بابريكا,100,carb
 Labneh Full Fat,55 G,3,4,7,غرام,لبنة المراعي كامل الدسم,55,fat
-Walnuts,30 G,4.6,2.1,19.6,غرام,جوز,30,fat
+Walnuts,30 G,4.6,4.1,19.6,غرام,جوز,30,fat
 Cashew,30 G,4.6,8.9,13.9,غرام,كاشو,30,fat
 Al reef Tortilla ,1 Loaf,3.3,26,0.7,رغيف,خبز تورتيلا الريف  ,1,carb
 Al reef Barn Bread,1 Loaf,2.8,14.4,0.8,رغيف,خبز اسملا الريف,1,carb

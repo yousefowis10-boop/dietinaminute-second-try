@@ -114,6 +114,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         call_command('add_usda_foods')
+        call_command('fix_old_foods')
         added = 0
         for spec in WORKOUTS:
             _, created = WorkoutTemplate.objects.get_or_create(

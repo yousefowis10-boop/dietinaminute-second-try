@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -78,6 +79,7 @@ class Command(BaseCommand):
         for tag in MEAL_TAGS:
             Tag.objects.get_or_create(name=tag)
 
+        call_command('fix_old_foods')  # rename old misspelled foods first, so the list below doesn't add them twice
         csv_path = Path(__file__).resolve().parents[2] / 'Foods.csv'
         with open(csv_path, newline='', encoding='utf-8') as f:
             for row in csv.DictReader(f):
