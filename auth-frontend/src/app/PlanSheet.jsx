@@ -31,13 +31,13 @@ function useSlots(data, t) {
 // Client goal -> workout goal, so matching workouts are listed first.
 const GOAL_TO_WORKOUT = { loss: "fat_loss", gain: "muscle_gain", maintain: "general_health" };
 
-function WorkoutBlock({ workout }) {
+export function WorkoutBlock({ workout }) {
   const { t, lang } = useI18n();
   const ar = lang === "ar";
   return (
     <section className="break-inside-avoid">
       <h2 className="mb-1 flex items-center gap-2 text-lg font-bold"><Dumbbell className="h-5 w-5 text-brand" />{t("workout")}: {ar ? workout.name_ar || workout.name : workout.name}</h2>
-      <p className="mb-3 text-sm text-muted">{ar ? workout.notes_ar || workout.notes : workout.notes}</p>
+      <p className="mb-3 whitespace-pre-line text-sm text-muted">{ar ? workout.notes_ar || workout.notes : workout.notes}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         {workout.days.map((day, di) => (
           <div key={di} className="break-inside-avoid rounded-xl border border-line p-3">

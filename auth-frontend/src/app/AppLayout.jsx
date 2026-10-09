@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { ClipboardList, Dumbbell, Home, LayoutGrid, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Salad, Settings, Users, X } from "lucide-react";
+import { CalendarDays, ClipboardList, Dumbbell, Home, LayoutGrid, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Salad, Settings, Users, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../i18n";
 import { Avatar } from "../ui";
@@ -111,7 +111,8 @@ export default function AppLayout() {
         )}
       </div>
       <nav className="flex-1 overflow-y-auto">
-        <NavItem slim={slim} to="/dashboard" end icon={Home} label={t("home")} />
+        <NavItem slim={slim} to="/dashboard" end icon={Home} label={t("today")} />
+        <NavItem slim={slim} to="/dashboard/appointments" icon={CalendarDays} label={t("appointments")} />
         <NavItem slim={slim} to="/dashboard/clients" icon={Users} label={t("clients")} />
         <NavItem slim={slim} to="/dashboard/interviews" icon={ClipboardList} label={t("interviews")} badge={waiting} />
         {slim ? <div className="mx-2 my-3 border-t border-line" /> : <div className="mx-3 mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-muted">{t("library")}</div>}

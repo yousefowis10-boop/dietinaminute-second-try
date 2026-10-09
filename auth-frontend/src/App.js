@@ -18,6 +18,9 @@ import Foods from "./app/Foods";
 import Settings from "./app/Settings";
 import PublicInterview from "./app/PublicInterview";
 import PublicCheckIn from "./app/PublicCheckIn";
+import PublicBooking from "./app/PublicBooking";
+import ClientApp from "./app/ClientApp";
+import Appointments from "./app/Appointments";
 
 // Old links (bookmarks, shared sheets) keep working.
 function OldPlanLink() {
@@ -39,6 +42,8 @@ export default function App() {
             {/* The client's interview link: public, no login. */}
             <Route path="/i/:token" element={<PublicInterview />} />
             <Route path="/c/:token" element={<PublicCheckIn />} />
+            <Route path="/m/:token" element={<ClientApp />} />
+            <Route path="/book/:slug" element={<PublicBooking />} />
 
             <Route element={<GuestGuard />}>
               <Route path="/login" element={<Login />} />
@@ -48,6 +53,7 @@ export default function App() {
             <Route element={<AuthGuard />}>
               <Route path="/dashboard" element={<AppLayout />}>
                 <Route index element={<Home />} />
+                <Route path="appointments" element={<Appointments />} />
                 <Route path="clients" element={<Clients />} />
                 <Route path="clients/new" element={<ClientForm />} />
                 <Route path="clients/:id" element={<ClientPage />} />

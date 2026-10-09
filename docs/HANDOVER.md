@@ -12,7 +12,8 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
 - phase0-checker (41114065-…): Bun function; fetches tools/test-copy-checker.ts from GitHub at a fixed commit SHA and runs
   ~100 API checks. To re-run: update its source with the new SHA, then read its logs ("ALL CHECKS PASSED").
 - Demo login: demo@dietinaminute.test (password = Railway variable DEMO_PASSWORD on backend-test). Yousef signs in himself.
-- No local Django; test through the deployed checker. Frontend checks: tsc-based syntax check, CRA build on Railway.
+- Local testing on Yousef's PC (outside the repo): ~/dj.sh runs manage.py on a throwaway sqlite db (pgAdmin's Python +
+  ~/dimlibs); Node 18 in ~/nodebin builds the site (CI=true react-scripts build). Also the deployed checker on Railway.
 
 ## Built and working on the test copy
 - Plan builder: Carbs / Protein / Fats columns, 3 most-used foods each, totals per column, Fit to target,
@@ -32,14 +33,16 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
    (~/Downloads/programs) into nutrition/academy_workouts.json; `add_academy_workouts` runs in seed_library.
    Added levels advanced/all_levels and goal muscle_focus. Sheet lists workouts matching the client goal first.
    (Existing design he likes: Claude design artifact "Workout Schedule Design" – navy/gold, Tajawal.)
-2. Appointment system + "daily-use" features – proposal given, NOT agreed yet. Proposal: calendar with working hours and
-   appointment types, status (attended/no-show), public booking link, reminders, link to interview/check-ins;
-   features: client app (daily meal ticks), Today screen, packages & payments, automatic follow-ups, visit notes,
-   results report. Open questions: WhatsApp reminders free (one-tap) vs automatic (paid API); online payment or not;
-   multi-dietitian clinics now or later; which features are Pro. Make mockups before any code.
-   Yousef answered (9 Oct): WhatsApp one-tap (free); BOTH online and pay-at-clinic; named calendars (one per dietitian).
-   Mockup docs/mockups/r6-appointments.html (calendar, booking link, calendar settings) – waiting for his OK.
-   Client app (phone page, meal ticks, water, adherence %) + Today screen: mockup docs/mockups/r7-client-app-today.html – waiting for his OK.
+2. Appointments + client phone app + Today screen: BUILT on test (Yousef approved mockups r6/r7, 9 Oct).
+   Backend: nutrition/scheduling.py, nutrition/views_v3.py, migration 0014, tests in nutrition/tests.py (9 pass).
+   - Named calendars per dietitian (Settings → Calendars): hours, break, visit types/prices, currency, booking link /book/<slug>.
+   - Appointments page (week grid), status, payment (cash/card/transfer/package), WhatsApp one-tap reminder (wa.me link).
+   - Client phone page /m/<token> (same token as check-in link /c/<token>): meals ticks (1 / ½), water, week plan, shopping, workout.
+   - Today screen (dashboard home): today's visits, new check-ins, adherence %, stopped logging (3 days), follow-ups (14 days,
+     nothing booked), packages ending, unpaid balances. Client file: appointments, phone page link + 14-day strip, packages.
+   - ONLINE PAYMENT not connected: needs a provider account (Stripe/Tap/HyperPay…). Set env PAYMENT_PROVIDER + build the
+     checkout; until then booking page offers pay-at-clinic only. Ask Yousef which provider.
+   - Not done yet: multi-dietitian permissions per calendar (everyone in a clinic sees all calendars), automatic reminders.
 3. Old foods: DONE on test (Yousef approved). `fix_old_foods` corrects 27 generic foods to USDA SR28 (total carbs), brands untouched;
    runs in seed_demo + seed_library. At go-live run it ONCE on the live DB, after the backup.
 4. Hummus: stays in Fats (Yousef). Already found from every food search (plan columns, interview pickers, foods page).

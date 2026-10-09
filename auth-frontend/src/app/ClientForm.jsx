@@ -53,7 +53,7 @@ export default function ClientForm() {
   const [newVisit, setNewVisit] = useState(true);
   const [manual, setManual] = useState(false);
   const [form, setForm] = useState({
-    name: "", description: "", age: "", gender: "M", weight: "", height: "", smm: "", pbf: "",
+    name: "", description: "", phone: "", age: "", gender: "M", weight: "", height: "", smm: "", pbf: "",
     work_style: "seated_moving", formula: "", adjustment: -500, carb_pct: 45, protein_pct: 30, fat_pct: 25,
   });
   const set = (key, value) => setForm((f) => ({ ...f, [key]: value }));
@@ -77,7 +77,7 @@ export default function ClientForm() {
       const auto = AUTO_SPLIT[goalFor(adj)];
       setManual(split.join() !== auto.join());
       setForm((f) => ({
-        ...f, name: c.name, description: c.description || "", age: c.age, gender: c.gender, weight: c.weight, height: c.height,
+        ...f, name: c.name, description: c.description || "", phone: c.phone || "", age: c.age, gender: c.gender, weight: c.weight, height: c.height,
         smm: c.smm ?? "", pbf: c.pbf ?? "", work_style: c.work_style, formula: c.formula_name || f.formula, adjustment: adj,
         carb_pct: split[0], protein_pct: split[1], fat_pct: split[2],
       }));
@@ -146,6 +146,9 @@ export default function ClientForm() {
             <Box label={t("clientName")}><input className="input h-12" required value={form.name} onChange={onField("name")} /></Box>
             <Box label={<>{t("descriptionLbl")} <span className="font-normal text-muted">({t("optional")})</span></>}>
               <input className="input h-12" placeholder={t("descriptionPh")} value={form.description} onChange={onField("description")} />
+            </Box>
+            <Box label={<>{t("phoneLbl")} <span className="font-normal text-muted">({t("optional")})</span></>}>
+              <input className="input h-12" type="tel" dir="ltr" placeholder="07X XXX XXXX" value={form.phone} onChange={onField("phone")} />
             </Box>
           </div>
         </Section>

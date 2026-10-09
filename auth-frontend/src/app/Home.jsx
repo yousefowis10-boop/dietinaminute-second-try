@@ -1,109 +1,169 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarClock, ClipboardList, FileText, Plus, Users } from "lucide-react";
+import { Activity, BellOff, CalendarCheck, CalendarClock, ClipboardList, Inbox, MessageCircle, Plus, Wallet } from "lucide-react";
 import API from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../i18n";
-import { Avatar, Card, Empty, PageHeader, Spinner } from "../ui";
+import { Avatar, Badge, Card, Empty, PageHeader, Spinner } from "../ui";
+import { reminderText, typeName } from "./Appointments";
+import { dayLabel, isoDay, money, openWhatsApp } from "./schedule";
 
-function Stat({ icon: Icon, label, value, tone = "brand" }) {
-  const tones = { brand: "bg-brand-soft text-brand", warn: "bg-warn-soft text-warn", ai: "bg-ai-soft text-ai" };
+function Count({ n, tone = "brand" }) {
+  const tones = { brand: "bg-brand-soft text-brand", warn: "bg-warn-soft text-warn", bad: "bg-bad-soft text-bad", ai: "bg-ai-soft text-ai" };
+  return <span className={`rounded-full px-2 text-xs font-bold ${tones[tone]}`}>{n}</span>;
+}
+
+function Row({ to, name, sub, children }) {
   return (
-    <div className="card flex items-center gap-4 p-4">
-      <span className={`grid h-11 w-11 place-items-center rounded-xl ${tones[tone]}`}><Icon className="h-5 w-5" /></span>
-      <div>
-        <div className="num text-2xl font-bold">{value}</div>
-        <div className="text-xs text-muted">{label}</div>
-      </div>
-    </div>
+    <li className="flex items-center gap-3 border-t border-line py-2.5 first:border-t-0">
+      <Avatar name={name} size={30} />
+      <Link to={to || "#"} className="min-w-0 flex-1 hover:text-brand">
+        <span className="block truncate text-sm font-medium">{name}</span>
+        {sub && <span className="block truncate text-xs text-muted">{sub}</span>}
+      </Link>
+      {children}
+    </li>
   );
 }
 
+const clientLink = (id, tab) => (id ? `/dashboard/clients/${id}${tab ? `?tab=${tab}` : ""}` : "/dashboard/appointments");
+
+// The first screen each morning: today's visits and everything that needs the dietitian.
 export default function Home() {
   const { account, user } = useAuth();
-  const { t, fmtDate } = useI18n();
+  const { t, lang, fmtDate } = useI18n();
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    API.get("/nutrition/dashboard/").then((r) => setData(r.data)).catch(() => setData({ error: true }));
+    API.get("/nutrition/today/", { params: { date: isoDay() } }).then((r) => setData(r.data)).catch(() => setData({ error: true }));
   }, []);
 
   const name = account?.first_name || user?.username?.split("@")[0] || "";
+  const pctTone = (p) => (p >= 75 ? "bg-ok" : p >= 50 ? "bg-warn" : "bg-bad");
+  const message = (row) => openWhatsApp(row.phone, t("nudgeMsg", { name: row.name.split(" ")[0] }));
+  const needs = data && !data.error
+    ? data.checkins.length + data.stopped_logging.length + data.follow_ups.length + data.packages_ending.length + data.unpaid.length
+    : 0;
+
   return (
     <>
       <PageHeader
         title={t("goodDay", { name })}
-        subtitle={t("homeSub")}
-        actions={<Link to="/dashboard/clients/new" className="btn-primary"><Plus className="h-4 w-4" />{t("newClient")}</Link>}
+        subtitle={data && !data.error ? t("todaySub", { date: dayLabel(new Date(), lang, { weekday: "long", day: "numeric", month: "long" }), n: data.appointments.length, m: needs }) : t("homeSub")}
+        actions={(
+          <>
+            <Link to="/dashboard/clients/new" className="btn-secondary"><Plus className="h-4 w-4" />{t("newClient")}</Link>
+            <Link to="/dashboard/appointments" className="btn-primary"><Plus className="h-4 w-4" />{t("newAppointment")}</Link>
+          </>
+        )}
       />
       {!data ? <Spinner label={t("loading")} /> : data.error ? <Empty>{t("error")}</Empty> : (
-        <>
-          <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Stat icon={Users} label={t("statClients")} value={data.counts.clients} />
-            <Stat icon={FileText} label={t("statPlans")} value={data.counts.plans_this_month} />
-            <Stat icon={ClipboardList} label={t("statInterviews")} value={data.counts.interviews_waiting} tone="warn" />
-            <Stat icon={CalendarClock} label={t("statFollowUps")} value={data.counts.follow_ups_due} tone="ai" />
-          </div>
-          {data.checkins_waiting?.length > 0 && (
-            <Card title={t("newCheckins")} className="mb-4">
-              <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                {data.checkins_waiting.map((c) => (
-                  <li key={c.id}>
-                    <Link to={`/dashboard/clients/${c.client_id}?tab=progress`} className="flex items-center gap-3 rounded-xl border border-line px-3 py-2.5 hover:border-brand">
-                      <Avatar name={c.name} size={30} />
-                      <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{c.name}</span><span className="text-xs text-muted">{fmtDate(c.date)}</span></span>
-                      <span className="num text-sm font-bold">{c.weight} {t("kg")}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
+            <Card title={<>{t("todaysAppointments")} <Count n={data.appointments.length} /></>} icon={<CalendarCheck className="h-4 w-4 text-brand" />}
+              actions={<Link to="/dashboard/appointments" className="text-xs font-semibold text-brand">{t("openCalendar")}</Link>}>
+              {data.appointments.length === 0 ? <p className="text-sm text-muted">{t("noAppointmentsToday")}</p> : (
+                <ul>
+                  {data.appointments.map((a) => (
+                    <li key={a.id} className="flex items-center gap-3 border-t border-line py-2.5 first:border-t-0">
+                      <span className="num w-11 text-sm font-bold">{a.time}</span>
+                      <Avatar name={a.name} size={30} />
+                      <Link to={clientLink(a.client)} className="min-w-0 flex-1 hover:text-brand">
+                        <span className="block truncate text-sm font-medium">{a.name}</span>
+                        <span className="block truncate text-xs text-muted">{typeName(a, lang)} · {a.minutes} {t("minShort")}{a.status !== "booked" ? ` · ${t(`apptStatus_${a.status}`)}` : ""}</span>
+                      </Link>
+                      {a.price > 0 && <Badge tone={a.paid ? "ok" : "warn"}>{a.paid ? t("paid") : a.pay_method === "clinic" ? t("payAtClinic") : t("unpaid")}</Badge>}
+                      {a.phone && a.status === "booked" && !a.reminder_sent_at && (
+                        <button type="button" className="btn px-2.5 py-1 text-xs bg-[#1fa855] text-white hover:opacity-90"
+                          onClick={() => { openWhatsApp(a.phone, reminderText(a, t, lang, account?.clinic_name)); API.post(`/nutrition/appointments/${a.id}/reminder/`).catch(() => {}); }}>
+                          <MessageCircle className="h-3.5 w-3.5" />{t("remind")}
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Card>
-          )}
+            <div className="space-y-4">
+              <Card title={<>{t("newCheckins")} <Count n={data.checkins.length} tone="ai" /></>} icon={<Inbox className="h-4 w-4 text-ai" />}>
+                {data.checkins.length === 0 ? <p className="text-sm text-muted">{t("nothingNew")}</p> : (
+                  <ul>
+                    {data.checkins.map((c) => (
+                      <Row key={c.id} to={clientLink(c.client_id, "progress")} name={c.name} sub={`${fmtDate(c.date)}${c.weight ? ` · ${c.weight} ${t("kg")}` : ""}`}>
+                        <Link to={clientLink(c.client_id, "progress")} className="btn-primary px-3 py-1 text-xs">{t("review")}</Link>
+                      </Row>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+              <Card title={t("weekAdherence")} icon={<Activity className="h-4 w-4 text-brand" />}>
+                {data.adherence.length === 0 ? <p className="text-sm text-muted">{t("noAdherenceYet")}</p> : (
+                  <ul className="space-y-2">
+                    {data.adherence.map((r) => (
+                      <li key={r.id} className="flex items-center gap-3 text-sm">
+                        <Link to={clientLink(r.id)} className="min-w-0 flex-1 truncate hover:text-brand">{r.name}</Link>
+                        <span className="h-2 w-28 overflow-hidden rounded-full bg-page"><span className={`block h-full rounded-full ${pctTone(r.pct)}`} style={{ width: `${Math.min(r.pct, 100)}%` }} /></span>
+                        <span className="num w-10 text-end font-bold">{r.pct}%</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
+          </div>
+
           <div className="grid gap-4 lg:grid-cols-3">
-            <Card title={t("interviewsWaiting")}>
-              {data.interviews_waiting.length ? (
-                <ul className="divide-y divide-line">
+            <Card title={<>{t("stoppedLogging")} <Count n={data.stopped_logging.length} tone="bad" /></>} icon={<BellOff className="h-4 w-4 text-bad" />}>
+              {data.stopped_logging.length === 0 ? <p className="text-sm text-muted">{t("everyoneLogging")}</p> : (
+                <ul>
+                  {data.stopped_logging.map((r) => (
+                    <Row key={r.id} to={clientLink(r.id)} name={r.name} sub={t("noTicksDays", { n: r.days })}>
+                      {r.phone && <button type="button" className="btn px-2.5 py-1 text-xs bg-[#1fa855] text-white hover:opacity-90" onClick={() => message(r)}>{t("message")}</button>}
+                    </Row>
+                  ))}
+                </ul>
+              )}
+            </Card>
+            <Card title={<>{t("followUpsDue")} <Count n={data.follow_ups.length} /></>} icon={<CalendarClock className="h-4 w-4 text-brand" />}>
+              {data.follow_ups.length === 0 && data.interviews_waiting.length === 0 ? <p className="text-sm text-muted">{t("noFollowUps")}</p> : (
+                <ul>
                   {data.interviews_waiting.map((c) => (
-                    <li key={c.id}>
-                      <Link to={`/dashboard/clients/${c.id}?tab=interview`} className="flex items-center gap-3 py-2.5 hover:text-brand">
-                        <Avatar name={c.name} size={30} /><span className="text-sm font-medium">{c.name}</span>
-                      </Link>
-                    </li>
+                    <Row key={`i${c.id}`} to={clientLink(c.id, "interview")} name={c.name} sub={t("interviewToReview")}>
+                      <ClipboardList className="h-4 w-4 text-warn" />
+                    </Row>
+                  ))}
+                  {data.follow_ups.map((r) => (
+                    <Row key={r.id} to={clientLink(r.id)} name={r.name} sub={t("lastSeenDays", { n: r.days })}>
+                      <Link to="/dashboard/appointments" className="btn-secondary px-2.5 py-1 text-xs">{t("book")}</Link>
+                    </Row>
                   ))}
                 </ul>
-              ) : <p className="text-sm text-muted">{t("interviewsEmpty")}</p>}
+              )}
             </Card>
-            <Card title={t("followUpsDue")}>
-              {data.follow_ups_due.length ? (
-                <ul className="divide-y divide-line">
-                  {data.follow_ups_due.map((c) => (
-                    <li key={c.id}>
-                      <Link to={`/dashboard/clients/${c.id}`} className="flex items-center gap-3 py-2.5 hover:text-brand">
-                        <Avatar name={c.name} size={30} />
-                        <span className="flex-1 text-sm font-medium">{c.name}</span>
-                        <span className="text-xs text-muted">{t("lastVisit")}: {fmtDate(c.last_visit)}</span>
-                      </Link>
-                    </li>
+            <Card title={<>{t("moneyTitle")} <Count n={data.packages_ending.length + data.unpaid.length} tone="warn" /></>} icon={<Wallet className="h-4 w-4 text-warn" />}>
+              <div className="text-xs font-semibold text-muted">{t("packagesEnding")}</div>
+              {data.packages_ending.length === 0 ? <p className="mb-3 mt-1 text-sm text-muted">—</p> : (
+                <ul className="mb-3">
+                  {data.packages_ending.map((p) => (
+                    <Row key={p.id} to={clientLink(p.client)} name={p.client_name}
+                      sub={`${p.name} · ${p.left > 0 ? t("visitsLeft", { n: p.left }) : t("noVisitsLeft")}${p.end ? ` · ${t("endsOn", { date: fmtDate(p.end) })}` : ""}`} />
                   ))}
                 </ul>
-              ) : <p className="text-sm text-muted">{t("followUpsEmpty")}</p>}
-            </Card>
-            <Card title={t("recentPlans")}>
-              {data.recent_plans.length ? (
-                <ul className="divide-y divide-line">
-                  {data.recent_plans.map((p) => (
-                    <li key={p.id}>
-                      <Link to={`/dashboard/plans/${p.id}`} className="block py-2.5 hover:text-brand">
-                        <div className="text-sm font-medium">{p.client}</div>
-                        <div className="text-xs text-muted">{p.name || t("defaultPlanName", { date: "" }).trim()} · {fmtDate(p.created_at)}</div>
-                      </Link>
-                    </li>
+              )}
+              <div className="flex items-center text-xs font-semibold text-muted">{t("unpaidBalances")}<span className="num ms-auto text-sm font-bold text-brand-ink">{money(data.unpaid_total, data.unpaid.find((u) => u.currency)?.currency)}</span></div>
+              {data.unpaid.length === 0 ? <p className="mt-1 text-sm text-muted">—</p> : (
+                <ul>
+                  {data.unpaid.slice(0, 8).map((u) => (
+                    <Row key={u.package ? `p${u.package}` : `a${u.id}`} to={clientLink(u.client)} name={u.name}
+                      sub={`${fmtDate(u.date)}${u.package ? ` · ${t("package")}` : ""}`}>
+                      <span className="num text-sm font-bold">{money(u.amount, u.currency)}</span>
+                    </Row>
                   ))}
                 </ul>
-              ) : <p className="text-sm text-muted">{t("recentEmpty")}</p>}
+              )}
             </Card>
           </div>
-        </>
+        </div>
       )}
     </>
   );

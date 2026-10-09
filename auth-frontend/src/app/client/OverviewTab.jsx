@@ -5,6 +5,7 @@ import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
 import { Badge, Card, SafetyFlags } from "../../ui";
 import AISummaryPanel from "./AIPanel";
+import { AppointmentsCard, ClientAppCard, PackagesCard } from "./CareCards";
 
 export function interviewUrl(token) {
   return `${window.location.origin}/i/${token}`;
@@ -138,6 +139,9 @@ export default function OverviewTab({ data, reload }) {
         <ExclusionsCard data={data} reload={reload} />
       </div>
       <div className="space-y-4">
+        <AppointmentsCard client={c} />
+        <ClientAppCard client={c} />
+        <PackagesCard client={c} />
         <AISummaryPanel clientId={c.id} last={lastSummary} />
         <InterviewLinkCard data={data} reload={reload} />
       </div>

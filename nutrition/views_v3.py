@@ -475,6 +475,7 @@ class PublicBookingView(APIView):
             'selected': cal.slug,
             'calendars': [{
                 'slug': c.slug, 'name': c.name, 'color': c.color, 'currency': c.currency,
+                'open_days': [int(d) for d, h in (c.hours or {}).items() if h.get('on')],
                 'pay_online': c.pay_online and online_payment_ready(), 'pay_at_clinic': c.pay_at_clinic or not online_payment_ready(),
                 'types': [{'id': t.id, 'name': t.name, 'name_ar': t.name_ar, 'minutes': t.minutes,
                            'price': float(t.price), 'online': t.online} for t in c.types.filter(active=True)],
