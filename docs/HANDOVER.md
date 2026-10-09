@@ -39,6 +39,7 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
    multi-dietitian clinics now or later; which features are Pro. Make mockups before any code.
    Yousef answered (9 Oct): WhatsApp one-tap (free); BOTH online and pay-at-clinic; named calendars (one per dietitian).
    Mockup docs/mockups/r6-appointments.html (calendar, booking link, calendar settings) – waiting for his OK.
+   Client app (phone page, meal ticks, water, adherence %) + Today screen: mockup docs/mockups/r7-client-app-today.html – waiting for his OK.
 3. Old foods: DONE on test (Yousef approved). `fix_old_foods` corrects 27 generic foods to USDA SR28 (total carbs), brands untouched;
    runs in seed_demo + seed_library. At go-live run it ONCE on the live DB, after the backup.
 4. Hummus: stays in Fats (Yousef). Already found from every food search (plan columns, interview pickers, foods page).

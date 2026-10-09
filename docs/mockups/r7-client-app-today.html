@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client app mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --brand:#1f6f5c; --brand-soft:#e5f1ed; --ink:#16211d; --muted:#6b7570; --line:#e3e7e5; --page:#f4f5f3;
+          --blue:#2f5fb3; --blue-soft:#e8eefa; --amber:#b9770e; --amber-soft:#fbf1df; --red:#c0392b; --red-soft:#fbe9e7;
+          --purple:#6a4fc2; --purple-soft:#efebfb; --ok:#1d7a46; --ok-soft:#e3f4ea; --wa:#1fa855; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#dfe3e1; font-family:Inter, system-ui, sans-serif; color:var(--ink); }
+  .cap { font:600 15px Inter; color:#4b5551; margin:28px auto 10px; max-width:1360px; padding:0 16px; }
+  .frame { max-width:1360px; margin:0 auto 34px; background:var(--page); border-radius:14px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,.08); display:flex; }
+  .side { width:220px; background:#fff; border-inline-end:1px solid var(--line); padding:22px 14px; flex-shrink:0; }
+  .logo { font-weight:700; color:var(--brand); font-size:17px; margin:0 8px 22px; }
+  .nav a { display:flex; gap:10px; align-items:center; padding:9px 10px; border-radius:10px; color:#3b4541; font-size:14px; margin-bottom:2px; }
+  .nav a i { width:16px; height:16px; border-radius:4px; background:#dfe4e2; }
+  .nav a.on { background:var(--brand-soft); color:var(--brand); font-weight:600; } .nav a.on i { background:#a9cfc3; }
+  .main { flex:1; padding:22px 26px; min-width:0; }
+  .top { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .top h2 { margin:0; font-size:24px; } .top .sub { color:var(--muted); font-size:14px; flex:1; }
+  .btn { border:1px solid var(--line); background:#fff; border-radius:9px; padding:6px 11px; font:600 12px Inter; color:var(--ink); white-space:nowrap; }
+  .btn.p { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .btn.wa { background:var(--wa); color:#fff; border-color:var(--wa); }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .card h3 { margin:0 0 10px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  .count { border-radius:999px; padding:1px 8px; font-size:12px; font-weight:700; }
+  .g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .g2 { display:grid; grid-template-columns:1.25fr 1fr; gap:14px; margin-bottom:14px; }
+  .item { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid #f0f2f1; font-size:13px; }
+  .item:first-of-type { border-top:0; }
+  .av { width:30px; height:30px; border-radius:50%; background:var(--brand-soft); color:var(--brand); display:grid; place-items:center; font-weight:700; font-size:11px; flex-shrink:0; }
+  .grow { flex:1; min-width:0; } .grow small { display:block; color:var(--muted); font-size:12px; }
+  .time { font-weight:700; width:44px; }
+  .pill { border-radius:999px; padding:2px 9px; font-size:11.5px; font-weight:600; white-space:nowrap; }
+  .ok { background:var(--ok-soft); color:var(--ok); } .warn { background:var(--amber-soft); color:var(--amber); }
+  .bad { background:var(--red-soft); color:var(--red); } .b { background:var(--blue-soft); color:var(--blue); } .pu { background:var(--purple-soft); color:var(--purple); }
+  .bar { height:8px; border-radius:99px; background:#eef1ef; overflow:hidden; width:110px; } .bar i { display:block; height:100%; border-radius:99px; }
+  .pct { font-weight:700; width:40px; text-align:end; }
+  .muted { color:var(--muted); font-size:13px; }
+  /* phones */
+  .phones { max-width:1360px; margin:0 auto 34px; display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; padding:0 16px; }
+  .phone { background:#fff; border-radius:30px; border:8px solid #1d2422; overflow:hidden; max-width:370px; width:100%; margin:0 auto; }
+  .ar { font-family:Tajawal, sans-serif; }
+  .ph-top { background:var(--brand); color:#fff; padding:18px 18px 16px; }
+  .ph-top small { opacity:.8; font-size:12px; } .ph-top h4 { margin:2px 0 10px; font-size:19px; }
+  .ring { display:flex; gap:10px; }
+  .ring div { flex:1; background:rgba(255,255,255,.14); border-radius:12px; padding:8px 10px; font-size:11px; }
+  .ring b { display:block; font-size:17px; }
+  .ph-body { padding:14px 16px 10px; }
+  .appt { display:flex; align-items:center; gap:10px; background:var(--blue-soft); border-radius:12px; padding:10px 12px; font-size:13px; margin-bottom:12px; }
+  .meal { display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:7px; font-size:13px; }
+  .meal.done { background:var(--ok-soft); border-color:#bfe3cd; }
+  .tick { width:24px; height:24px; border-radius:50%; border:2px solid #c4ccc8; flex-shrink:0; display:grid; place-items:center; font-size:13px; color:#fff; }
+  .meal.done .tick { background:var(--ok); border-color:var(--ok); }
+  .meal.half .tick { background:var(--amber); border-color:var(--amber); }
+  .meal small { display:block; color:var(--muted); font-size:11.5px; }
+  .water { display:flex; gap:5px; margin:6px 0 12px; } .water span { flex:1; height:30px; border-radius:8px; background:#eef1ef; display:grid; place-items:center; font-size:13px; }
+  .water span.f { background:#d6e6fb; }
+  .lbl { font-weight:700; font-size:14px; margin:12px 0 6px; display:flex; justify-content:space-between; }
+  .bigbtn { background:var(--brand); color:#fff; text-align:center; border-radius:14px; padding:12px; font-weight:700; font-size:14px; }
+  .tabbar { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--line); font-size:11px; text-align:center; color:var(--muted); }
+  .tabbar span { padding:9px 0 12px; } .tabbar span.on { color:var(--brand); font-weight:700; }
+  .tabbar span i { display:block; width:18px; height:18px; border-radius:5px; background:#dfe4e2; margin:0 auto 3px; } .tabbar span.on i { background:#a9cfc3; }
+  .day { display:flex; gap:5px; margin-bottom:10px; } .day span { flex:1; text-align:center; border:1px solid var(--line); border-radius:10px; padding:5px 0; font-size:11px; }
+  .day span.on { background:var(--brand); color:#fff; border-color:var(--brand); } .day b { display:block; font-size:14px; }
+  .shop { display:flex; gap:8px; align-items:center; padding:7px 0; border-bottom:1px solid #f0f2f1; font-size:13px; }
+  .box { width:18px; height:18px; border:2px solid #c4ccc8; border-radius:5px; } .box.on { background:var(--brand); border-color:var(--brand); }
+  .hint { background:#fff8e6; border:1px solid #f3dfae; border-radius:12px; padding:9px 11px; font-size:12px; margin-bottom:12px; }
+  .notes { max-width:1360px; margin:0 auto 40px; padding:0 16px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .notes .card { font-size:14px; line-height:1.65; } .notes ul { padding-inline-start:20px; margin:6px 0; }
+  @media (max-width:1000px) { .g3,.g2,.phones,.notes { grid-template-columns:1fr; } .side { display:none; } }
+</style>
+</head>
+<body>
+
+<div class="cap">1 · Today screen: what the dietitian sees first every morning</div>
+<div class="frame">
+  <aside class="side">
+    <div class="logo">Diet in a Minute</div>
+    <nav class="nav"><a class="on"><i></i>Today</a><a><i></i>Appointments</a><a><i></i>Clients</a><a><i></i>Interviews</a><a><i></i>Plan templates</a><a><i></i>Workout plans</a><a><i></i>Food database</a><a><i></i>Settings</a></nav>
+  </aside>
+  <main class="main">
+    <div class="top"><h2>Good morning, Yousef</h2><span class="sub">Monday 14 October · 6 appointments · 9 things need you</span><span class="btn p">+ New appointment</span></div>
+
+    <div class="g2">
+      <div class="card">
+        <h3>Today's appointments <span class="count b">6</span></h3>
+        <div class="item"><span class="time">10:00</span><div class="av">AK</div><div class="grow">Ahmad Khalil<small>Follow-up · 30 min · followed 82% this week</small></div><span class="pill ok">Paid</span><span class="btn">Open</span></div>
+        <div class="item"><span class="time">11:00</span><div class="av">MN</div><div class="grow">Maya Nasser<small>First visit · interview done ✓</small></div><span class="pill ok">Paid online</span><span class="btn">Open</span></div>
+        <div class="item"><span class="time">12:00</span><div class="av">SO</div><div class="grow">Sami Odeh<small>Follow-up · didn't log for 3 days</small></div><span class="pill warn">Unpaid</span><span class="btn">Open</span></div>
+        <div class="item"><span class="time">14:00</span><div class="av">KS</div><div class="grow">Karim Said<small>Follow-up</small></div><span class="pill warn">Pay at clinic</span><span class="btn">Open</span></div>
+        <div class="item"><span class="time">15:00</span><div class="av">TM</div><div class="grow">Tala Mansour<small>Online follow-up · video call</small></div><span class="pill ok">Paid</span><span class="btn">Open</span></div>
+        <div class="item"><span class="time">16:00</span><div class="av">JA</div><div class="grow">Joud Ahmad<small>Follow-up · reminder not sent yet</small></div><span class="pill warn">Unpaid</span><span class="btn wa">Remind</span></div>
+      </div>
+      <div class="card">
+        <h3>New check-ins overnight <span class="count pu">3</span></h3>
+        <div class="item"><div class="av">LH</div><div class="grow">Lina Haddad<small>InBody upload · weight −0.8 kg · fat −0.6%</small></div><span class="btn p">Review</span></div>
+        <div class="item"><div class="av">OS</div><div class="grow">Omar Saleh<small>Client link · weight −0.4 kg</small></div><span class="btn p">Review</span></div>
+        <div class="item"><div class="av">HT</div><div class="grow">Hiba Taha<small>Client link · weight +0.3 kg</small></div><span class="btn p">Review</span></div>
+        <h3 style="margin-top:16px">This week's adherence</h3>
+        <div class="item"><div class="grow">Ahmad Khalil</div><div class="bar"><i style="width:82%;background:var(--ok)"></i></div><span class="pct">82%</span></div>
+        <div class="item"><div class="grow">Lina Haddad</div><div class="bar"><i style="width:91%;background:var(--ok)"></i></div><span class="pct">91%</span></div>
+        <div class="item"><div class="grow">Omar Saleh</div><div class="bar"><i style="width:64%;background:var(--amber)"></i></div><span class="pct">64%</span></div>
+        <div class="item"><div class="grow">Sami Odeh</div><div class="bar"><i style="width:28%;background:var(--red)"></i></div><span class="pct">28%</span></div>
+      </div>
+    </div>
+
+    <div class="g3">
+      <div class="card">
+        <h3>Stopped logging <span class="count bad">2</span></h3>
+        <div class="item"><div class="av">SO</div><div class="grow">Sami Odeh<small>No ticks for 3 days</small></div><span class="btn wa">Message</span></div>
+        <div class="item"><div class="av">RA</div><div class="grow">Rana Aziz<small>No ticks for 5 days · missed last visit</small></div><span class="btn wa">Message</span></div>
+      </div>
+      <div class="card">
+        <h3>Follow-ups due <span class="count b">3</span></h3>
+        <div class="item"><div class="av">DF</div><div class="grow">Dana Fares<small>Last visit 15 days ago · no appointment booked</small></div><span class="btn">Book</span></div>
+        <div class="item"><div class="av">YA</div><div class="grow">Yazan Ali<small>Check-in due today</small></div><span class="btn wa">Remind</span></div>
+        <div class="item"><div class="av">NK</div><div class="grow">Noor Kamal<small>Plan is 4 weeks old · time to update</small></div><span class="btn">Open</span></div>
+      </div>
+      <div class="card">
+        <h3>Money <span class="count warn">4</span></h3>
+        <div class="item"><div class="grow">Packages ending<small>Ahmad Khalil (1 visit left) · Lina Haddad (ends 18 Oct)</small></div><span class="btn">Renew</span></div>
+        <div class="item"><div class="grow">Unpaid balances<small>Sami Odeh 20 · Joud Ahmad 20 · Rana Aziz 35</small></div><b style="font-size:14px">75 JOD</b></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="cap">2 · Client app: the client's own phone page (no download — “Add to home screen”). Arabic and English, same layout.</div>
+<div class="phones">
+  <!-- Phone 1: today (Arabic) -->
+  <div class="phone ar" dir="rtl">
+    <div class="ph-top">
+      <small>الاثنين 14 أكتوبر</small>
+      <h4>صباح الخير يا أحمد 👋</h4>
+      <div class="ring"><div>هذا الأسبوع<b>82%</b></div><div>وجبات اليوم<b>2 / 5</b></div><div>الماء<b>1.5 / 3 ل</b></div></div>
+    </div>
+    <div class="ph-body">
+      <div class="appt"><span>📅</span><div style="flex:1">موعدك القادم<br><b>اليوم 10:00 · يوسف عويس</b></div></div>
+      <div class="lbl">وجبات اليوم <span class="muted">اضغط على الوجبة لما تاكلها</span></div>
+      <div class="meal done"><span class="tick">✓</span><div style="flex:1"><b>الفطور · 8:00</b><small>شوفان 50 غ · بيضة · موزة</small></div></div>
+      <div class="meal done"><span class="tick">✓</span><div style="flex:1"><b>سناك · 11:00</b><small>تفاحة · لوز 15 غ</small></div></div>
+      <div class="meal"><span class="tick"></span><div style="flex:1"><b>الغداء · 2:00</b><small>رز 150 غ · صدر دجاج 150 غ · سلطة</small></div></div>
+      <div class="meal"><span class="tick"></span><div style="flex:1"><b>سناك · 5:00</b><small>لبن قليل الدسم · توت</small></div></div>
+      <div class="meal"><span class="tick"></span><div style="flex:1"><b>العشاء · 8:00</b><small>توست أسمر · جبنة قريش · خيار</small></div></div>
+      <div class="lbl">الماء <span class="muted">كل كوب 250 مل</span></div>
+      <div class="water"><span class="f">💧</span><span class="f">💧</span><span class="f">💧</span><span class="f">💧</span><span class="f">💧</span><span class="f">💧</span><span>+</span><span>+</span></div>
+      <div class="bigbtn">سجّل قياسك الآن</div>
+    </div>
+    <div class="tabbar"><span class="on"><i></i>اليوم</span><span><i></i>الخطة</span><span><i></i>التسوّق</span><span><i></i>التمارين</span></div>
+  </div>
+
+  <!-- Phone 2: weekly + shopping (Arabic) -->
+  <div class="phone ar" dir="rtl">
+    <div class="ph-top"><small>خطتي</small><h4>الخطة الأسبوعية</h4></div>
+    <div class="ph-body">
+      <div class="day"><span>سبت<b>12</b></span><span>أحد<b>13</b></span><span class="on">اثنين<b>14</b></span><span>ثلاثاء<b>15</b></span><span>أربعاء<b>16</b></span><span>خميس<b>17</b></span></div>
+      <div class="meal"><div style="flex:1"><b>الفطور</b><small>شوفان 50 غ · بيضة · موزة</small></div><span class="pill b">بدّل</span></div>
+      <div class="meal"><div style="flex:1"><b>الغداء</b><small>رز 150 غ · صدر دجاج 150 غ · سلطة</small></div><span class="pill b">بدّل</span></div>
+      <div class="meal"><div style="flex:1"><b>العشاء</b><small>توست أسمر · جبنة قريش · خيار</small></div><span class="pill b">بدّل</span></div>
+      <div class="lbl">قائمة التسوّق <span class="muted">لهذا الأسبوع</span></div>
+      <div class="shop"><span class="box on"></span><span style="flex:1">شوفان</span><span class="muted">350 غ</span></div>
+      <div class="shop"><span class="box on"></span><span style="flex:1">بيض</span><span class="muted">7 حبات</span></div>
+      <div class="shop"><span class="box"></span><span style="flex:1">صدر دجاج</span><span class="muted">1 كغ</span></div>
+      <div class="shop"><span class="box"></span><span style="flex:1">رز</span><span class="muted">1 كغ</span></div>
+      <div class="shop"><span class="box"></span><span style="flex:1">موز</span><span class="muted">7 حبات</span></div>
+      <div style="height:10px"></div>
+    </div>
+    <div class="tabbar"><span><i></i>اليوم</span><span class="on"><i></i>الخطة</span><span><i></i>التسوّق</span><span><i></i>التمارين</span></div>
+  </div>
+
+  <!-- Phone 3: English + install hint -->
+  <div class="phone">
+    <div class="ph-top">
+      <small>Monday 14 October</small>
+      <h4>Good morning, Ahmad 👋</h4>
+      <div class="ring"><div>This week<b>82%</b></div><div>Meals today<b>2 / 5</b></div><div>Water<b>1.5 / 3 L</b></div></div>
+    </div>
+    <div class="ph-body">
+      <div class="hint">📲 Tap <b>Share → Add to Home Screen</b> to keep Diet in a Minute on your phone like an app.</div>
+      <div class="appt"><span>📅</span><div style="flex:1">Next appointment<br><b>Today 10:00 · Yousef Owis</b></div></div>
+      <div class="lbl">Today's meals</div>
+      <div class="meal done"><span class="tick">✓</span><div style="flex:1"><b>Breakfast · 8:00</b><small>Oats 50 g · egg · banana</small></div></div>
+      <div class="meal half"><span class="tick">½</span><div style="flex:1"><b>Snack · 11:00</b><small>Apple · almonds 15 g — ate half</small></div></div>
+      <div class="meal"><span class="tick"></span><div style="flex:1"><b>Lunch · 2:00</b><small>Rice 150 g · chicken breast 150 g · salad</small></div></div>
+      <div class="lbl">Workout today</div>
+      <div class="meal"><div style="flex:1"><b>Push · Beginner PPL – Week 1</b><small>7 exercises · 3 × 15 · 45 sec rest</small></div><span class="pill ok">Open</span></div>
+      <div class="bigbtn">Check in now</div>
+    </div>
+    <div class="tabbar"><span class="on"><i></i>Today</span><span><i></i>Plan</span><span><i></i>Shopping</span><span><i></i>Workout</span></div>
+  </div>
+</div>
+
+<div class="notes">
+  <div class="card">
+    <h3>How the client app works</h3>
+    <ul>
+      <li>When you give a client a plan, they get <b>their own private link</b> (sent by WhatsApp). No app store, no password — the link is the key, and you can switch it off any time.</li>
+      <li>They see today's meals, the weekly plan (with swaps you allowed), the shopping list, their workout and their next appointment.</li>
+      <li>They tap a meal when they eat it (tap again for “half”), and tap a glass for each 250 ml of water.</li>
+      <li><b>“Check in now”</b> opens the check-in you already have (weight, InBody photo).</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>How the numbers are counted</h3>
+    <ul>
+      <li><b>Adherence</b> = meals ticked ÷ meals in the plan for the last 7 days (a “half” counts as half). Shown on the Today screen and on each client's page.</li>
+      <li><b>Stopped logging</b> = no ticks for 3 days in a row (you can change the number).</li>
+      <li><b>Follow-up due</b> = no visit for 14 days and nothing booked, or a check-in date that has arrived.</li>
+      <li><b>Packages</b> and <b>unpaid balances</b> come from the appointments and payments.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>
