@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Appointments mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --brand:#1f6f5c; --brand-soft:#e5f1ed; --ink:#16211d; --muted:#6b7570; --line:#e3e7e5; --page:#f4f5f3;
+          --blue:#2f5fb3; --blue-soft:#e8eefa; --amber:#b9770e; --amber-soft:#fbf1df; --red:#c0392b; --red-soft:#fbe9e7;
+          --purple:#6a4fc2; --purple-soft:#efebfb; --wa:#1fa855; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#dfe3e1; font-family:Inter, system-ui, sans-serif; color:var(--ink); }
+  h1.cap { font:600 15px Inter; color:#4b5551; margin:28px auto 10px; max-width:1360px; padding:0 16px; }
+  .frame { max-width:1360px; margin:0 auto 34px; background:var(--page); border-radius:14px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,.08); display:flex; }
+  .side { width:220px; background:#fff; border-inline-end:1px solid var(--line); padding:22px 14px; flex-shrink:0; }
+  .logo { font-weight:700; color:var(--brand); font-size:17px; margin:0 8px 22px; }
+  .nav a { display:flex; gap:10px; align-items:center; padding:9px 10px; border-radius:10px; color:#3b4541; font-size:14px; text-decoration:none; margin-bottom:2px; }
+  .nav a i { width:16px; height:16px; border-radius:4px; background:#dfe4e2; display:inline-block; }
+  .nav a.on { background:var(--brand-soft); color:var(--brand); font-weight:600; }
+  .nav a.on i { background:#a9cfc3; }
+  .main { flex:1; padding:22px 26px; min-width:0; }
+  .top { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .top h2 { margin:0; font-size:24px; flex:1; }
+  .btn { border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 13px; font:600 13px Inter; color:var(--ink); white-space:nowrap; }
+  .btn.p { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .btn.wa { background:var(--wa); color:#fff; border-color:var(--wa); }
+  .tabs { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+  .chip { border:1px solid var(--line); background:#fff; border-radius:999px; padding:6px 12px; font-size:13px; display:flex; gap:7px; align-items:center; }
+  .chip.on { border-color:var(--brand); background:var(--brand-soft); color:var(--brand); font-weight:600; }
+  .dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .grid2 { display:grid; grid-template-columns: 1fr 330px; gap:16px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px; }
+  .stat { padding:13px 15px; } .stat small { color:var(--muted); font-size:12px; } .stat b { display:block; font-size:22px; margin-top:4px; }
+  .cal { display:grid; grid-template-columns:54px repeat(6,1fr); font-size:12px; }
+  .cal .h { padding:10px 6px; text-align:center; font-weight:600; border-bottom:1px solid var(--line); }
+  .cal .h small { display:block; color:var(--muted); font-weight:500; }
+  .cal .h.today { color:var(--brand); }
+  .cal .t { color:var(--muted); text-align:end; padding:0 8px; height:52px; border-top:1px solid #f0f2f1; font-size:11px; }
+  .cal .c { height:52px; border-top:1px solid #f0f2f1; border-inline-start:1px solid #f0f2f1; position:relative; }
+  .cal .c.off { background:repeating-linear-gradient(45deg,#fafafa,#fafafa 6px,#f3f4f4 6px,#f3f4f4 12px); }
+  .ev { position:absolute; inset:3px 4px; border-radius:8px; padding:4px 7px; font-size:11px; line-height:1.3; overflow:hidden; border-inline-start:3px solid; }
+  .ev b { display:block; font-size:11.5px; }
+  .ev.first { background:var(--brand-soft); border-color:var(--brand); }
+  .ev.fu { background:var(--blue-soft); border-color:var(--blue); }
+  .ev.inb { background:var(--purple-soft); border-color:var(--purple); }
+  .ev.online { background:var(--amber-soft); border-color:var(--amber); }
+  .ev.tall { bottom:-49px; z-index:2; }
+  .ev.sel { outline:2px solid var(--ink); }
+  .ev .st { position:absolute; inset-inline-end:5px; top:4px; font-size:10px; font-weight:700; }
+  .panel { padding:18px; }
+  .panel h3 { margin:0 0 2px; font-size:17px; }
+  .muted { color:var(--muted); font-size:13px; }
+  .row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid #f0f2f1; font-size:13px; gap:8px; }
+  .row:last-child { border:0; }
+  .pill { border-radius:999px; padding:2px 9px; font-size:11.5px; font-weight:600; }
+  .pill.ok { background:#e3f4ea; color:#1d7a46; } .pill.warn { background:var(--amber-soft); color:var(--amber); }
+  .pill.bad { background:var(--red-soft); color:var(--red); } .pill.b { background:var(--blue-soft); color:var(--blue); }
+  .seg { display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); border-radius:10px; overflow:hidden; margin:10px 0 14px; }
+  .seg span { text-align:center; padding:7px 4px; font-size:12px; font-weight:600; border-inline-end:1px solid var(--line); }
+  .seg span:last-child { border:0; } .seg span.on { background:#e3f4ea; color:#1d7a46; }
+  .section-t { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin:16px 0 6px; }
+  .wa-box { background:#f2fbf5; border:1px solid #cdeedb; border-radius:12px; padding:11px; font-size:12.5px; line-height:1.55; margin:6px 0 10px; }
+  .links { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .note { margin-top:8px; font-size:12px; color:var(--muted); }
+  .legend { display:flex; gap:14px; font-size:12px; color:var(--muted); margin-inline-start:auto; flex-wrap:wrap; }
+  /* booking page */
+  .ar { font-family:Tajawal, sans-serif; }
+  .book { max-width:1360px; margin:0 auto 34px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .phone { background:#fff; border-radius:28px; padding:22px 20px; box-shadow:0 8px 30px rgba(0,0,0,.08); border:8px solid #1d2422; max-width:390px; margin:0 auto; width:100%; }
+  .phone h4 { margin:0 0 4px; font-size:20px; } .clinic { display:flex; gap:10px; align-items:center; margin-bottom:16px; }
+  .clinic .av { width:44px; height:44px; border-radius:50%; background:var(--brand-soft); color:var(--brand); display:grid; place-items:center; font-weight:800; }
+  .opt { border:1px solid var(--line); border-radius:12px; padding:11px 13px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+  .opt.on { border:2px solid var(--brand); background:var(--brand-soft); }
+  .opt small { display:block; color:var(--muted); font-size:12px; }
+  .days { display:flex; gap:6px; margin:8px 0 10px; overflow:hidden; }
+  .days span { flex:1; text-align:center; border:1px solid var(--line); border-radius:12px; padding:7px 0; font-size:12px; }
+  .days span b { display:block; font-size:16px; } .days span.on { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .slots { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:14px; }
+  .slots span { border:1px solid var(--line); border-radius:10px; text-align:center; padding:8px 0; font-size:13px; }
+  .slots span.on { border:2px solid var(--brand); color:var(--brand); font-weight:700; } .slots span.x { color:#c2c8c5; text-decoration:line-through; }
+  .lbl { font-weight:700; font-size:14px; margin:14px 0 6px; }
+  .bigbtn { background:var(--brand); color:#fff; text-align:center; border-radius:14px; padding:13px; font-weight:700; margin-top:12px; }
+  .side-note { background:#fff; border-radius:14px; padding:20px 22px; font-size:14px; line-height:1.65; align-self:start; border:1px solid var(--line); }
+  .side-note h3 { margin:0 0 6px; font-size:17px; }
+  .side-note ol { padding-inline-start:20px; margin:6px 0; }
+  .settings { max-width:1360px; margin:0 auto 40px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .tbl { width:100%; border-collapse:collapse; font-size:13px; } .tbl td, .tbl th { padding:9px 8px; border-bottom:1px solid #f0f2f1; text-align:start; }
+  .tbl th { color:var(--muted); font-weight:600; font-size:12px; }
+  .hours { display:grid; grid-template-columns:80px 1fr 1fr 60px; gap:6px 10px; font-size:13px; align-items:center; }
+  .in { border:1px solid var(--line); border-radius:9px; padding:6px 9px; background:#fff; }
+  .tog { width:34px; height:19px; border-radius:99px; background:var(--brand); position:relative; } .tog::after { content:""; position:absolute; width:15px; height:15px; border-radius:50%; background:#fff; top:2px; right:2px; }
+  .tog.off { background:#cfd5d2; } .tog.off::after { right:auto; left:2px; }
+  @media (max-width:900px) { .grid2, .book, .settings { grid-template-columns:1fr; } .side { display:none; } .stats { grid-template-columns:1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<h1 class="cap">1 · Appointments (dietitian view) — each calendar has a name, so a clinic can have one per dietitian</h1>
+<div class="frame">
+  <aside class="side">
+    <div class="logo">Diet in a Minute</div>
+    <nav class="nav">
+      <a><i></i>Home</a><a class="on"><i></i>Appointments</a><a><i></i>Clients</a><a><i></i>Interviews</a>
+      <a><i></i>Plan templates</a><a><i></i>Workout plans</a><a><i></i>Food database</a><a><i></i>Settings</a>
+    </nav>
+  </aside>
+  <main class="main">
+    <div class="top">
+      <h2>Appointments</h2>
+      <span class="btn">🔗 Booking link</span>
+      <span class="btn">‹ This week, 12–17 Oct ›</span>
+      <span class="btn p">+ New appointment</span>
+    </div>
+    <div class="tabs">
+      <span class="chip on"><span class="dot" style="background:var(--brand)"></span>Yousef's calendar</span>
+      <span class="chip"><span class="dot" style="background:#c06c84"></span>Dr. Sara's calendar</span>
+      <span class="chip">All calendars</span>
+      <span class="chip" style="border-style:dashed">+ New calendar</span>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--brand)"></span> First visit</span>
+        <span><span class="dot" style="background:var(--blue)"></span> Follow-up</span>
+        <span><span class="dot" style="background:var(--purple)"></span> InBody</span>
+        <span><span class="dot" style="background:var(--amber)"></span> Online</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="card stat"><small>Today</small><b>6 <span class="muted">appointments</span></b></div>
+      <div class="card stat"><small>This week</small><b>23 <span class="muted">· 3 free slots</span></b></div>
+      <div class="card stat"><small>No-shows this month</small><b style="color:var(--red)">2</b></div>
+      <div class="card stat"><small>Paid this week</small><b>1,840 <span class="muted">JOD · 4 unpaid</span></b></div>
+    </div>
+    <div class="grid2">
+      <div class="card" style="overflow:hidden">
+        <div class="cal">
+          <div class="h"></div>
+          <div class="h">Sat<small>12 Oct</small></div><div class="h">Sun<small>13 Oct</small></div><div class="h today">Mon<small>14 Oct · today</small></div>
+          <div class="h">Tue<small>15 Oct</small></div><div class="h">Wed<small>16 Oct</small></div><div class="h">Thu<small>17 Oct</small></div>
+          <!-- 10:00 -->
+          <div class="t">10:00</div>
+          <div class="c"><div class="ev first tall"><b>Lina Haddad</b>First visit · 60 min<span class="st">✓</span></div></div>
+          <div class="c"></div>
+          <div class="c"><div class="ev fu"><b>Ahmad Khalil</b>Follow-up<span class="st" style="color:#1d7a46">✓</span></div></div>
+          <div class="c"><div class="ev inb"><b>Omar Saleh</b>InBody + follow-up</div></div>
+          <div class="c"></div>
+          <div class="c off"></div>
+          <!-- 11:00 -->
+          <div class="t">11:00</div>
+          <div class="c"></div>
+          <div class="c"><div class="ev fu"><b>Rana Aziz</b>Follow-up<span class="st" style="color:var(--red)">✗</span></div></div>
+          <div class="c"><div class="ev first tall sel"><b>Maya Nasser</b>First visit · 60 min · Paid online</div></div>
+          <div class="c"></div>
+          <div class="c"><div class="ev online"><b>Hiba Taha</b>Online check-in</div></div>
+          <div class="c off"></div>
+          <!-- 12:00 -->
+          <div class="t">12:00</div>
+          <div class="c"><div class="ev fu"><b>Sami Odeh</b>Follow-up</div></div>
+          <div class="c"></div>
+          <div class="c"></div>
+          <div class="c"><div class="ev fu"><b>Dana Fares</b>Follow-up</div></div>
+          <div class="c"></div>
+          <div class="c off"></div>
+          <!-- 13:00 -->
+          <div class="t">13:00</div>
+          <div class="c off"></div><div class="c off"></div><div class="c off"></div><div class="c off"></div><div class="c off"></div><div class="c off"></div>
+          <!-- 14:00 -->
+          <div class="t">14:00</div>
+          <div class="c"><div class="ev inb"><b>Yazan Ali</b>InBody</div></div>
+          <div class="c"><div class="ev first tall"><b>Noor Kamal</b>First visit · 60 min</div></div>
+          <div class="c"><div class="ev fu"><b>Karim Said</b>Follow-up</div></div>
+          <div class="c"></div>
+          <div class="c"><div class="ev fu"><b>Reem Jaber</b>Follow-up</div></div>
+          <div class="c off"></div>
+          <!-- 15:00 -->
+          <div class="t">15:00</div>
+          <div class="c"></div><div class="c"></div>
+          <div class="c"><div class="ev online"><b>Tala Mansour</b>Online follow-up</div></div>
+          <div class="c"><div class="ev first tall"><b>Faris Hamdan</b>First visit</div></div>
+          <div class="c"></div>
+          <div class="c off"></div>
+          <!-- 16:00 -->
+          <div class="t">16:00</div>
+          <div class="c"><div class="ev fu"><b>Joud Ahmad</b>Follow-up</div></div>
+          <div class="c"></div><div class="c"></div><div class="c"></div>
+          <div class="c"><div class="ev inb"><b>Ali Barakat</b>InBody + follow-up</div></div>
+          <div class="c off"></div>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <span class="pill" style="background:var(--brand-soft);color:var(--brand)">First visit · 60 min</span>
+        <h3 style="margin-top:8px">Maya Nasser</h3>
+        <div class="muted">Mon 14 Oct · 11:00 – 12:00 · Yousef's calendar</div>
+        <div class="seg"><span class="on">✓ Attended</span><span>✗ No-show</span><span>Cancelled</span></div>
+
+        <div class="row"><span class="muted">Phone</span><span>0791 234 567</span></div>
+        <div class="row"><span class="muted">Booked</span><span>Booking link · 9 Oct</span></div>
+        <div class="row"><span class="muted">Payment</span><span><span class="pill ok">Paid online</span> 35 JOD</span></div>
+        <div class="row"><span class="muted">Package</span><span>Monthly · visit 1 of 4</span></div>
+
+        <div class="section-t">Reminder</div>
+        <div class="wa-box">Hi Maya 👋 reminder of your appointment with Yousef tomorrow, Mon 14 Oct at 11:00. Please fill your interview before you come: dietinaminute.app/i/7Kq2</div>
+        <span class="btn wa" style="display:block;text-align:center">Send on WhatsApp (one tap)</span>
+        <div class="note">Opens WhatsApp with this message ready — you just press send. Free, no WhatsApp Business needed.</div>
+
+        <div class="section-t">Open</div>
+        <div class="links">
+          <span class="btn" style="text-align:center">Interview <span class="pill ok">done</span></span>
+          <span class="btn" style="text-align:center">+ Check-in</span>
+          <span class="btn" style="text-align:center">Visit notes</span>
+          <span class="btn" style="text-align:center">Build plan</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<h1 class="cap">2 · Booking link (what the client sees on their phone) — Arabic shown; English is the same</h1>
+<div class="book">
+  <div class="phone ar" dir="rtl">
+    <div class="clinic"><div class="av">ي</div><div><h4>احجز موعدك</h4><div class="muted" style="font-family:Tajawal">عيادة يوسف عويس للتغذية</div></div></div>
+    <div class="lbl">مع مين؟</div>
+    <div class="opt on"><span>يوسف عويس<small>أخصائي تغذية</small></span><span>●</span></div>
+    <div class="opt"><span>د. سارة<small>أخصائية تغذية</small></span><span style="color:#c2c8c5">○</span></div>
+    <div class="lbl">نوع الموعد</div>
+    <div class="opt on"><span>زيارة أولى<small>60 دقيقة · مقابلة + قياس InBody</small></span><b>35 د.أ</b></div>
+    <div class="opt"><span>متابعة<small>30 دقيقة</small></span><b>20 د.أ</b></div>
+    <div class="opt"><span>متابعة أونلاين<small>20 دقيقة · مكالمة فيديو</small></span><b>15 د.أ</b></div>
+    <div class="lbl">اليوم والوقت</div>
+    <div class="days"><span>سبت<b>12</b></span><span>أحد<b>13</b></span><span class="on">اثنين<b>14</b></span><span>ثلاثاء<b>15</b></span><span>أربعاء<b>16</b></span></div>
+    <div class="slots"><span class="x">10:00</span><span class="on">11:00</span><span class="x">12:00</span><span>14:00</span><span>15:00</span><span class="x">16:00</span></div>
+    <div class="lbl">الدفع</div>
+    <div class="opt on"><span>ادفع الآن أونلاين<small>بطاقة · Apple Pay</small></span><span>●</span></div>
+    <div class="opt"><span>ادفع في العيادة<small>نقدًا أو بطاقة عند الزيارة</small></span><span style="color:#c2c8c5">○</span></div>
+    <div class="bigbtn">تأكيد الحجز · 35 د.أ</div>
+    <div class="note" style="text-align:center;font-family:Tajawal">بعد التأكيد يوصلك رابط المقابلة لتعبّيها قبل الزيارة.</div>
+  </div>
+  <div class="side-note">
+    <h3>How it works</h3>
+    <ol>
+      <li>You share one link (Instagram bio, WhatsApp). Clients pick <b>which dietitian's calendar</b>, the visit type, a free time and how to pay.</li>
+      <li>Only free times inside your working hours show. Booked or blocked times are crossed out.</li>
+      <li><b>Pay online</b> (card) or <b>pay at the clinic</b> — you choose per calendar which options to offer. Unpaid visits show “Unpaid” and you can mark them paid by hand (cash / card / transfer).</li>
+      <li>The new appointment appears in that calendar; the client gets the interview link straight away.</li>
+      <li>The day before, the appointment shows <b>“Send reminder”</b>: one tap opens WhatsApp with the message ready.</li>
+    </ol>
+    <p class="muted" style="margin-top:12px">Online payment needs a payment account (for example Stripe, Tap or HyperPay). We'll pick one when we build it; until then “pay at the clinic” works on its own.</p>
+  </div>
+</div>
+
+<h1 class="cap">3 · Settings → Calendars (create a calendar and name it after the dietitian)</h1>
+<div class="settings">
+  <div class="card panel">
+    <div class="top" style="margin-bottom:8px"><h2 style="font-size:18px">Calendars</h2><span class="btn p">+ New calendar</span></div>
+    <table class="tbl">
+      <tr><th>Name</th><th>Booking link</th><th>Payment</th><th>This week</th></tr>
+      <tr><td><span class="dot" style="background:var(--brand)"></span> Yousef's calendar</td><td><span class="pill b">/book/yousef</span></td><td>Online + clinic</td><td>23</td></tr>
+      <tr><td><span class="dot" style="background:#c06c84"></span> Dr. Sara's calendar</td><td><span class="pill b">/book/sara</span></td><td>Clinic only</td><td>11</td></tr>
+    </table>
+    <div class="section-t">Visit types (for Yousef's calendar)</div>
+    <table class="tbl">
+      <tr><th>Type</th><th>Length</th><th>Price</th><th>Colour</th></tr>
+      <tr><td>First visit</td><td>60 min</td><td>35 JOD</td><td><span class="dot" style="background:var(--brand)"></span></td></tr>
+      <tr><td>Follow-up</td><td>30 min</td><td>20 JOD</td><td><span class="dot" style="background:var(--blue)"></span></td></tr>
+      <tr><td>InBody + follow-up</td><td>30 min</td><td>25 JOD</td><td><span class="dot" style="background:var(--purple)"></span></td></tr>
+      <tr><td>Online follow-up</td><td>20 min</td><td>15 JOD</td><td><span class="dot" style="background:var(--amber)"></span></td></tr>
+    </table>
+  </div>
+  <div class="card panel">
+    <h2 style="font-size:18px;margin:0 0 4px">Edit: Yousef's calendar</h2>
+    <div class="muted" style="margin-bottom:12px">Name · working hours · how clients can pay</div>
+    <div class="hours" style="margin-bottom:12px"><span class="muted">Name</span><span class="in" style="grid-column:span 3">Yousef's calendar</span></div>
+    <div class="section-t">Working hours</div>
+    <div class="hours">
+      <span>Saturday</span><span class="in">10:00</span><span class="in">17:00</span><span class="tog"></span>
+      <span>Sunday</span><span class="in">10:00</span><span class="in">17:00</span><span class="tog"></span>
+      <span>Monday</span><span class="in">10:00</span><span class="in">17:00</span><span class="tog"></span>
+      <span>Tuesday</span><span class="in">10:00</span><span class="in">17:00</span><span class="tog"></span>
+      <span>Wednesday</span><span class="in">10:00</span><span class="in">17:00</span><span class="tog"></span>
+      <span>Thursday</span><span class="in muted">—</span><span class="in muted">—</span><span class="tog off"></span>
+      <span>Break</span><span class="in">13:00</span><span class="in">14:00</span><span class="tog"></span>
+    </div>
+    <div class="section-t">Payment options on the booking link</div>
+    <div class="row"><span>Pay online when booking</span><span class="tog"></span></div>
+    <div class="row"><span>Pay at the clinic</span><span class="tog"></span></div>
+    <div class="section-t">Reminders</div>
+    <div class="row"><span>Show “Send WhatsApp reminder” the day before</span><span class="tog"></span></div>
+  </div>
+</div>
+
+</body>
+</html>
