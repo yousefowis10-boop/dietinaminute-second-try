@@ -50,5 +50,8 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
    DO NOT CODE until Yousef says his review of the test site is finished.
    Also offered (no answer yet): per-client "Send booking link" (prefilled name, optional chosen times).
    Stripe: Yousef has an account; connect online payment later.
-6. Before go-live: database BACKUP of live DB (required), AI key, prices (Basic/Pro), switch-over plan,
+6. Blood tests (Yousef asked 9 Oct): upload photo/PDF, AI reads values, record with trends, micronutrient food advice,
+   share with client. Mockup docs/mockups/r9-blood-tests.html. Waiting for OK; no code before his test review.
+   Ideas from Nutrium comparison offered (chat, photo food log, micronutrients in plans, recipes, invoices, video link).
+7. Before go-live: database BACKUP of live DB (required), AI key, prices (Basic/Pro), switch-over plan,
    recommendations after check-ins and nicer sheet design are deferred.

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blood tests mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --brand:#1f6f5c; --brand-soft:#e5f1ed; --ink:#16211d; --muted:#6b7570; --line:#e3e7e5; --page:#f4f5f3;
+          --ok:#1d7a46; --ok-soft:#e3f4ea; --warn:#b7791f; --warn-soft:#fdf4e3; --bad:#c2410c; --bad-soft:#fdece4; --ai:#5b4bd6; --ai-soft:#efedfc; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#dfe3e1; font-family:Inter, system-ui, sans-serif; color:var(--ink); }
+  .cap { font:600 15px Inter; color:#4b5551; margin:28px auto 10px; max-width:1300px; padding:0 16px; }
+  .frame { max-width:1300px; margin:0 auto 30px; background:var(--page); border-radius:14px; padding:22px 26px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+  .ar { font-family:Tajawal, sans-serif; }
+  .top { display:flex; align-items:center; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .av { width:46px; height:46px; border-radius:50%; background:var(--brand-soft); color:var(--brand); display:grid; place-items:center; font-weight:700; }
+  .top h2 { margin:0; font-size:22px; } .top .sub { color:var(--muted); font-size:13px; }
+  .grow { flex:1; }
+  .btn { border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 13px; font:600 13px Inter; white-space:nowrap; }
+  .btn.p { background:var(--brand); color:#fff; border-color:var(--brand); } .btn.ai { background:var(--ai); color:#fff; border-color:var(--ai); }
+  .tabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:16px; flex-wrap:wrap; }
+  .tabs span { padding:9px 14px; font-size:14px; color:var(--muted); } .tabs span.on { color:var(--brand); font-weight:600; border-bottom:2px solid var(--brand); }
+  .card { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px 18px; }
+  .card h3 { margin:0 0 10px; font-size:15px; display:flex; gap:8px; align-items:center; }
+  .g2 { display:grid; grid-template-columns:330px 1fr; gap:14px; margin-bottom:14px; }
+  .drop { border:2px dashed #c8d2ce; border-radius:14px; padding:22px; text-align:center; color:var(--muted); font-size:13px; }
+  .drop b { display:block; color:var(--ink); font-size:14px; margin:6px 0 2px; }
+  .file { display:flex; gap:8px; align-items:center; font-size:13px; margin-top:10px; } .file .grow { color:var(--ink); }
+  .pill { border-radius:999px; padding:2px 9px; font-size:11.5px; font-weight:700; white-space:nowrap; }
+  .low { background:var(--bad-soft); color:var(--bad); } .high { background:var(--warn-soft); color:var(--warn); } .norm { background:var(--ok-soft); color:var(--ok); }
+  .aitag { background:var(--ai-soft); color:var(--ai); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:start; color:var(--muted); font-weight:600; font-size:12px; padding:8px; border-bottom:1px solid var(--line); }
+  td { padding:8px; border-bottom:1px solid #f0f2f1; }
+  td.num { font-variant-numeric:tabular-nums; }
+  .in { border:1px solid var(--line); border-radius:8px; padding:5px 8px; width:80px; font-variant-numeric:tabular-nums; }
+  .arrow { font-weight:700; } .down { color:var(--bad); } .up { color:var(--ok); }
+  .advice { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .adv { border:1px solid var(--line); border-radius:14px; padding:13px 14px; font-size:13px; line-height:1.55; }
+  .adv h4 { margin:0 0 6px; font-size:14px; display:flex; gap:6px; align-items:center; }
+  .foods { display:flex; flex-wrap:wrap; gap:5px; margin:6px 0 8px; } .foods span { background:var(--page); border-radius:8px; padding:3px 8px; font-size:12px; }
+  .foods span.in-plan { background:var(--ok-soft); color:var(--ok); font-weight:600; }
+  .tip { color:#4b5551; }
+  .warnbox { background:var(--bad-soft); border:1px solid #f6c7b1; color:#7a2e0b; border-radius:12px; padding:10px 13px; font-size:13px; margin-bottom:14px; }
+  .note { font-size:12px; color:var(--muted); margin-top:10px; }
+  .spark { display:inline-block; vertical-align:middle; }
+  .notes { max-width:1300px; margin:0 auto 40px; padding:0 16px; }
+  .notes .card { font-size:14px; line-height:1.7; } .notes ul { margin:6px 0; padding-inline-start:20px; }
+  @media (max-width:950px) { .g2, .advice { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div class="cap">1 · Client file → new “Blood tests” tab: upload, check the numbers the AI read, keep every test as a record</div>
+<div class="frame">
+  <div class="top">
+    <div class="av">LH</div>
+    <div class="grow"><h2>Lina Haddad</h2><div class="sub">28 y · Female · 61 kg · Goal: maintain</div></div>
+    <span class="btn">New check-in</span><span class="btn p">⬆ Upload blood test</span>
+  </div>
+  <div class="tabs"><span>Overview</span><span>Interview</span><span>Plans (2)</span><span>Progress & check-ins</span><span class="on">Blood tests (3)</span></div>
+
+  <div class="g2">
+    <div class="card">
+      <h3>Upload blood test</h3>
+      <div class="drop">🩸<b>Photo or PDF of the lab report</b>Any lab, Arabic or English. The numbers are read automatically — you check them before saving.</div>
+      <div class="file"><span>📄</span><span class="grow">biolab_lina_05-10.pdf</span><span class="pill aitag">✦ Read by AI</span></div>
+      <div style="margin-top:12px;font-size:13px;color:var(--muted)">Test date</div>
+      <div class="in" style="width:100%;margin-top:4px">5 Oct 2026</div>
+    </div>
+    <div class="card">
+      <h3>Read from the report — check before saving <span class="pill aitag">✦ AI</span></h3>
+      <table>
+        <tr><th>Test</th><th>Result</th><th>Unit</th><th>Lab range</th><th>Status</th><th>Last time</th></tr>
+        <tr><td>Ferritin</td><td><span class="in">9</span></td><td>ng/mL</td><td class="num">15 – 150</td><td><span class="pill low">Low</span></td><td class="num">14 <span class="arrow down">↓</span></td></tr>
+        <tr><td>Hemoglobin</td><td><span class="in">11.4</span></td><td>g/dL</td><td class="num">12 – 15.5</td><td><span class="pill low">Low</span></td><td class="num">11.9 <span class="arrow down">↓</span></td></tr>
+        <tr><td>Vitamin D (25-OH)</td><td><span class="in">16</span></td><td>ng/mL</td><td class="num">30 – 100</td><td><span class="pill low">Low</span></td><td class="num">12 <span class="arrow up">↑</span></td></tr>
+        <tr><td>Vitamin B12</td><td><span class="in">310</span></td><td>pg/mL</td><td class="num">200 – 900</td><td><span class="pill norm">Normal</span></td><td class="num">290</td></tr>
+        <tr><td>Folate</td><td><span class="in">7.8</span></td><td>ng/mL</td><td class="num">&gt; 5.4</td><td><span class="pill norm">Normal</span></td><td class="num">—</td></tr>
+        <tr><td>Calcium</td><td><span class="in">9.1</span></td><td>mg/dL</td><td class="num">8.6 – 10.3</td><td><span class="pill norm">Normal</span></td><td class="num">9.0</td></tr>
+        <tr><td>Fasting glucose</td><td><span class="in">88</span></td><td>mg/dL</td><td class="num">70 – 99</td><td><span class="pill norm">Normal</span></td><td class="num">91</td></tr>
+        <tr><td>LDL cholesterol</td><td><span class="in">142</span></td><td>mg/dL</td><td class="num">&lt; 130</td><td><span class="pill high">High</span></td><td class="num">138 <span class="arrow down">↑</span></td></tr>
+      </table>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><span class="btn">+ Add a test by hand</span><span class="btn">Cancel</span><span class="btn p">Save blood test</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <h3>Micronutrient advice from this blood test <span class="pill aitag">✦ suggested — you decide</span></h3>
+    <div class="advice">
+      <div class="adv">
+        <h4><span class="pill low">Low</span> Iron (ferritin 9, Hb 11.4)</h4>
+        <div class="tip">Add iron-rich foods and pair them with vitamin C. Keep tea and coffee 1 hour away from meals.</div>
+        <div class="foods"><span class="in-plan">Beef sirloin ✓ in plan</span><span>Lentils</span><span>Chickpeas</span><span>Spinach</span><span>Chicken liver</span><span>Orange (vit C)</span></div>
+        <span class="btn" style="font-size:12px">+ Add lentils to lunch</span>
+      </div>
+      <div class="adv">
+        <h4><span class="pill low">Low</span> Vitamin D (16)</h4>
+        <div class="tip">15–20 min of midday sun on arms 3× a week. Few foods have enough — a supplement may be needed: <b>refer to doctor</b>.</div>
+        <div class="foods"><span>Salmon</span><span>Sardines</span><span>Egg yolk</span><span>Fortified milk</span></div>
+        <span class="btn" style="font-size:12px">+ Add salmon 2× a week</span>
+      </div>
+      <div class="adv">
+        <h4><span class="pill high">High</span> LDL cholesterol (142)</h4>
+        <div class="tip">Swap butter/ghee for olive oil, more fibre (oats, beans), fewer fried and processed foods.</div>
+        <div class="foods"><span class="in-plan">Oats ✓ in plan</span><span>Olive oil</span><span>Walnuts</span><span>Beans</span></div>
+        <span class="btn" style="font-size:12px">Swap ghee → olive oil</span>
+      </div>
+    </div>
+    <div class="note">These are food suggestions only. Medication and supplement doses are for the doctor. Values far outside the range show a “refer to doctor” warning.</div>
+  </div>
+
+  <div class="card">
+    <h3>All blood tests (record)</h3>
+    <table>
+      <tr><th>Test</th><th>12 Mar 2026</th><th>20 Jun 2026</th><th>5 Oct 2026</th><th>Trend</th></tr>
+      <tr><td>Ferritin</td><td class="num">22</td><td class="num">14 <span class="pill low">Low</span></td><td class="num">9 <span class="pill low">Low</span></td><td><svg class="spark" width="80" height="22"><polyline fill="none" stroke="#c2410c" stroke-width="2" points="2,4 40,12 78,18"/></svg></td></tr>
+      <tr><td>Vitamin D</td><td class="num">10 <span class="pill low">Low</span></td><td class="num">12 <span class="pill low">Low</span></td><td class="num">16 <span class="pill low">Low</span></td><td><svg class="spark" width="80" height="22"><polyline fill="none" stroke="#2f9e6e" stroke-width="2" points="2,18 40,15 78,9"/></svg></td></tr>
+      <tr><td>Hemoglobin</td><td class="num">12.4</td><td class="num">11.9 <span class="pill low">Low</span></td><td class="num">11.4 <span class="pill low">Low</span></td><td><svg class="spark" width="80" height="22"><polyline fill="none" stroke="#c2410c" stroke-width="2" points="2,6 40,11 78,16"/></svg></td></tr>
+      <tr><td>LDL</td><td class="num">131 <span class="pill high">High</span></td><td class="num">138 <span class="pill high">High</span></td><td class="num">142 <span class="pill high">High</span></td><td><svg class="spark" width="80" height="22"><polyline fill="none" stroke="#b7791f" stroke-width="2" points="2,15 40,11 78,8"/></svg></td></tr>
+    </table>
+    <div style="display:flex;gap:8px;margin-top:12px"><span class="btn">📄 Open original reports (3)</span><span class="btn">⬇ Blood test report PDF</span></div>
+  </div>
+</div>
+
+<div class="cap">2 · The same advice on the client's sheet and phone page (Arabic)</div>
+<div class="frame ar" dir="rtl" style="max-width:520px">
+  <div class="card">
+    <h3>🩸 نتائج تحليل الدم – 5 أكتوبر</h3>
+    <div class="warnbox">الحديد وفيتامين د منخفضين. خطتك فيها أكل غني بالحديد، ولا تشرب شاي أو قهوة قبل الأكل أو بعده بساعة.</div>
+    <div class="adv" style="margin-bottom:8px"><h4><span class="pill low">منخفض</span> الحديد</h4>
+      <div class="foods"><span>عدس</span><span>حمص</span><span>سبانخ</span><span>لحم بقري</span><span>برتقال مع الوجبة</span></div></div>
+    <div class="adv"><h4><span class="pill low">منخفض</span> فيتامين د</h4>
+      <div class="tip">15–20 دقيقة شمس الظهر 3 مرات بالأسبوع، وسلمون أو سردين مرتين بالأسبوع.</div></div>
+  </div>
+</div>
+
+<div class="notes"><div class="card">
+  <b>How it works</b>
+  <ul>
+    <li><b>Upload</b> a photo or PDF from any lab (also from the client's phone page). The AI reads the test names, results, units and the lab's own normal ranges; you check and save. You can also type tests by hand.</li>
+    <li><b>Record:</b> every test is kept with the original file, so you see all past results side by side with a trend line.</li>
+    <li><b>Advice</b> covers the common nutrition-related tests: iron/ferritin, hemoglobin, vitamin D, B12, folate, calcium, magnesium, zinc, glucose/HbA1c, cholesterol and triglycerides, uric acid. Each low/high result gets foods from your food list (marked if already in the plan), simple tips, and one-click “add to plan”.</li>
+    <li><b>Safety:</b> no doses or medicines; results far outside the range show “refer to doctor”. The client only sees advice after you press “Share with client”.</li>
+    <li>Arabic and English, like the rest of the app. The AI reading is part of Pro; typing results by hand works for everyone.</li>
+  </ul>
+</div></div>
+</body>
+</html>
