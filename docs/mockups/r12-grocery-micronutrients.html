@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grocery and micronutrients mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --brand:#1f6f5c; --brand-soft:#e5f1ed; --ink:#16211d; --muted:#6b7570; --line:#e3e7e5; --page:#f4f5f3;
+          --ok:#2f9e6e; --ok-soft:#e4f5ec; --warn:#b7791f; --warn-soft:#fdf4e3; --bad:#c2410c; --bad-soft:#fdece4; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#dfe3e1; font-family:Inter, system-ui, sans-serif; color:var(--ink); }
+  .cap { font:600 15px Inter; color:#4b5551; margin:28px auto 10px; max-width:1250px; padding:0 16px; }
+  .frame { max-width:1250px; margin:0 auto 30px; background:var(--page); border-radius:14px; padding:22px 26px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+  .ar { font-family:Tajawal, sans-serif; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px 18px; }
+  .btn { border:1px solid var(--line); background:#fff; border-radius:10px; padding:7px 12px; font:600 13px Inter; white-space:nowrap; display:inline-block; }
+  .btn.wa { background:#1fa855; color:#fff; border-color:#1fa855; }
+  .muted { color:var(--muted); font-size:12.5px; }
+  .top { display:flex; align-items:center; gap:8px; margin-bottom:12px; flex-wrap:wrap; } .top h3 { margin:0; flex:1; font-size:16px; }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:12.5px; } .seg span { padding:6px 11px; } .seg span.on { background:var(--brand-soft); color:var(--brand); font-weight:600; }
+  .groups { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .grp { border:1px solid var(--line); border-radius:14px; padding:10px 12px; }
+  .grp h4 { margin:0 0 6px; font-size:13px; display:flex; gap:6px; align-items:center; }
+  .it { display:flex; align-items:center; gap:8px; padding:6px 0; border-top:1px solid #f0f2f1; font-size:13px; }
+  .box { width:16px; height:16px; border:2px solid #c4ccc8; border-radius:4px; flex-shrink:0; } .box.on { background:var(--brand); border-color:var(--brand); }
+  .it .q { margin-inline-start:auto; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; } .it.done span:nth-child(2) { color:var(--muted); text-decoration:line-through; }
+  .it small { color:var(--muted); font-size:11px; display:block; }
+  .g2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .nut { display:grid; grid-template-columns:120px 1fr 92px; align-items:center; gap:10px; padding:7px 0; font-size:13px; border-top:1px solid #f0f2f1; }
+  .nut .b { height:8px; border-radius:99px; background:#eef1ef; position:relative; overflow:hidden; } .nut .b i { position:absolute; inset-block:0; inset-inline-start:0; border-radius:99px; }
+  .nut .v { text-align:end; font-variant-numeric:tabular-nums; font-weight:600; } .nut .v small { color:var(--muted); font-weight:400; }
+  .tag { border-radius:999px; padding:1px 8px; font-size:11px; font-weight:700; }
+  .low { background:var(--bad-soft); color:var(--bad); } .okk { background:var(--ok-soft); color:#1d7a46; } .hi { background:var(--warn-soft); color:var(--warn); }
+  .tip { background:var(--warn-soft); border-radius:12px; padding:10px 12px; font-size:13px; margin-top:10px; line-height:1.55; }
+  .tip b { color:var(--bad); }
+  .foods span { display:inline-block; background:#fff; border:1px solid var(--line); border-radius:8px; padding:2px 8px; font-size:12px; margin:4px 4px 0 0; }
+  .notes { max-width:1250px; margin:0 auto 40px; padding:0 16px; } .notes .card { font-size:14px; line-height:1.7; } .notes ul { margin:6px 0; padding-inline-start:20px; }
+  @media (max-width:950px) { .groups, .g2 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<div class="cap">1 · Smart grocery list (plan sheet → Shopping list, and the client's phone page)</div>
+<div class="frame">
+  <div class="card">
+    <div class="top"><h3>Shopping list · Ahmad – weight loss</h3>
+      <div class="seg"><span class="on">1 week</span><span>2 weeks</span></div>
+      <span class="btn">⬇ PDF</span><span class="btn wa">Send on WhatsApp</span></div>
+    <div class="muted" style="margin-bottom:10px">Amounts are what to buy (rounded to shop sizes), sorted by the aisle you'll find them in. Tick to cross off.</div>
+    <div class="groups">
+      <div class="grp"><h4>🥬 Vegetables</h4>
+        <div class="it"><span class="box on"></span><span>Cucumber</span><span class="q">7 pcs</span></div>
+        <div class="it"><span class="box"></span><span>Tomato</span><span class="q">7 pcs</span></div>
+        <div class="it"><span class="box"></span><span>Lettuce</span><span class="q">1 head</span></div>
+      </div>
+      <div class="grp"><h4>🍎 Fruit</h4>
+        <div class="it"><span class="box on"></span><span>Banana</span><span class="q">7 pcs</span></div>
+        <div class="it"><span class="box"></span><span>Apple</span><span class="q">4 pcs</span></div>
+      </div>
+      <div class="grp"><h4>🍗 Meat, chicken & fish</h4>
+        <div class="it"><span class="box"></span><span>Chicken breast<small>150 g a day</small></span><span class="q">1.1 kg</span></div>
+        <div class="it"><span class="box"></span><span>Salmon<small>2 times a week</small></span><span class="q">200 g</span></div>
+      </div>
+      <div class="grp"><h4>🥚 Dairy & eggs</h4>
+        <div class="it done"><span class="box on"></span><span>Eggs</span><span class="q">14 (1 tray)</span></div>
+        <div class="it"><span class="box"></span><span>Low-fat yogurt</span><span class="q">700 g</span></div>
+        <div class="it"><span class="box"></span><span>Cottage cheese</span><span class="q">700 g</span></div>
+      </div>
+      <div class="grp"><h4>🍞 Bread, rice & grains</h4>
+        <div class="it"><span class="box"></span><span>White rice<small>raw weight</small></span><span class="q">400 g</span></div>
+        <div class="it"><span class="box"></span><span>Oats</span><span class="q">350 g</span></div>
+        <div class="it"><span class="box"></span><span>Whole-wheat toast</span><span class="q">14 slices</span></div>
+      </div>
+      <div class="grp"><h4>🫒 Oils, nuts & seeds</h4>
+        <div class="it"><span class="box"></span><span>Olive oil</span><span class="q">14 tsp (~70 ml)</span></div>
+        <div class="it"><span class="box"></span><span>Walnuts</span><span class="q">210 g</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cap">2 · Vitamins & minerals for the plan (plan builder side panel and client sheet) — compared with what this client needs a day</div>
+<div class="frame">
+  <div class="g2">
+    <div class="card">
+      <div class="top"><h3>Vitamins & minerals · per day</h3><span class="muted">needs for: male, 34 y</span></div>
+      <div class="nut"><span>Iron</span><div class="b"><i style="width:58%;background:var(--bad)"></i></div><span class="v">4.6 <small>/ 8 mg</small> <span class="tag low">Low</span></span></div>
+      <div class="nut"><span>Calcium</span><div class="b"><i style="width:71%;background:var(--warn)"></i></div><span class="v">710 <small>/ 1000</small></span></div>
+      <div class="nut"><span>Vitamin D</span><div class="b"><i style="width:22%;background:var(--bad)"></i></div><span class="v">3.3 <small>/ 15 µg</small> <span class="tag low">Low</span></span></div>
+      <div class="nut"><span>Vitamin B12</span><div class="b"><i style="width:100%;background:var(--ok)"></i></div><span class="v">3.1 <small>/ 2.4 µg</small></span></div>
+      <div class="nut"><span>Folate</span><div class="b"><i style="width:80%;background:var(--ok)"></i></div><span class="v">320 <small>/ 400 µg</small></span></div>
+      <div class="nut"><span>Magnesium</span><div class="b"><i style="width:65%;background:var(--warn)"></i></div><span class="v">270 <small>/ 420</small></span></div>
+      <div class="nut"><span>Zinc</span><div class="b"><i style="width:100%;background:var(--ok)"></i></div><span class="v">11.8 <small>/ 11 mg</small></span></div>
+      <div class="nut"><span>Potassium</span><div class="b"><i style="width:62%;background:var(--warn)"></i></div><span class="v">2,100 <small>/ 3,400</small></span></div>
+      <div class="nut"><span>Fibre</span><div class="b"><i style="width:57%;background:var(--warn)"></i></div><span class="v">22 <small>/ 38 g</small></span></div>
+      <div class="nut"><span>Sodium</span><div class="b"><i style="width:48%;background:var(--ok)"></i></div><span class="v">1,100 <small>/ max 2,300</small></span></div>
+      <div class="muted" style="margin-top:8px">Green = enough · orange = 50–90% · red = under 50%. Needs from the standard daily values by age and sex.</div>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 6px;font-size:16px">How to close the gaps</h3>
+      <div class="tip"><b>Iron low</b> — swap 1 chicken serving for beef or add lentils at lunch. Vitamin C with the meal helps.
+        <div class="foods"><span>+ Lentils 100 g → +3.3 mg</span><span>Beef sirloin</span><span>Spinach</span></div></div>
+      <div class="tip"><b>Vitamin D low</b> — salmon or sardines 2× a week, eggs, sun. If the blood test is low too: refer to doctor for a supplement.
+        <div class="foods"><span>+ Salmon 100 g → +11 µg</span><span>Sardines</span></div></div>
+      <div class="tip" style="background:var(--page)">Fibre, magnesium and potassium are a bit short — more vegetables, fruit and whole grains will fix all three.
+        <div class="foods"><span>+ Swap white toast → whole-wheat</span><span>+ Add a salad to dinner</span></div></div>
+      <div class="muted" style="margin-top:10px">Each “+” button changes the plan and the bars update at once. When a blood test is saved, its low results are highlighted here too.</div>
+    </div>
+  </div>
+</div>
+
+<div class="cap">Same panel in Arabic</div>
+<div class="frame ar" dir="rtl" style="max-width:560px">
+  <div class="card">
+    <div class="top"><h3>الفيتامينات والمعادن · باليوم</h3></div>
+    <div class="nut"><span>الحديد</span><div class="b"><i style="width:58%;background:var(--bad)"></i></div><span class="v">4.6 <small>/ 8 ملغ</small> <span class="tag low">منخفض</span></span></div>
+    <div class="nut"><span>الكالسيوم</span><div class="b"><i style="width:71%;background:var(--warn)"></i></div><span class="v">710 <small>/ 1000</small></span></div>
+    <div class="nut"><span>فيتامين د</span><div class="b"><i style="width:22%;background:var(--bad)"></i></div><span class="v">3.3 <small>/ 15 ميكروغرام</small></span></div>
+    <div class="nut"><span>الألياف</span><div class="b"><i style="width:57%;background:var(--warn)"></i></div><span class="v">22 <small>/ 38 غ</small></span></div>
+  </div>
+</div>
+
+<div class="notes"><div class="card">
+  <b>Notes</b>
+  <ul>
+    <li><b>Grocery list:</b> foods get a shop section once (I set them for all foods; you can change any). Cooked amounts are turned into what to buy (e.g. 150 g cooked rice a day → about 400 g raw a week), pieces are rounded up (eggs by tray). 1 or 2 weeks. Same list on the client's phone with ticks.</li>
+    <li><b>Vitamins & minerals:</b> values come from the USDA tables for the 103 USDA foods and the 27 corrected old foods. Brand products (bars, powders) use their label where known, otherwise they're left out and the panel says “3 foods without data”.</li>
+    <li>Daily needs from the standard reference values (by age, sex, pregnancy). Shown on the plan builder (side panel) and the client sheet; the client sees it only if you switch it on.</li>
+  </ul>
+</div></div>
+</body>
+</html>
