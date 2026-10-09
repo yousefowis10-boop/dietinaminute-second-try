@@ -38,6 +38,8 @@ class FoodItem(models.Model):
     name_ar = models.CharField(max_length=100, blank=True, null=True)
     unit_ar = models.CharField(max_length=50, blank=True, null=True)
     multiplying_factor = models.FloatField(default=1.0)
+    # Vitamins & minerals in ONE serving (USDA): {"iron_mg": 1.2, "vitd_ug": 0, ...}. Empty = no data (e.g. brands).
+    micros = models.JSONField(default=dict, blank=True)
 
     def __str__(self):
         return self.name
@@ -736,3 +738,40 @@ class DayLog(models.Model):
     class Meta:
         unique_together = [('client', 'date')]
         ordering = ['-date']
+
+
+# ---------------------------------------------------------------- blood tests ---
+
+class BloodTest(models.Model):
+    """One lab report for a client: date, the results and (optionally) the original file."""
+    client = models.ForeignKey(ClientProfile, on_delete=models.CASCADE, related_name='blood_tests')
+    date = models.DateField()
+    lab = models.CharField(max_length=120, blank=True, default='')
+    note = models.TextField(blank=True, default='')
+    # The client sees the food advice on their phone page only after the dietitian shares it.
+    shared = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-id']
+
+
+class BloodTestFile(models.Model):
+    test = models.OneToOneField(BloodTest, on_delete=models.CASCADE, related_name='file')
+    name = models.CharField(max_length=255, blank=True, default='')
+    content_type = models.CharField(max_length=100, default='application/octet-stream')
+    data = models.BinaryField()
+
+
+class BloodResult(models.Model):
+    test = models.ForeignKey(BloodTest, on_delete=models.CASCADE, related_name='results')
+    code = models.CharField(max_length=30, blank=True, default='')  # known marker (ferritin, vitd…) or '' for others
+    name = models.CharField(max_length=120)
+    value = models.FloatField()
+    unit = models.CharField(max_length=30, blank=True, default='')
+    # The lab's own normal range when printed on the report (else the app's default range is used).
+    ref_low = models.FloatField(null=True, blank=True)
+    ref_high = models.FloatField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['id']

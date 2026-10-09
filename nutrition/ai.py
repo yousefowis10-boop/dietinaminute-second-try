@@ -304,3 +304,47 @@ def read_inbody(data, content_type, client):
             clean[key] = None
     clean['test_mode'] = False
     return clean
+
+
+def read_blood_test(data, content_type, client):
+    """Read every test from a lab report (photo or PDF). The dietitian checks the values before saving."""
+    if is_fake():
+        return {'test_date': None, 'lab': 'Test lab', 'test_mode': True, 'results': [
+            {'name': 'Ferritin', 'value': 9, 'unit': 'ng/mL', 'ref_low': 15, 'ref_high': 150},
+            {'name': 'Hemoglobin', 'value': 11.4, 'unit': 'g/dL', 'ref_low': 12, 'ref_high': 15.5},
+            {'name': 'Vitamin D (25-OH)', 'value': 16, 'unit': 'ng/mL', 'ref_low': 30, 'ref_high': 100},
+            {'name': 'Vitamin B12', 'value': 310, 'unit': 'pg/mL', 'ref_low': 200, 'ref_high': 900},
+            {'name': 'Fasting glucose', 'value': 88, 'unit': 'mg/dL', 'ref_low': 70, 'ref_high': 99},
+            {'name': 'LDL cholesterol', 'value': 142, 'unit': 'mg/dL', 'ref_low': None, 'ref_high': 130},
+        ]}
+    import base64
+    b64 = base64.b64encode(data).decode()
+    if content_type == 'application/pdf':
+        source = {'type': 'document', 'source': {'type': 'base64', 'media_type': 'application/pdf', 'data': b64}}
+    else:
+        media = content_type if content_type in ('image/jpeg', 'image/png', 'image/webp', 'image/gif') else 'image/jpeg'
+        source = {'type': 'image', 'source': {'type': 'base64', 'media_type': media, 'data': b64}}
+    prompt = (
+        "This is a medical laboratory report (it may be in Arabic or English). Read every test result exactly as printed. "
+        'Return JSON: {"test_date": "YYYY-MM-DD" or null, "lab": lab name or null, "results": [{"name": test name in English, '
+        '"value": number, "unit": unit as printed, "ref_low": number or null, "ref_high": number or null}]}. '
+        "Use the reference range printed on the report for ref_low/ref_high (for '< 130' use ref_low null and ref_high 130). "
+        "Skip tests whose result is not a number. Do not guess values that are not printed."
+    )
+    out = _json(_call(SYSTEM, [source, {'type': 'text', 'text': prompt}], max_tokens=2500))
+    results = []
+    for r in (out.get('results') or [])[:80]:
+        try:
+            value = float(r.get('value'))
+        except (TypeError, ValueError):
+            continue
+        def num(v):
+            try:
+                return float(v) if v is not None else None
+            except (TypeError, ValueError):
+                return None
+        results.append({'name': str(r.get('name') or '')[:120], 'value': value, 'unit': str(r.get('unit') or '')[:30],
+                        'ref_low': num(r.get('ref_low')), 'ref_high': num(r.get('ref_high'))})
+    date = out.get('test_date')
+    return {'test_date': date if isinstance(date, str) and re.match(r'^\d{4}-\d{2}-\d{2}$', date) else None,
+            'lab': str(out.get('lab') or '')[:120], 'results': results, 'test_mode': False}

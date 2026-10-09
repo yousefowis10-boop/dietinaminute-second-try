@@ -20,6 +20,7 @@ from .views import ClientProfileView, \
 
 from . import views_v2 as v2
 from . import views_v3 as v3
+from . import views_v4 as v4
 
 urlpatterns = [
     # --- upgrade ---
@@ -66,6 +67,13 @@ urlpatterns = [
     path('packages/<int:package_id>/', v3.PackageDetailView.as_view()),
     path('clients/<int:client_id>/app/', v3.ClientAppLinkView.as_view()),
     path('plan/<int:plan_id>/workout-suggestions/', v3.WorkoutSuggestionsView.as_view()),
+    path('clients/<int:client_id>/blood-tests/', v4.BloodTestListView.as_view()),
+    path('clients/<int:client_id>/blood-read/', v4.BloodReadView.as_view()),
+    path('clients/<int:client_id>/history/', v4.HistoryView.as_view()),
+    path('clients/<int:client_id>/micro-needs/', v4.MicroNeedsView.as_view()),
+    path('blood-tests/<int:test_id>/', v4.BloodTestDetailView.as_view()),
+    path('blood-tests/<int:test_id>/file/', v4.BloodTestFileView.as_view()),
+    path('plan/<int:plan_id>/micros/', v4.PlanMicrosView.as_view()),
     # --- existing ---
     path('profile/', UserProfileView.as_view(), name='user-profile'),
 

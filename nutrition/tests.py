@@ -174,3 +174,61 @@ class WorkoutSuggestionTests(TestCase):
         DietPlan.objects.filter(pk=self.plan.pk).update(workout_id=first)
         r = self.api.get(f'/api/nutrition/plan/{self.plan.id}/workout-suggestions/', {'goal': 'muscle_gain', 'level': 'advanced'}).json()
         self.assertNotIn(first, [w['id'] for w in r['workouts']])
+
+
+class BloodTestTests(TestCase):
+    def setUp(self):
+        from django.core.management import call_command
+        call_command('add_usda_foods', verbosity=0)
+        call_command('add_food_micros', verbosity=0)
+        self.user = User.objects.create_user(username='d@x.test', password='x')
+        self.client_profile = make_client(self.user)
+        self.api = APIClient()
+        self.api.force_authenticate(self.user)
+
+    def test_save_advice_history_and_share(self):
+        url = f'/api/nutrition/clients/{self.client_profile.id}/blood-tests/'
+        old = {'date': '2026-03-01', 'results': [{'name': 'Ferritin', 'value': 22}, {'name': 'Vitamin D (25-OH)', 'value': 10}]}
+        new = {'date': '2026-10-05', 'results': [
+            {'name': 'Ferritin', 'value': 9, 'unit': 'ng/mL', 'ref_low': 15, 'ref_high': 150},
+            {'name': 'Vitamin D', 'value': 16}, {'name': 'LDL cholesterol', 'value': 142},
+            {'name': 'TSH', 'value': 6.2}, {'name': 'Some other test', 'value': 3}]}
+        self.assertEqual(self.api.post(url, old, format='json').status_code, 201)
+        r = self.api.post(url, new, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual(r.json()['low'], 2)
+        page = self.api.get(url).json()
+        codes = {a['code']: a for a in page['advice']}
+        self.assertEqual(codes['ferritin']['status'], 'low')
+        self.assertTrue(codes['ferritin']['foods'])
+        self.assertTrue(codes['tsh']['refer'])  # thyroid -> doctor
+        self.assertTrue(page['advice'][0]['refer'])  # 'refer to doctor' items come first
+        hist = self.api.get(f'/api/nutrition/clients/{self.client_profile.id}/history/').json()
+        ferritin = next(s for s in hist['blood'] if s['key'] == 'ferritin')
+        self.assertEqual([p['value'] for p in ferritin['points']], [22, 9])
+        self.assertTrue(any(s['key'] == 'weight' for s in hist['body']) or hist['body'] == [])
+        # client sees nothing until shared
+        token = CheckInLink.objects.create(client=self.client_profile).token
+        self.assertIsNone(APIClient().get(f'/api/public/app/{token}/').json()['blood_advice'])
+        self.api.put(f"/api/nutrition/blood-tests/{r.json()['id']}/", {'shared': True}, format='json')
+        shared = APIClient().get(f'/api/public/app/{token}/').json()['blood_advice']
+        self.assertEqual(shared['date'], '2026-10-05')
+
+    def test_ai_read_fake(self):
+        import os
+        os.environ['AI_FAKE'] = 'true'
+        self.user.plan_tier = 'pro'
+        self.user.save()
+        import base64
+        r = self.api.post(f'/api/nutrition/clients/{self.client_profile.id}/blood-read/',
+                          {'file': {'name': 'lab.png', 'content_type': 'image/png', 'data': base64.b64encode(b'x').decode()}}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.json()['results'][0]['code'], 'ferritin')
+
+    def test_plan_micros(self):
+        plan = make_plan(self.client_profile)  # 3 servings of a food without data
+        r = self.api.get(f'/api/nutrition/plan/{plan.id}/micros/').json()
+        iron = next(x for x in r['rows'] if x['key'] == 'iron_mg')
+        self.assertEqual(iron['status'], 'low')
+        self.assertTrue(iron['sources'])
+        self.assertEqual(r['missing'], ['rice'])

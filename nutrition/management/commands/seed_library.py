@@ -116,6 +116,7 @@ class Command(BaseCommand):
         call_command('add_usda_foods')
         call_command('fix_old_foods')
         call_command('add_academy_workouts')
+        call_command('add_food_micros')
         added = 0
         for spec in WORKOUTS:
             _, created = WorkoutTemplate.objects.get_or_create(

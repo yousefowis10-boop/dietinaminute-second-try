@@ -379,6 +379,15 @@ def _clinic(owner):
     }
 
 
+def _shared_blood_advice(client):
+    """Food advice from blood tests the dietitian chose to share with the client."""
+    from .views_v4 import blood_advice
+    shared = list(client.blood_tests.filter(shared=True).prefetch_related('results'))
+    if not shared:
+        return None
+    return {'date': shared[0].date.isoformat(), 'items': blood_advice(client, shared)}
+
+
 class PublicClientAppView(APIView):
     """The client's own phone page. No login; the long random token is the key."""
     permission_classes = [AllowAny]
@@ -424,6 +433,7 @@ class PublicClientAppView(APIView):
             },
             'week': week,
             'adherence': adherence(client, today),
+            'blood_advice': _shared_blood_advice(client),
             'next_appointment': None if nxt is None else {
                 'date': nxt.date.isoformat(), 'time': nxt.time.strftime('%H:%M'),
                 'type_name': nxt.type.name if nxt.type else '', 'type_name_ar': nxt.type.name_ar if nxt.type else '',
