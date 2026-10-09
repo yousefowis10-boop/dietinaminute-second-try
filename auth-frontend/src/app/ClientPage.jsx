@@ -26,6 +26,11 @@ export default function ClientPage() {
     API.get(`/nutrition/clients/${id}/overview/`).then((r) => setData(r.data)).catch(() => setFailed(true));
   }, [id]);
   useEffect(() => { load(); }, [load]);
+  // Coming back to this window (e.g. after testing the client's link) shows what they just sent.
+  useEffect(() => {
+    window.addEventListener("focus", load);
+    return () => window.removeEventListener("focus", load);
+  }, [load]);
 
   if (failed) return <p className="text-muted">{t("error")}</p>;
   if (!data) return <Spinner label={t("loading")} />;

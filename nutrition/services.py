@@ -364,14 +364,14 @@ def clean_meal_slots(slots):
 
 # Used until the dietitian has made enough plans for the app to learn their favourites.
 COMMON_FOOD_DEFAULTS = {
-    'carb': ['white rice', 'oats', 'al reef barn bread'],
-    'protein': ['chicken breast', 'whole egg boiled', 'tuna in olive'],
-    'fat': ['olive oil', 'avocado', 'walnuts'],
+    'carb': ['white rice', 'oats', 'al reef barn bread', 'potato', 'sweet potato', 'banana', 'pasta', 'apple'],
+    'protein': ['chicken breast', 'whole egg boiled', 'tuna in olive', 'steak', 'salmon', 'ground beef', 'turkey', 'shrimp'],
+    'fat': ['olive oil', 'avocado', 'walnuts', 'almond', 'american garden peanut butter', 'tahini', 'labneh full fat', 'cashew'],
 }
 
 
-def common_foods(user, per_type=3):
-    """The 3 foods of each group this dietitian uses most, filled up with sensible defaults."""
+def common_foods(user, per_type=6):
+    """The 6 foods of each group this dietitian uses most, filled up with sensible defaults."""
     from django.db.models import Count
 
     from .models import DietItem, FoodItem

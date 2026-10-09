@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 const STRINGS = {
   ar: {
     // appointments, client app, Today
+    newCheckinsBanner: "وصلك {n} قياس جديد من العميل — افتح القياسات", waterToday: "الماء اليوم",
     today: "اليوم",
     appointments: "المواعيد",
     appointment: "موعد",
@@ -309,7 +310,7 @@ const STRINGS = {
     addAnother_fat: "أضف دهونًا أخرى من القائمة…",
     searchFood: "ابحث عن طعام…",
     noMatch: "لا توجد نتائج",
-    builderHint: "الأطعمة الثلاثة الأكثر استخدامًا جاهزة في كل مجموعة — فقط اكتب الحصص. أي طعام آخر من القائمة. حصة رز = 100 غ، و1.5 = 150 غ.",
+    builderHint: "الأطعمة الستة الأكثر استخدامًا جاهزة في كل مجموعة — فقط اكتب الحصص. أي طعام آخر من القائمة. حصة رز = 100 غ، و1.5 = 150 غ.",
     nextSplit: "التالي: توزيع الوجبات ←",
     fromTemplate: "من قالب",
     aiDraftBtn: "مسودة بالذكاء الاصطناعي",
@@ -468,6 +469,7 @@ const STRINGS = {
   },
   en: {
     // appointments, client app, Today
+    newCheckinsBanner: "{n} new check-in from the client — open Progress & check-ins", waterToday: "Water today",
     today: "Today",
     appointments: "Appointments",
     appointment: "Appointment",
@@ -756,7 +758,7 @@ const STRINGS = {
     addAnother_fat: "Add another fat from the list…",
     searchFood: "Search a food…",
     noMatch: "No matches",
-    builderHint: "The 3 most-used foods in each group are always ready — just type servings. Anything else comes from the list. 1 serving of rice = 100 g, 1.5 = 150 g.",
+    builderHint: "The 6 most-used foods in each group are always ready — just type servings. Anything else comes from the list. 1 serving of rice = 100 g, 1.5 = 150 g.",
     nextSplit: "Next: split into meals →",
     fromTemplate: "From template",
     aiDraftBtn: "AI draft",

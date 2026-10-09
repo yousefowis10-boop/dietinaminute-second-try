@@ -225,7 +225,7 @@ export default function PlanBuilder() {
   // ------------------------------------------------------------ actions
   const updateItem = (foodId, patch) => setItems((list) => list.map((i) => (i.food_id === foodId ? { ...i, ...patch } : i)));
   const removeItem = (foodId) => setItems((list) => list.filter((i) => i.food_id !== foodId));
-  const addFood = (food) => setItems((list) => (list.some((i) => i.food_id === food.id) ? list : [...list, foodToItem(food, { quantity: 1 })]));
+  const addFood = (food) => setItems((list) => (list.some((i) => i.food_id === food.id) ? list : [...list, foodToItem(food, { quantity: 0 })]));
 
   const fit = useCallback(async () => {
     const list = items.filter((i) => i.quantity > 0);

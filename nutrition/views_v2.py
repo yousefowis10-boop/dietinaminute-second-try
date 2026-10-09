@@ -557,7 +557,7 @@ class PlanReplaceView(APIView):
 # -------------------------------------------------------- common foods ---
 
 class CommonFoodsView(APIView):
-    """The 3 most-used foods per group, shown ready in the plan builder."""
+    """The 6 most-used foods per group, shown ready in the plan builder."""
 
     def get(self, request):
         return Response(common_foods(request.user))

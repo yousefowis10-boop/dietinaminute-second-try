@@ -53,12 +53,15 @@ export function ClientAppCard({ client }) {
                   const done = l ? Object.values(l.meals || {}).reduce((s, v) => s + Number(v), 0) : 0;
                   const pct = Math.min(done / info.meals_per_day, 1);
                   return (
-                    <div key={d} title={`${dayLabel(fromIso(d), lang, { day: "numeric", month: "short" })}: ${done}/${info.meals_per_day}`}
+                    <div key={d} title={`${dayLabel(fromIso(d), lang, { day: "numeric", month: "short" })}: ${done}/${info.meals_per_day} · ${t("water")} ${l ? l.water * 0.25 : 0} ${t("litre")}`}
                       className="h-7 rounded" style={{ background: l ? `rgba(47,158,110,${0.15 + pct * 0.85})` : "#eef1ef" }} />
                   );
                 })}
               </div>
-              <p className="mt-1.5 text-xs text-muted">{info.last_log ? t("lastTick", { date: dayLabel(fromIso(info.last_log), lang, { day: "numeric", month: "short" }) }) : t("noTicksYet")}</p>
+              <p className="mt-1.5 text-xs text-muted">
+                {info.last_log ? t("lastTick", { date: dayLabel(fromIso(info.last_log), lang, { day: "numeric", month: "short" }) }) : t("noTicksYet")}
+                {" · "}{t("waterToday")}: <b className="num text-brand-ink">{(logs[isoDay()]?.water || 0) * 0.25} {t("litre")}</b>
+              </p>
             </>
           )}
           {!client.phone && <p className="mt-2 text-xs text-muted">{t("addPhoneHint")}</p>}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Ban, Copy, Link2, MessageCircle, Plus, TriangleAlert, X } from "lucide-react";
+import { Ban, Copy, Inbox, Link2, MessageCircle, Plus, TriangleAlert, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
@@ -113,7 +114,14 @@ export default function OverviewTab({ data, reload }) {
   const { t, num, fmtDate } = useI18n();
   const c = data.client;
   const lastSummary = data.ai_results.find((r) => r.kind === "summary");
+  const newCheckins = data.progress.filter((r) => !r.reviewed).length;
   return (
+    <>
+    {newCheckins > 0 && (
+      <Link to="?tab=progress" className="mb-4 flex items-center gap-2 rounded-xl border border-ai/20 bg-ai-soft px-4 py-3 text-sm font-semibold text-ai">
+        <Inbox className="h-4 w-4" />{t("newCheckinsBanner", { n: newCheckins })}<span className="ms-auto">→</span>
+      </Link>
+    )}
     <div className="grid gap-4 lg:grid-cols-2">
       <div className="space-y-4">
         <Card title={t("dailyTarget")}>
@@ -146,5 +154,6 @@ export default function OverviewTab({ data, reload }) {
         <InterviewLinkCard data={data} reload={reload} />
       </div>
     </div>
+    </>
   );
 }
