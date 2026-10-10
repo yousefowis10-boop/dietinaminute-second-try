@@ -413,3 +413,15 @@ class AllergyTests(TestCase):
         self.assertEqual(ov['allergy_mode'], '')
         api.put(f'/api/nutrition/clients/{client.id}/allergy-mode/', {'mode': 'hide'}, format='json')
         self.assertEqual(api.get(f'/api/nutrition/clients/{client.id}/overview/').json()['allergy_mode'], 'hide')
+
+
+class SupplementTests(TestCase):
+    def test_save_and_show(self):
+        user = User.objects.create_user(username='d@x.test', password='x')
+        api = APIClient()
+        api.force_authenticate(user)
+        plan = make_plan(make_client(user))
+        rows = [{'key': 'creatine', 'dose': '5', 'unit': 'g', 'when': 'post_workout'}, {'key': '', 'name': 'Ashwagandha', 'dose': '300', 'unit': 'mg', 'when': 'nonsense'}, {}]
+        r = api.put(f'/api/nutrition/plan/{plan.id}/supplements/', {'supplements': rows}, format='json').json()['supplements']
+        self.assertEqual([(x['key'] or x['name'], x['when']) for x in r], [('creatine', 'post_workout'), ('Ashwagandha', 'any')])
+        self.assertEqual(len(api.get(f'/api/nutrition/plan/{plan.id}/sheet/').json()['supplements']), 2)

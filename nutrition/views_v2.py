@@ -307,6 +307,7 @@ class PlanSheetView(APIView):
             'grocery2': smart_grocery(plan, weeks=2),
             'grocery4': smart_grocery(plan, weeks=4),
             'recipes': plan_recipes(plan),
+            'supplements': plan.supplements or [],
             'workout': WorkoutTemplateSerializer(plan.workout).data if plan.workout else None,
             'branding': {'clinic_name': account['clinic_name'], 'logo_url': account['logo_url']},
         })
@@ -830,3 +831,23 @@ class AllergyModeView(APIView):
             return Response({'mode': 'invalid'}, status=400)
         ClientProfile.objects.filter(pk=client.pk).update(allergy_mode=mode)
         return Response({'allergy_mode': mode})
+
+
+SUPPLEMENT_WHEN = {'morning', 'with_breakfast', 'with_meal', 'pre_workout', 'post_workout', 'bedtime', 'any'}
+
+
+class PlanSupplementsView(APIView):
+    """Save the plan's supplements list (name, dose, unit, when, note)."""
+
+    def put(self, request, plan_id):
+        plan = get_object_or_404(plan_qs(request.user), id=plan_id)
+        rows = []
+        for r in (request.data.get('supplements') or [])[:30]:
+            if not isinstance(r, dict) or not (r.get('key') or r.get('name')):
+                continue
+            rows.append({'key': str(r.get('key') or '')[:40], 'name': str(r.get('name') or '')[:80],
+                         'dose': str(r.get('dose') or '')[:20], 'unit': str(r.get('unit') or '')[:20],
+                         'when': r.get('when') if r.get('when') in SUPPLEMENT_WHEN else 'any', 'note': str(r.get('note') or '')[:200]})
+        plan.supplements = rows
+        plan.save(update_fields=['supplements'])
+        return Response({'supplements': rows})

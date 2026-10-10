@@ -288,6 +288,9 @@ class DietPlan(models.Model):
     meal_slots = models.JSONField(default=list, blank=True)
     # Suggested week: {"days": [{"items": [{"meal": "meal1", "food_id": 1, "quantity": 1.5, "swapped": false}]}]}
     weekly = models.JSONField(null=True, blank=True)
+    # Supplements, kept apart from the foods (not counted in the macros):
+    # [{"key": "creatine", "name": "", "dose": "5", "unit": "g", "when": "post_workout", "note": ""}]
+    supplements = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return f"{self.user.username} - Plan on {self.created_at.date()}"

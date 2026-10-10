@@ -8,6 +8,7 @@ import { LanguageSwitch } from "./AppLayout";
 import WorkoutView from "./WorkoutView";
 import SmartGrocery from "./SmartGrocery";
 import RecipeCard from "./RecipeCard";
+import { SupplementsList } from "./supplements";
 import { AdviceCards } from "./client/bloodUi";
 import { englishUnit, niceAmount } from "./foodUtils";
 import { dayLabel, fromIso, isoDay } from "./schedule";
@@ -210,6 +211,7 @@ export default function ClientApp() {
                 </div>
               ))
             )}
+            {plan.supplements?.length > 0 && <div className="mt-3 bg-white"><SupplementsList rows={plan.supplements} compact /></div>}
             {plan.notes && <div className="card mt-3 whitespace-pre-line p-4 text-sm">{plan.notes}</div>}
             {plan.recipes?.length > 0 && (
               <>

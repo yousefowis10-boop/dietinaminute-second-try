@@ -83,6 +83,7 @@ urlpatterns = [
     path('foods/review/', vf.FoodReviewView.as_view()),
     path('foods/review/<int:food_id>/', vf.FoodReviewView.as_view()),
     path('team/', vf.TeamView.as_view()),
+    path('plan/<int:plan_id>/supplements/', v2.PlanSupplementsView.as_view()),
     path('clients/<int:client_id>/allergy-mode/', v2.AllergyModeView.as_view()),
     path('team/members/', vf.TeamMemberView.as_view()),
     path('team/members/<int:member_id>/', vf.TeamMemberView.as_view()),

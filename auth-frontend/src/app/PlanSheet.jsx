@@ -14,6 +14,7 @@ import WorkoutView from "./WorkoutView";
 import SmartGrocery from "./SmartGrocery";
 import MicrosPanel from "./MicrosPanel";
 import RecipeCard from "./RecipeCard";
+import { SupplementsEditor, SupplementsList } from "./supplements";
 import { openWhatsApp } from "./schedule";
 
 const enUnit = (row) => englishUnit(row.unit_en, row.unit, row.factor ?? 100);
@@ -113,6 +114,7 @@ function DaySheet({ data, slots, notes }) {
         <span className="inline-flex items-center gap-1.5"><i className={`h-2 w-2 rounded-full ${FOOD_DOT.protein}`} />{t("protein")}</span>
         <span className="inline-flex items-center gap-1.5"><i className={`h-2 w-2 rounded-full ${FOOD_DOT.fat}`} />{t("fat")}</span>
       </div>
+      <div className="pdf-keep"><SupplementsList rows={data.supplements} /></div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="break-inside-avoid rounded-xl border border-line px-4 py-3 text-[13px]">
           <h4 className="mb-1 font-bold text-brand">{t("notesFromDietitian")}</h4>
@@ -310,6 +312,7 @@ export default function PlanSheet() {
   const hi = week ? Math.max(...week.days.map((d) => d.kcal)) : 0;
   const recipes = data.recipes || [];
   const tabs = [["day", t("tabDayPlan")], ["week", t("tabWeekly")], ["shop", t("tabShopping")], ...(recipes.length ? [["recipes", `${t("recipesTab")} (${num(recipes.length)})`]] : []),
+    ["supplements", `${t("supplementsTab")}${data.supplements?.length ? ` (${num(data.supplements.length)})` : ""}`],
     ["workout", t("tabWorkout")], ["micros", t("tabMicros")]];
 
   return (
@@ -405,6 +408,8 @@ export default function PlanSheet() {
           {recipes.map((r) => <div key={r.key} className="card p-5 sm:p-6"><RecipeCard recipe={r} /></div>)}
         </div>
       )}
+
+      {tab === "supplements" && <SupplementsEditor planId={planId} initial={data.supplements} onSaved={(rows) => setData((d) => ({ ...d, supplements: rows }))} />}
 
       {tab === "micros" && <PlanMicros planId={planId} />}
       {tab !== "workout" && !data.workout && (
