@@ -49,6 +49,27 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
   foods/workouts remembered, compact plan builder (kept +/− and 3 columns), welcome guide for new dietitians.
   Not done on purpose: client file split (Yousef: fine as is), one link per client (interview/phone page) — ask first.
 
+## Feedback round 3 (10 Oct evening) — all DONE (Yousef: "fix everything I texted you about")
+- PDF: each part (day plan, week, shopping list, recipes, workout) starts on a fresh page, nothing cut in half, no blank
+  pages, shopping-list title stays with the list, recipes flow one after another (no empty box when a recipe has no photo).
+- Today page: the boxes are now folding sections (tap to close); everything starts OPEN, the choice is remembered.
+- Client page: age / weight / height chips on the same line as the name; Progress tab: Charts and All check-ins fold away.
+- Explanation texts moved behind a small "!" (hover or tap) across the app.
+- Overview tab: cards split evenly left / right.
+- Interviews page: interviews the dietitian fills in themselves now show (marked Reviewed); waiting ones first.
+  Interview sections all start open (they already did in code; could not reproduce the closed ones).
+- Plan templates: grouped and folding by health issue, each opens to show meals + portions + totals, do/avoid tips per
+  condition (draft, needs review), "Use for a client" opens the builder with the template filled in.
+- Food database: "Add from label photo" (AI reads the nutrition table, brand REQUIRED, goes straight into the main list)
+  and "Add manually" (only that dietitian / company sees it until an admin approves). Admin = staff account; approval list
+  at the top of the Foods page. The test-site demo account is staff so Yousef can try it.
+- Team: Settings → Team. Solo (freelancer) account, or "Make it a company": the admin adds dietitians (one-time password
+  shown once), switches them off/on, and chooses whether dietitians share all clients or each sees their own (admin sees all).
+- Supplements: own tab on the client sheet (protein, creatine, EAA/BCAA, vitamins, minerals… with usual doses and timing),
+  shown on the day plan, PDF and phone page. NOT counted in calories/macros.
+- Blood test "only one result": the test site runs the AI in TEST MODE (fake fixed results). Real reading needs the
+  Anthropic key on the Railway TEST backend (Yousef adds it himself) and AI_FAKE switched off.
+
 ## Pinned (waiting for Yousef)
 - ✅ **Recipes library** (built 10 Oct): all 100 recipes from "The Bodybuilder's Kitchen" (Yousef
   confirmed 10 Oct he holds the rights to the book). Each recipe is ONE food in the Carbs / Protein / Fat lists (where most of
@@ -60,9 +81,9 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
   recipe with photo), client phone page (Plan → "Recipes in your plan"), shopping list ("Recipes" section: cook N times,
   the batch ingredients × N).
   The GitHub repo is PUBLIC; told that pushing publishes the book, Yousef chose "Upload it anyway" (10 Oct).
-- **Allergies from the interview** (Yousef 10 Oct): if the client marks an allergy (peanuts, shellfish, dairy, eggs, wheat,
-  soy, gluten…), the dietitian is ASKED once: "Remove these foods from the search" or "Just mark them in red". Applies in the
-  plan builder and swaps.
+- ✅ **Allergies from the interview** (built 10 Oct): the builder asks ONCE per client "Remove them from search and swaps"
+  or "Keep them, mark in red". Foods are matched by name, recipes by their ingredients (almond milk is not dairy,
+  eggplant is not egg). Hide also applies to weekly-plan swaps and manual day edits. Choice saved on the client.
 - Later ideas: health-watch sync (needs a real phone app), company wellness, own branded app in the stores.
 
 ## Mockups
