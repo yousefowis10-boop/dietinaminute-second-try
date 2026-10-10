@@ -2,7 +2,7 @@
 
 Configuration (environment variables):
   ANTHROPIC_API_KEY  - enables real AI. Without it, AI features are unavailable.
-  AI_MODEL           - model name, default "claude-sonnet-5".
+  AI_MODEL           - model name, default "claude-sonnet-5-5".
   AI_FAKE=true       - TEST SERVERS ONLY: return predictable sample output without
                        calling any AI, so the screens can be tried end to end.
 """
@@ -51,7 +51,7 @@ def check_allowed(user):
 
 def _call(system, prompt, max_tokens=2000):
     body = json.dumps({
-        'model': os.getenv('AI_MODEL', 'claude-sonnet-5'),
+        'model': os.getenv('AI_MODEL', 'claude-sonnet-5-5'),
         'max_tokens': max_tokens,
         'system': system,
         'messages': [{'role': 'user', 'content': prompt}],
