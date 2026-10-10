@@ -22,6 +22,7 @@ from . import views_v2 as v2
 from . import views_v3 as v3
 from . import views_v4 as v4
 from . import views_foods as vf
+from . import views_reports as vr
 
 urlpatterns = [
     # --- upgrade ---
@@ -83,6 +84,9 @@ urlpatterns = [
     path('foods/review/', vf.FoodReviewView.as_view()),
     path('foods/review/<int:food_id>/', vf.FoodReviewView.as_view()),
     path('team/', vf.TeamView.as_view()),
+    path('finance/', vr.FinanceView.as_view()),
+    path('contacts/', vr.ContactsView.as_view()),
+    path('clients/<int:client_id>/contact-notes/', vr.ContactNotesView.as_view()),
     path('plan/<int:plan_id>/supplements/', v2.PlanSupplementsView.as_view()),
     path('clients/<int:client_id>/allergy-mode/', v2.AllergyModeView.as_view()),
     path('team/members/', vf.TeamMemberView.as_view()),

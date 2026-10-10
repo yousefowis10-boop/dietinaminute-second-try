@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { CalendarDays, ClipboardList, Dumbbell, Home, LayoutGrid, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Salad, Settings, Users, X } from "lucide-react";
+import { BookUser, CalendarDays, ClipboardList, Wallet, Dumbbell, Home, LayoutGrid, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Salad, Settings, Users, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../i18n";
 import { Avatar, Spinner } from "../ui";
@@ -115,6 +115,8 @@ export default function AppLayout() {
         <NavItem slim={slim} to="/dashboard/appointments" icon={CalendarDays} label={t("appointments")} />
         <NavItem slim={slim} to="/dashboard/clients" icon={Users} label={t("clients")} />
         <NavItem slim={slim} to="/dashboard/interviews" icon={ClipboardList} label={t("interviews")} badge={waiting} />
+        <NavItem slim={slim} to="/dashboard/contacts" icon={BookUser} label={t("contactsNav")} />
+        <NavItem slim={slim} to="/dashboard/finance" icon={Wallet} label={t("financeNav")} />
         {slim ? <div className="mx-2 my-3 border-t border-line" /> : <div className="mx-3 mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wider text-muted">{t("library")}</div>}
         <NavItem slim={slim} to="/dashboard/templates" icon={LayoutGrid} label={t("planTemplates")} />
         <NavItem slim={slim} to="/dashboard/workouts" icon={Dumbbell} label={t("workoutPlans")} />

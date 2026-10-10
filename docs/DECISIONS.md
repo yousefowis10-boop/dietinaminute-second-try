@@ -71,6 +71,11 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
 - Blood test "only one result": the test site runs the AI in TEST MODE (fake fixed results). Real reading needs the
   Anthropic key on the Railway TEST backend (Yousef adds it himself) and AI_FAKE switched off.
 
+- Side menu: **Contacts** (every client: phone, current subscription start / end, visits left, status Active / Ending soon
+  (≤7 days or 1 visit left) / Ended / None, notes saved per client, WhatsApp "Remind to renew") and **Finances & reports**
+  (period: this month / last month / 3 months / year; revenue received, unpaid with WhatsApp reminder + mark paid, expected
+  from booked visits, simple report, by payment method, last-6-months bar chart, all payments list).
+
 ## Pinned (waiting for Yousef)
 - ✅ **Recipes library** (built 10 Oct): all 100 recipes from "The Bodybuilder's Kitchen" (Yousef
   confirmed 10 Oct he holds the rights to the book). Each recipe is ONE food in the Carbs / Protein / Fat lists (where most of

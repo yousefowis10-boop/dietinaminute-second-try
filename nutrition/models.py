@@ -151,6 +151,8 @@ class ClientProfile(models.Model):
     goal = models.CharField(max_length=10, choices=GOAL_CHOICES, blank=True, default='')
     # Mobile number for WhatsApp messages (any format; digits are taken when sending).
     phone = models.CharField(max_length=30, blank=True, default='')
+    # Free notes on the Contacts page (e.g. "wants to renew in Ramadan").
+    contact_notes = models.TextField(blank=True, default='')
     work_style = models.CharField(max_length=20, choices=WORK_STYLE_CHOICES)
 
     # Computed fields

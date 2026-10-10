@@ -15,6 +15,8 @@ const Clients = lazy(() => import("./app/Clients"));
 const ClientForm = lazy(() => import("./app/ClientForm"));
 const ClientPage = lazy(() => import("./app/ClientPage"));
 const PlanBuilder = lazy(() => import("./app/PlanBuilder"));
+const Finance = lazy(() => import("./app/Finance"));
+const Contacts = lazy(() => import("./app/Contacts"));
 const PlanSheet = lazy(() => import("./app/PlanSheet"));
 const Templates = lazy(() => import("./app/Templates"));
 const Workouts = lazy(() => import("./app/Workouts"));
@@ -71,6 +73,8 @@ export default function App() {
                 <Route path="workouts" element={<Workouts />} />
                 <Route path="foods" element={<Foods />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="finance" element={<Finance />} />
+                <Route path="contacts" element={<Contacts />} />
                 {/* old addresses */}
                 <Route path="list-client" element={<Navigate to="/dashboard/clients" replace />} />
                 <Route path="create-client" element={<Navigate to="/dashboard/clients/new" replace />} />

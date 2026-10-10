@@ -425,3 +425,32 @@ class SupplementTests(TestCase):
         r = api.put(f'/api/nutrition/plan/{plan.id}/supplements/', {'supplements': rows}, format='json').json()['supplements']
         self.assertEqual([(x['key'] or x['name'], x['when']) for x in r], [('creatine', 'post_workout'), ('Ashwagandha', 'any')])
         self.assertEqual(len(api.get(f'/api/nutrition/plan/{plan.id}/sheet/').json()['supplements']), 2)
+
+
+class FinanceAndContactsTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='d@x.test', password='x', first_name='Yousef')
+        self.api = APIClient()
+        self.api.force_authenticate(self.user)
+        self.cal = self.api.get('/api/nutrition/calendars/').json()[0]
+
+    def test_finance_and_contacts(self):
+        from decimal import Decimal
+        from .models import ClientPackage
+        today = timezone.localdate()
+        client = make_client(self.user)
+        typ = self.cal['types'][1]['id']
+        cal = Calendar.objects.get(id=self.cal['id'])
+        past = today - timedelta(days=1) if today.day > 1 else today
+        Appointment.objects.create(calendar=cal, type_id=typ, client=client, date=past, time='10:00', price=20, status='attended', paid=True, paid_via='cash')
+        Appointment.objects.create(calendar=cal, type_id=typ, client=client, date=past, time='11:00', price=15, status='attended')
+        ClientPackage.objects.create(client=client, name='Monthly', visits=4, start=today, end=today + timedelta(days=5),
+                                     price=Decimal('100'), paid_amount=Decimal('60'))
+        f = self.api.get('/api/nutrition/finance/').json()
+        self.assertEqual((f['received'], f['owed_total']), (80.0, 55.0))
+        self.assertEqual(f['by_via'][0], {'via': 'package', 'amount': 60.0})
+        self.assertEqual(len(f['months']), 6)
+        c = self.api.get('/api/nutrition/contacts/').json()[0]
+        self.assertEqual((c['status'], c['days_left'], c['package']['name']), ('ending', 5, 'Monthly'))
+        self.api.put(f'/api/nutrition/clients/{client.id}/contact-notes/', {'notes': 'Renew in Ramadan'}, format='json')
+        self.assertEqual(self.api.get('/api/nutrition/contacts/').json()[0]['notes'], 'Renew in Ramadan')
