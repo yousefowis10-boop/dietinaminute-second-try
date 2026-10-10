@@ -247,6 +247,8 @@ def today_summary(user, today):
 
     return {
         'date': today.isoformat(),
+        'clients_count': clients.count(),
+        'calendars_count': calendars_for(user).count(),
         'appointments': todays,
         'checkins': [{'id': r.id, 'client_id': r.client_id, 'name': r.client.name, 'date': r.created_at,
                       'weight': r.weight, 'source': r.source} for r in checkins],

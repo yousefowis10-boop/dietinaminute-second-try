@@ -33,11 +33,13 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
 5. ✅ DONE 9 Oct · **Blood tests** + ONE full-history page of everything measured (Yousef asked) → upload photo/PDF, AI reads results, record with trends, food advice per low/high result, "refer to doctor" for extreme values, share with client. Mockup r9. Links to #4.
 
 ## Wanted — not approved for building yet
-- Per-client "Send booking link" (name prefilled, optional chosen times) — offered, no answer yet.
+- ✅ DONE 10 Oct: per-client "Send booking link" (name filled in, optional chosen times, WhatsApp).
 - Stripe online payment — Yousef has an account; connect later. Then: deposit / no-show fee.
 - From the competitor report, suggested top picks (waiting for his choice): photo food diary + comments, chat,
   protocol templates (low iron, PCOS, cholesterol…), ready-made programs, automatic client journey, branded PDFs/pages.
-- Simplify / speed-up review (lighter client page, smaller menu, one link per client, fewer cards…) — waiting.
+- ✅ DONE 10 Oct (Yousef: "finish everything"): pages load on demand (1.5 MB -> 0.4 MB), light menu counts, faster Today,
+  foods/workouts remembered, compact plan builder (kept +/− and 3 columns), welcome guide for new dietitians.
+  Not done on purpose: client file split (Yousef: fine as is), one link per client (interview/phone page) — ask first.
 
 ## Pinned (waiting for Yousef)
 - **Recipes library** — Yousef will send his recipe book; then recipes with nutrition per serving, filters, "cook once eat twice".

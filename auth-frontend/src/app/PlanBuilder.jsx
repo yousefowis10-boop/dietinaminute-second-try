@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { Check, ChevronDown, Copy, LayoutGrid, Minus, Pencil, Plus, Search, Shuffle, Sparkles, Target, X } from "lucide-react";
 import API, { cachedGet } from "../hooks/useApi";
 import { useI18n } from "../i18n";
-import { CalorieRing, DraftBadge, Empty, Modal, SafetyFlags, Spinner, apiError, targetStatus } from "../ui";
+import { DraftBadge, Empty, Modal, SafetyFlags, Spinner, apiError, targetStatus } from "../ui";
 import { useAIBlocker } from "./client/AIPanel";
 import MicrosPanel, { microRows } from "./MicrosPanel";
 import { amountOf, kcalOf, niceAmount, roundHalf, totalsOf, tplDesc, tplName, unitLabel } from "./foodUtils";
@@ -401,17 +401,19 @@ export default function PlanBuilder() {
 
       {step === 0 && (
         <>
-          <div className="mb-4 grid gap-4 lg:grid-cols-[1fr_340px]">
-            <StepsBar current={0} className="content-center" />
-            <div className="card flex items-center gap-4 p-4">
-              <CalorieRing value={totals.kcal} target={targets.kcal} size={96} />
-              <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-semibold text-muted">{t("totalCalories")}</div>
-                <div className="num mb-2 text-[13px] text-muted">{t("targetKcal", { n: num(targets.kcal) })}</div>
-                <button type="button" className="btn w-full border-[#c5e8d6] bg-ok-soft text-[#1d7a52]" onClick={fit} disabled={busy === "fit" || !active.length}>
-                  <Target className="h-4 w-4" />{busy === "fit" ? t("loading") : t("fitToTarget")}
-                </button>
+          <div className="card mb-4 flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
+            <StepsBar current={0} className="min-w-0 flex-1" />
+            <div className="flex items-center gap-3">
+              <div className="w-44 leading-tight">
+                <div className="flex items-baseline gap-1"><span className="text-[11.5px] text-muted">{t("totalCalories")}</span>
+                  <span className="num ms-auto text-lg font-bold">{num(totals.kcal)}</span><span className="num text-xs text-muted">/ {num(targets.kcal)}</span></div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-[#edf0ee]">
+                  <i className={`block h-full rounded-full ${BAR[targetStatus(totals.kcal, targets.kcal)]}`} style={{ width: `${targets.kcal ? Math.min(totals.kcal / targets.kcal, 1) * 100 : 0}%` }} />
+                </div>
               </div>
+              <button type="button" className="btn border-[#c5e8d6] bg-ok-soft px-3 py-2 text-[#1d7a52]" onClick={fit} disabled={busy === "fit" || !active.length}>
+                <Target className="h-4 w-4" />{busy === "fit" ? t("loading") : t("fitToTarget")}
+              </button>
             </div>
           </div>
 
@@ -426,31 +428,27 @@ export default function PlanBuilder() {
               const diff = Math.round((v - tg) * 10) / 10;
               return (
                 <section key={col} className="card">
-                  <header className={`flex items-center gap-2.5 rounded-t-2xl border-b border-line px-5 py-3.5 ${HEAD[col]}`}>
-                    <i className={`h-2.5 w-2.5 rounded-[3px] ${DOT[col]}`} /><h3 className="text-base font-bold">{t(col === "carb" ? "carbs" : col)}</h3>
-                  </header>
-                  <div className="border-b border-line px-5 py-3.5">
-                    <div className="flex items-center text-[12.5px] font-semibold text-muted">
-                      {t("totalOf", { m: t(col === "carb" ? "carbs" : col) })}
-                      <span className={`ms-auto rounded-full px-2 py-0.5 text-[11px] ${PILL[s]}`}>{s === "on" ? t("onTarget") : s === "near" ? t("nearTarget") : t("offTarget")}</span>
+                  <header className={`rounded-t-2xl border-b border-line px-4 py-3 ${HEAD[col]}`}>
+                    <div className="flex items-center gap-2">
+                      <i className={`h-2.5 w-2.5 rounded-[3px] ${DOT[col]}`} /><h3 className="text-base font-bold">{t(col === "carb" ? "carbs" : col)}</h3>
+                      <span className="num ms-auto text-sm"><b className="text-lg text-brand-ink">{num(v, 1)}</b><span className="text-muted"> / {num(tg)} {t("g")}</span></span>
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${PILL[s]}`}>{s === "on" ? "✓" : diff >= 0 ? `+${num(Math.round(diff))}` : `−${num(Math.round(-diff))}`}</span>
                     </div>
-                    <div className="mb-2 mt-1 text-sm text-muted"><b className="num text-[28px] font-bold text-brand-ink">{num(v, 1)}</b><span className="num"> / {num(tg)} {t("g")}</span></div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-[#edf0ee]"><i className={`block h-full rounded-full ${BAR[s]}`} style={{ width: `${tg ? Math.min(v / tg, 1) * 100 : 0}%` }} /></div>
-                    <div className="num mt-2 text-xs text-muted">{diff >= 0 ? t("gOver", { n: num(Math.round(diff)) }) : t("gToGo", { n: num(Math.round(-diff)) })}</div>
-                  </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/70"><i className={`block h-full rounded-full ${BAR[s]}`} style={{ width: `${tg ? Math.min(v / tg, 1) * 100 : 0}%` }} /></div>
+                  </header>
                   <table className="w-full table-fixed border-collapse text-sm">
-                    <colgroup><col style={{ width: "34%" }} /><col style={{ width: "17%" }} /><col style={{ width: "27%" }} /><col style={{ width: "16%" }} /><col style={{ width: "6%" }} /></colgroup>
+                    <colgroup><col style={{ width: "44%" }} /><col style={{ width: "31%" }} /><col style={{ width: "19%" }} /><col style={{ width: "6%" }} /></colgroup>
                     <thead><tr className="text-start text-[11.5px] text-muted">
-                      <th className="ps-5 pt-3 pb-1.5 text-start font-semibold">{t("colFood")}</th><th className="pt-3 pb-1.5 text-start font-semibold">{t("colServing")}</th>
-                      <th className="pt-3 pb-1.5 text-start font-semibold">{t("colServings")}</th><th className="pt-3 pb-1.5 text-start font-semibold">{t("colAmount")}</th><th />
+                      <th className="ps-4 pt-2.5 pb-1 text-start font-semibold">{t("colFood")}</th>
+                      <th className="pt-2.5 pb-1 text-start font-semibold">{t("colServings")}</th><th className="pt-2.5 pb-1 text-start font-semibold">{t("colAmount")}</th><th />
                     </tr></thead>
                     <tbody>
                       {rows.map((i) => (
                         <tr key={i.food_id} className="border-t border-[#f0f2f0]">
-                          <td className={`h-[52px] ps-5 pe-1.5 font-semibold leading-tight ${i.quantity > 0 ? "" : "text-muted"}`}>
+                          <td className={`h-[50px] ps-4 pe-1.5 font-semibold leading-tight ${i.quantity > 0 ? "" : "text-muted"}`}>
                             {foodName(i)}{!i.common && <span className="ms-1.5 rounded-full bg-page px-1.5 py-px align-middle text-[10.5px] font-semibold text-muted">{t("addedTag")}</span>}
+                            <span className="num block text-[11px] font-normal text-muted">1 = {amountOf(i, 1)} {unitLabel(i, lang)}</span>
                           </td>
-                          <td className="num px-1.5 text-[12.5px] leading-tight text-muted">{amountOf(i, 1)} {unitLabel(i, lang)}</td>
                           <td className="px-1.5"><Stepper value={i.quantity} onChange={(q) => updateItem(i.food_id, { quantity: q })} /></td>
                           <td className={`num whitespace-nowrap px-1.5 text-[13px] font-bold ${i.quantity > 0 ? "text-brand" : "font-medium text-[#c3c9c6]"}`}>
                             {i.quantity > 0 ? `${amountOf(i, i.quantity)} ${unitLabel(i, lang)}` : "—"}
@@ -460,7 +458,7 @@ export default function PlanBuilder() {
                       ))}
                     </tbody>
                   </table>
-                  <div className="px-5 pb-4 pt-3"><FoodPicker options={options} others={foods.filter((f) => colOf(f) !== col && !used.has(f.id) && !excludedIds.has(f.id))} onPick={addFood} placeholder={t(`addAnother_${col}`)} /></div>
+                  <div className="px-4 pb-3 pt-2.5"><FoodPicker options={options} others={foods.filter((f) => colOf(f) !== col && !used.has(f.id) && !excludedIds.has(f.id))} onPick={addFood} placeholder={t(`addAnother_${col}`)} /></div>
                 </section>
               );
             })}

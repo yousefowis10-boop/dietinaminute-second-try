@@ -59,6 +59,22 @@ export default function Home() {
       />
       {!data ? <Spinner label={t("loading")} /> : data.error ? <Empty>{t("error")}</Empty> : (
         <div className="space-y-4">
+          {data.clients_count === 0 && (
+            <section className="card p-6">
+              <h2 className="text-lg font-bold">{t("welcomeTitle")}</h2>
+              <p className="mt-1 text-sm text-muted">{t("welcomeSub")}</p>
+              <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+                {[["/dashboard/clients/new", "welcomeStep1"], ["/dashboard/settings#calendars", "welcomeStep2"], ["/dashboard/appointments", "welcomeStep3"]].map(([to, key], i) => (
+                  <li key={key}>
+                    <Link to={to} className="flex h-full items-start gap-3 rounded-xl border border-line p-4 hover:border-brand">
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">{i + 1}</span>
+                      <span className="text-sm font-semibold">{t(key)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
           <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
             <Card title={<>{t("todaysAppointments")} <Count n={data.appointments.length} /></>} icon={<CalendarCheck className="h-4 w-4 text-brand" />}
               actions={<Link to="/dashboard/appointments" className="text-xs font-semibold text-brand">{t("openCalendar")}</Link>}>
