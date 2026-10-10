@@ -67,7 +67,7 @@ function TemplateCard({ tpl, foods, onUse, onDelete }) {
 // One folding group (My templates, or one health issue).
 function Group({ id, title, icon, count, tips, children }) {
   const { t, lang } = useI18n();
-  const [open, toggle] = useFold(`dim.templates.${id}`, true);
+  const [open, toggle] = useFold(id);
   const tip = tips?.[lang] || tips?.en;
   return (
     <section className="mb-4">

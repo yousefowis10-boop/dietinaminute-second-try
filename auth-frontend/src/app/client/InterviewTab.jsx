@@ -128,7 +128,7 @@ export default function InterviewTab({ data, reload }) {
   const [branding, setBranding] = useState(null);
   const [busy, setBusy] = useState("");
   const [dirty, setDirty] = useState(false);
-  const [closed, setClosed] = useState({});
+  const [opened, setOpened] = useState({}); // sections start closed; the dietitian opens what they need
   const [linkOpen, setLinkOpen] = useState(false);
   const pdfRef = useRef(null);
 
@@ -178,7 +178,10 @@ export default function InterviewTab({ data, reload }) {
     const others = ["liked_foods", "never_foods", "less_foods"].filter((n) => n !== field.name);
     return others.flatMap((n) => answers[n] || []);
   };
-  const jump = (key) => document.getElementById(`sec-${key}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const jump = (key) => {
+    setOpened((x) => ({ ...x, [key]: true }));
+    setTimeout(() => document.getElementById(`sec-${key}`)?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
 
   return (
     <>
@@ -216,10 +219,10 @@ export default function InterviewTab({ data, reload }) {
         <div className="space-y-4">
           {steps.map((step, i) => {
             const [a, b] = counts[i];
-            const isClosed = closed[step.key];
+            const isClosed = !opened[step.key];
             return (
               <section key={step.key} id={`sec-${step.key}`} className="card scroll-mt-4">
-                <button type="button" onClick={() => setClosed((x) => ({ ...x, [step.key]: !x[step.key] }))}
+                <button type="button" onClick={() => setOpened((x) => ({ ...x, [step.key]: !x[step.key] }))}
                   className={`flex w-full items-center gap-3 ${isClosed ? "rounded-2xl" : "rounded-t-2xl"} bg-[#fafbfa] px-6 py-4 text-start ${isClosed ? "" : "border-b border-line"}`}>
                   <span className="grid h-[30px] w-[30px] place-items-center rounded-[9px] bg-brand text-sm font-bold text-white">{i + 1}</span>
                   <h3 className="text-[17px] font-bold">{step[lang] || step.en}</h3>
@@ -245,11 +248,13 @@ export default function InterviewTab({ data, reload }) {
             );
           })}
           <section id="sec-measurements" className="card scroll-mt-4 overflow-hidden">
-            <div className="flex items-center gap-3 border-b border-line bg-[#fafbfa] px-6 py-4">
+            <button type="button" onClick={() => setOpened((x) => ({ ...x, measurements: !x.measurements }))}
+              className={`flex w-full items-center gap-3 bg-[#fafbfa] px-6 py-4 text-start ${opened.measurements ? "border-b border-line" : ""}`}>
               <span className="grid h-[30px] w-[30px] place-items-center rounded-[9px] bg-brand text-sm font-bold text-white">{steps.length + 1}</span>
               <h3 className="text-[17px] font-bold">{t("measurementsSec")}</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-3">
+              <ChevronDown className={`ms-auto h-4 w-4 text-muted transition ${opened.measurements ? "" : "-rotate-90 rtl:rotate-90"}`} />
+            </button>
+            {opened.measurements && <div className="grid grid-cols-2 gap-4 p-6 sm:grid-cols-3">
               {MEASUREMENT_FIELDS.map((f) => (
                 <label key={f} className="block">
                   <span className="mb-1.5 block text-[13px] font-semibold">{MEASUREMENT_LABELS[f][lang === "ar" ? 0 : 1]}</span>
@@ -259,7 +264,7 @@ export default function InterviewTab({ data, reload }) {
                   </div>
                 </label>
               ))}
-            </div>
+            </div>}
           </section>
           {dirty && (
             <div className="sticky bottom-4 flex items-center gap-3 rounded-2xl border border-warn/30 bg-white p-3 shadow-lg">

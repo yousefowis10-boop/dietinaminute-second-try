@@ -74,8 +74,8 @@ export default function ProgressTab({ data, reload, checkin, setCheckin }) {
     await API.delete(`/nutrition/checkins/${id}/`);
     reload();
   };
-  const [chartsOpen, toggleCharts] = useFold("dim.fold.charts", true);
-  const [listOpen, toggleList] = useFold("dim.fold.checkins", true);
+  const [chartsOpen, toggleCharts] = useFold("charts");
+  const [listOpen, toggleList] = useFold("checkins");
   const downloadReport = async () => {
     setBusy("pdf");
     toggleCharts(true);

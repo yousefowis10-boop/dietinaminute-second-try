@@ -52,7 +52,8 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
 ## Feedback round 3 (10 Oct evening) — all DONE (Yousef: "fix everything I texted you about")
 - PDF: each part (day plan, week, shopping list, recipes, workout) starts on a fresh page, nothing cut in half, no blank
   pages, shopping-list title stays with the list, recipes flow one after another (no empty box when a recipe has no photo).
-- Today page: the boxes are now folding sections (tap to close); everything starts OPEN, the choice is remembered.
+- Today page: the boxes are now folding sections. Yousef (later, 10 Oct): EVERY folding section in the app starts CLOSED
+  (just the title) each time; open what you need. Applies to Today, charts, check-ins, templates, interview sections.
 - Client page: age / weight / height chips on the same line as the name; Progress tab: Charts and All check-ins fold away.
 - Explanation texts moved behind a small "!" (hover or tap) across the app.
 - Overview tab: cards split evenly left / right.

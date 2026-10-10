@@ -28,7 +28,7 @@ function Row({ to, name, sub, children }) {
 
 // One folding box on the Today page: a button with its title and count; tap to open or close (remembered).
 function Fold({ id, title, icon, count, tone, actions, children }) {
-  const [open, toggle] = useFold(`dim.today.${id}`, true);
+  const [open, toggle] = useFold(id);
   return (
     <section className="card overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3">

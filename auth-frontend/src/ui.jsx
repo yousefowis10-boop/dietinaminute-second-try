@@ -251,16 +251,10 @@ export function apiError(err, t) {
   return t("error");
 }
 
-// Open / closed state for a folding box, remembered on this computer (e.g. "dim.fold.charts").
-export function useFold(key, initial = true) {
-  const [open, setOpen] = useState(() => {
-    try { const v = localStorage.getItem(key); return v === null ? initial : v === "1"; } catch { return initial; }
-  });
-  const toggle = (next) => setOpen((o) => {
-    const v = typeof next === "boolean" ? next : !o;
-    try { localStorage.setItem(key, v ? "1" : "0"); } catch { /* private window */ }
-    return v;
-  });
+// Open / closed state for a folding box. Boxes start closed (just the title) and the dietitian opens what they need.
+export function useFold(_key, initial = false) {
+  const [open, setOpen] = useState(initial);
+  const toggle = (next) => setOpen((o) => (typeof next === "boolean" ? next : !o));
   return [open, toggle];
 }
 
