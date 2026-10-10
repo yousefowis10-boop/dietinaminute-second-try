@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, MessageCircle, Wallet } from "lucide-react";
+import { MessageCircle, Plus, Trash2, Wallet } from "lucide-react";
 import toast from "react-hot-toast";
 import API from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../i18n";
 import { Badge, Empty, FoldArrow, PageHeader, Spinner, useFold } from "../ui";
 import { isoDay, money, openWhatsApp } from "./schedule";
+import RecordPayment from "./RecordPayment";
 
 const PERIODS = ["thisMonth", "lastMonth", "last3Months", "thisYear"];
 
@@ -38,6 +39,7 @@ export default function Finance() {
   const { account } = useAuth();
   const [period, setPeriod] = useState("thisMonth");
   const [data, setData] = useState(null);
+  const [paying, setPaying] = useState(null); // {} = new payment, or {client, kind, id}
   const ar = lang === "ar";
 
   const load = useCallback(() => {
@@ -48,12 +50,9 @@ export default function Finance() {
 
   const cur = data?.currency || "";
   const remind = (o) => openWhatsApp(o.phone, t("payReminderMsg", { name: o.name.split(" ")[0], amount: money(o.amount, cur), clinic: account?.clinic_name || "" }));
-  const markPaid = async (o) => {
-    try {
-      await API.put(`/nutrition/appointments/${o.id}/`, { paid: true, paid_via: "cash" });
-      toast.success(t("markedPaid"));
-      load();
-    } catch { toast.error(t("error")); }
+  const undo = async (r) => {
+    if (!window.confirm(t("undoPaymentConfirm"))) return;
+    try { await API.delete(`/nutrition/payments/${r.id}/`); load(); } catch { toast.error(t("error")); }
   };
 
   const stats = data && !data.error ? [
@@ -66,11 +65,14 @@ export default function Finance() {
   return (
     <>
       <PageHeader title={t("financeTitle")} subtitle={t("financeSub")} actions={(
-        <div className="inline-flex overflow-hidden rounded-xl border border-line bg-white text-sm font-semibold">
-          {PERIODS.map((p) => (
-            <button key={p} type="button" onClick={() => setPeriod(p)} className={`px-3 py-2 ${period === p ? "bg-brand text-white" : "hover:bg-page"}`}>{t(p)}</button>
-          ))}
-        </div>
+        <>
+          <div className="inline-flex overflow-hidden rounded-xl border border-line bg-white text-sm font-semibold">
+            {PERIODS.map((p) => (
+              <button key={p} type="button" onClick={() => setPeriod(p)} className={`px-3 py-2 ${period === p ? "bg-brand text-white" : "hover:bg-page"}`}>{t(p)}</button>
+            ))}
+          </div>
+          <button type="button" className="btn-primary" onClick={() => setPaying({})}><Plus className="h-4 w-4" />{t("recordPayment")}</button>
+        </>
       )} />
       {!data ? <Spinner label={t("loading")} /> : data.error ? <Empty>{t("error")}</Empty> : (
         <div className="space-y-4">
@@ -128,28 +130,29 @@ export default function Finance() {
                     </span>
                     <b className="num text-bad">{money(o.amount, cur)}</b>
                     {o.phone && <button type="button" className="btn px-2.5 py-1 text-xs bg-[#1fa855] text-white hover:opacity-90" onClick={() => remind(o)}><MessageCircle className="h-3.5 w-3.5" />{t("remind")}</button>}
-                    {o.kind === "visit" && <button type="button" className="btn-secondary px-2.5 py-1 text-xs" onClick={() => markPaid(o)}><Check className="h-3.5 w-3.5" />{t("markPaid")}</button>}
+                    {o.client && <button type="button" className="btn-secondary px-2.5 py-1 text-xs" onClick={() => setPaying({ client: o.client, kind: o.kind, id: o.id })}><Wallet className="h-3.5 w-3.5" />{t("recordPayment")}</button>}
                   </li>
                 ))}
               </ul>
             )}
           </Section>
 
-          <Section title={t("allPayments")} count={data.rows.length}>
+          <Section title={t("paymentsReceived")} count={data.rows.length}>
             {!data.rows.length ? <p className="p-4 text-sm text-muted">{t("noPaymentsPeriod")}</p> : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[640px] text-[13.5px]">
                   <thead className="bg-[#fafbfa] text-xs text-muted"><tr>
-                    {[t("colDate"), t("client"), t("item"), t("amount"), t("statusCol")].map((h) => <th key={h} className="px-4 py-2.5 text-start font-semibold">{h}</th>)}
+                    {[t("colDate"), t("client"), t("item"), t("amount"), t("payMethod"), ""].map((h, i) => <th key={i} className="px-4 py-2.5 text-start font-semibold">{h}</th>)}
                   </tr></thead>
                   <tbody>
                     {data.rows.map((r) => (
                       <tr key={`${r.kind}${r.id}`} className="border-t border-line">
                         <td className="num px-4 py-2">{fmtDate(r.date)}</td>
                         <td className="px-4 py-2">{r.name}</td>
-                        <td className="px-4 py-2 text-muted">{r.kind === "package" ? `${t("package")} · ${r.what}` : (ar && r.what_ar) || r.what}</td>
-                        <td className="num px-4 py-2 font-semibold">{money(r.amount, cur)}</td>
-                        <td className="px-4 py-2"><Badge tone={r.state === "paid" ? "ok" : r.state === "unpaid" ? "warn" : "brand"}>{t(`pay_${r.state}`)}{r.via ? ` · ${t(`via_${r.via}`)}` : ""}</Badge></td>
+                        <td className="px-4 py-2 text-muted">{r.kind === "package" || r.for === "package" ? `${t("package")} · ${r.what}` : r.for === "other" ? (r.what || t("paymentOther")) : (ar && r.what_ar) || r.what || t("visit")}</td>
+                        <td className="num px-4 py-2 font-semibold">{money(r.paid_amount, cur)}</td>
+                        <td className="px-4 py-2"><Badge tone="ok">{t(`via_${r.via || "other"}`)}</Badge></td>
+                        <td className="px-4 py-2 text-end">{r.kind === "payment" && <button type="button" className="text-[#b9c0bc] hover:text-bad" onClick={() => undo(r)} aria-label={t("delete")}><Trash2 className="h-4 w-4" /></button>}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -160,6 +163,7 @@ export default function Finance() {
           <p className="flex items-center gap-2 text-xs text-muted"><Wallet className="h-3.5 w-3.5" />{t("financeNote")}</p>
         </div>
       )}
+      <RecordPayment open={Boolean(paying)} preset={paying?.client ? paying : null} currency={cur} onClose={() => setPaying(null)} onSaved={() => { setPaying(null); load(); }} />
     </>
   );
 }

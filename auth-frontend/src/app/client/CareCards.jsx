@@ -5,6 +5,7 @@ import { CalendarDays, Copy, MessageCircle, Package, Plus, Send, Smartphone, Tra
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
 import { Badge, Card, Field, InfoTip, Modal, apiError } from "../../ui";
+import RecordPayment from "../RecordPayment";
 import { STATUS_TONE, typeName } from "../Appointments";
 import { addDays, clientAppUrl, dayLabel, fromIso, isoDay, money, openWhatsApp } from "../schedule";
 
@@ -109,7 +110,7 @@ export function PackagesCard({ client }) {
   const load = useCallback(() => API.get(`/nutrition/clients/${client.id}/packages/`).then((r) => setList(r.data)).catch(() => {}), [client.id]);
   useEffect(() => { load(); }, [load]);
 
-  const markPaid = async (p) => { await API.put(`/nutrition/packages/${p.id}/`, { paid_amount: p.price }); load(); };
+  const [paying, setPaying] = useState(null);
   const remove = async (p) => {
     if (!window.confirm(t("confirmDelete"))) return;
     await API.delete(`/nutrition/packages/${p.id}/`);
@@ -129,7 +130,7 @@ export function PackagesCard({ client }) {
               </div>
               <Badge tone={p.left <= 1 ? "warn" : "brand"}>{t("visitsUsed", { used: p.used, total: p.visits })}</Badge>
               {p.balance > 0 ? (
-                <button type="button" className="btn-secondary px-2.5 py-1 text-xs" onClick={() => markPaid(p)}>{t("owes")} {money(p.balance)} · {t("markPaid")}</button>
+                <button type="button" className="btn-secondary px-2.5 py-1 text-xs" onClick={() => setPaying({ client: client.id, kind: "package", id: p.id })}>{t("owes")} {money(p.balance)} · {t("recordPayment")}</button>
               ) : p.price > 0 && <Badge tone="ok">{t("paid")}</Badge>}
               <button type="button" className="btn-ghost p-1 hover:text-bad" onClick={() => remove(p)}><Trash2 className="h-3.5 w-3.5" /></button>
             </li>
@@ -137,6 +138,7 @@ export function PackagesCard({ client }) {
         </ul>
       )}
       {adding && <PackageForm clientId={client.id} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />}
+      <RecordPayment open={Boolean(paying)} preset={paying} onClose={() => setPaying(null)} onSaved={() => { setPaying(null); load(); }} />
     </Card>
   );
 }

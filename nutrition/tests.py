@@ -454,3 +454,32 @@ class FinanceAndContactsTests(TestCase):
         self.assertEqual((c['status'], c['days_left'], c['package']['name']), ('ending', 5, 'Monthly'))
         self.api.put(f'/api/nutrition/clients/{client.id}/contact-notes/', {'notes': 'Renew in Ramadan'}, format='json')
         self.assertEqual(self.api.get('/api/nutrition/contacts/').json()[0]['notes'], 'Renew in Ramadan')
+
+
+class PaymentTests(TestCase):
+    def test_record_part_payment_and_undo(self):
+        from decimal import Decimal
+        from .models import ClientPackage
+        user = User.objects.create_user(username='d@x.test', password='x')
+        api = APIClient()
+        api.force_authenticate(user)
+        cal = api.get('/api/nutrition/calendars/').json()[0]
+        client = make_client(user)
+        today = timezone.localdate()
+        pkg = ClientPackage.objects.create(client=client, name='Monthly', visits=4, start=today - timedelta(days=40),
+                                           price=Decimal('100'), paid_amount=Decimal('40'))
+        visit = Appointment.objects.create(calendar_id=cal['id'], client=client, date=today, time='10:00', price=20, status='attended')
+        items = api.get(f'/api/nutrition/clients/{client.id}/open-items/').json()
+        self.assertEqual({(i['kind'], i['amount']) for i in items}, {('visit', 20.0), ('package', 60.0)})
+        r = api.post('/api/nutrition/payments/', {'client': client.id, 'package': pkg.id, 'amount': '35', 'method': 'card'}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        api.post('/api/nutrition/payments/', {'client': client.id, 'appointment': visit.id, 'amount': '20', 'method': 'cash'}, format='json')
+        pkg.refresh_from_db()
+        visit.refresh_from_db()
+        self.assertEqual((pkg.paid_amount, visit.paid, visit.paid_via), (Decimal('75'), True, 'cash'))
+        f = api.get('/api/nutrition/finance/').json()
+        self.assertEqual(f['received'], 55.0)  # 35 today + 20 today; the old 40 was paid last month
+        self.assertEqual(f['owed_total'], 25.0)
+        api.delete(f'/api/nutrition/payments/{r.json()["id"]}/')
+        pkg.refresh_from_db()
+        self.assertEqual(pkg.paid_amount, Decimal('40'))

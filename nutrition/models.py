@@ -760,6 +760,23 @@ class Appointment(models.Model):
 
 # ------------------------------------------------------------- client app ---
 
+class Payment(models.Model):
+    """Money received: for a visit, towards a package (can be part of it), or anything else (e.g. an old balance)."""
+    METHODS = [('cash', 'Cash'), ('card', 'Card'), ('transfer', 'Transfer'), ('online', 'Online')]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')  # who recorded it
+    client = models.ForeignKey(ClientProfile, null=True, blank=True, on_delete=models.SET_NULL, related_name='payments')
+    appointment = models.ForeignKey(Appointment, null=True, blank=True, on_delete=models.SET_NULL, related_name='payments')
+    package = models.ForeignKey(ClientPackage, null=True, blank=True, on_delete=models.SET_NULL, related_name='payments')
+    amount = models.DecimalField(max_digits=9, decimal_places=2)
+    method = models.CharField(max_length=10, choices=METHODS, default='cash')
+    date = models.DateField()
+    note = models.CharField(max_length=200, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-date', '-id']
+
+
 class DayLog(models.Model):
     """What the client ticked in their phone page for one day."""
     client = models.ForeignKey(ClientProfile, on_delete=models.CASCADE, related_name='day_logs')

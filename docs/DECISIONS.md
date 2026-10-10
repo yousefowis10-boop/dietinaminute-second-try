@@ -76,6 +76,11 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
   (period: this month / last month / 3 months / year; revenue received, unpaid with WhatsApp reminder + mark paid, expected
   from booked visits, simple report, by payment method, last-6-months bar chart, all payments list).
 
+- **Record payment** (Yousef 10 Oct): button on Finances & reports (top + each unpaid row) and on the client's Packages card.
+  Pick client → what it is for (an unpaid visit, a package balance — part payments allowed — or "something else"),
+  amount, method (cash / card / transfer / online), date, note. Every payment is kept as a record (can be deleted =
+  undo). Revenue now counts payments on the day they were received (older ticks still count on the visit date).
+
 ## Pinned (waiting for Yousef)
 - ✅ **Recipes library** (built 10 Oct): all 100 recipes from "The Bodybuilder's Kitchen" (Yousef
   confirmed 10 Oct he holds the rights to the book). Each recipe is ONE food in the Carbs / Protein / Fat lists (where most of
