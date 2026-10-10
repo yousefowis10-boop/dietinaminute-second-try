@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from collections import defaultdict
 from decimal import Decimal, ROUND_HALF_UP
 
-from .services import client_qs, plan_qs, calculate_targets, split_plan, clean_meal_slots, ensure_tags, sync_never_foods
+from .services import visible_foods, client_qs, plan_qs, calculate_targets, split_plan, clean_meal_slots, ensure_tags, sync_never_foods
 from .models import ClientProfile, DietPlan, FoodItem, DietItem, ClientProfileRevision, BMRFormula, Tag, DetailedProfile, DetailedProfileRevision, UserProfile
 from .serializers import ClientProfileSerializer, DietPlanSerializer, FoodItemSerializer, BMRFormulaSerializer, DietItemTagUpdateSerializer, \
     TagSerializer, DetailedProfileSerializer, UserProfileSerializer, DetailedProfileRevisionSerializer
@@ -184,7 +184,7 @@ class GenerateDietPlanView(APIView):
         def fill_macro(food_type, target, macro_key):
             total = 0
             food_quantities = defaultdict(int)
-            foods = FoodItem.objects.exclude(recipe__has_pork=True).filter(food_type=food_type).order_by(f"-{macro_key}")
+            foods = visible_foods(request.user).filter(food_type=food_type).order_by(f"-{macro_key}")
             
             for food in foods:
                 if total >= target:
@@ -348,7 +348,8 @@ class AddItemToPlanView(APIView):
         return Response({"message": "Item added and plan updated."})
 
 class FoodItemListView(ListAPIView):
-    queryset = FoodItem.objects.exclude(recipe__has_pork=True).select_related('recipe')  # pork recipes hidden (Yousef 10 Oct)
+    def get_queryset(self):  # main list + the dietitian's own foods; pork recipes hidden (Yousef 10 Oct)
+        return visible_foods(self.request.user).select_related('recipe')
     serializer_class = FoodItemSerializer
     permission_classes = [IsAuthenticated]
 
@@ -390,7 +391,7 @@ class GenerateCustomPlanView(APIView):
         # Step 2: Fill remaining macros
         def fill_macro(food_type, macro_key, current, target):
             nonlocal protein_total, carb_total, fat_total
-            foods = FoodItem.objects.exclude(recipe__has_pork=True).filter(food_type=food_type).exclude(id__in=used_ids).order_by(f"-{macro_key}")
+            foods = visible_foods(user).filter(food_type=food_type).exclude(id__in=used_ids).order_by(f"-{macro_key}")
             for food in foods:
                 if current >= target:
                     break

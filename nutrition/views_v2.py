@@ -79,6 +79,7 @@ class AccountView(APIView):
             'plan_tier': user.plan_tier,
             'clinic': {'id': user.clinic_id, 'name': user.clinic.name} if user.clinic_id else None,
             'is_clinic_admin': user.is_clinic_admin,
+            'is_staff': user.is_staff,
             'ai': {
                 'plan_allows': user.has_ai_plan,
                 'enabled': profile.ai_enabled,
@@ -253,7 +254,7 @@ class PublicInterviewView(APIView):
             'clinic_name': (profile.clinic_name if profile else '') or (owner.clinic.name if owner.clinic_id else ''),
             'logo_url': profile.logo_data if profile and profile.logo_data else None,
             'submitted': invite.submitted_at is not None,
-            'foods': list(FoodItem.objects.exclude(recipe__has_pork=True).order_by('food_type', 'name').values('id', 'name', 'name_ar', 'food_type')),
+            'foods': list(FoodItem.objects.filter(is_public=True).exclude(recipe__has_pork=True).order_by('food_type', 'name').values('id', 'name', 'name_ar', 'food_type')),
         })
 
     @transaction.atomic

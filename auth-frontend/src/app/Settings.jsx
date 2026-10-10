@@ -7,6 +7,7 @@ import { useI18n } from "../i18n";
 import { Badge, Card, Field, PageHeader } from "../ui";
 import { LanguageSwitch } from "./AppLayout";
 import CalendarSettings from "./CalendarSettings";
+import TeamSettings from "./TeamSettings";
 
 export default function Settings() {
   const { account, refreshAccount } = useAuth();
@@ -56,6 +57,7 @@ export default function Settings() {
     <>
       <PageHeader title={t("settingsTitle")} />
       <div id="calendars" className="mb-4 scroll-mt-6"><CalendarSettings /></div>
+      <div id="team" className="mb-4 scroll-mt-6"><TeamSettings /></div>
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title={t("brandingTitle")}>
           <Field label={t("clinicName")}>

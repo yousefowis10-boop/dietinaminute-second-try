@@ -108,7 +108,7 @@ class FoodItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodItem
         fields = ['id', 'name', 'name_ar', 'unit', 'unit_ar', 'food_type', 'protein', 'carb', 'fat', 'multiplying_factor', 'micros',
-                  'recipe']
+                  'recipe', 'brand', 'source', 'is_public', 'review_status']
 
     def get_recipe(self, food):
         try:

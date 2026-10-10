@@ -325,3 +325,72 @@ class InterviewListTests(TestCase):
         self.assertEqual(api.put(f'/api/nutrition/clients/{client.id}/detailed-profile/', {'email': 'l@x.test'}, format='json').status_code, 200)
         client.refresh_from_db()
         self.assertEqual(client.interview_status, 'reviewed')
+
+
+class FoodAddAndTeamTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='d@x.test', password='x', first_name='Yousef', plan_tier='pro')
+        self.api = APIClient()
+        self.api.force_authenticate(self.user)
+
+    def names(self, api):
+        return {f['name'] for f in api.get('/api/nutrition/foods/').json()}
+
+    def test_label_food_is_public_and_needs_brand(self):
+        body = {'name': 'Protein bar', 'serving': 60, 'protein': 25, 'carb': 18, 'fat': 7, 'from_label': True}
+        self.assertEqual(self.api.post('/api/nutrition/foods/add/', body, format='json').status_code, 400)
+        r = self.api.post('/api/nutrition/foods/add/', {**body, 'brand': 'Barebells'}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertEqual((r.json()['name'], r.json()['unit'], r.json()['food_type']), ('Barebells – Protein bar', 'g', 'protein'))
+        other = APIClient()
+        other.force_authenticate(User.objects.create_user(username='o@x.test', password='x'))
+        self.assertIn('Barebells – Protein bar', self.names(other))
+
+    def test_manual_food_private_until_approved(self):
+        r = self.api.post('/api/nutrition/foods/add/', {'name': 'Mum\'s maqluba', 'serving': 250, 'protein': 15, 'carb': 60, 'fat': 14},
+                          format='json')
+        food_id = r.json()['id']
+        self.assertEqual(r.json()['review_status'], 'pending')
+        self.assertIn("Mum's maqluba", self.names(self.api))
+        other = APIClient()
+        other.force_authenticate(User.objects.create_user(username='o@x.test', password='x'))
+        self.assertNotIn("Mum's maqluba", self.names(other))
+        self.assertEqual(self.api.get('/api/nutrition/foods/review/').status_code, 403)  # not an admin
+        boss = APIClient()
+        boss.force_authenticate(User.objects.create_user(username='a@x.test', password='x', is_staff=True))
+        self.assertEqual([f['id'] for f in boss.get('/api/nutrition/foods/review/').json()], [food_id])
+        boss.post(f'/api/nutrition/foods/review/{food_id}/', {'approve': True}, format='json')
+        self.assertIn("Mum's maqluba", self.names(other))
+
+    def test_label_reading_fake(self):
+        import base64
+        import os
+        os.environ['AI_FAKE'] = 'true'
+        img = {'name': 'l.jpg', 'content_type': 'image/jpeg', 'data': base64.b64encode(b'\xff\xd8\xff' + b'0' * 50).decode()}
+        r = self.api.post('/api/nutrition/foods/read-label/', {'files': [img]}, format='json')
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertTrue(r.json()['test_mode'])
+
+    def test_company_admin_adds_dietitian(self):
+        self.assertEqual(self.api.get('/api/nutrition/team/').json()['mode'], 'solo')
+        self.assertEqual(self.api.post('/api/nutrition/team/', {'name': 'Nour Nutrition'}, format='json').json()['is_admin'], True)
+        r = self.api.post('/api/nutrition/team/members/', {'name': 'Sara', 'email': 'sara@x.test'}, format='json')
+        self.assertEqual(r.status_code, 201, r.content)
+        self.assertTrue(len(r.json()['password']) >= 10)
+        sara = User.objects.get(username='sara@x.test')
+        self.assertEqual((sara.clinic_id, sara.plan_tier), (self.user.clinic_id, 'pro'))
+        # shared clients by default; when switched off Sara only sees her own, the admin still sees all
+        mine = make_client(self.user, name='Admin client')
+        sara_api = APIClient()
+        sara_api.force_authenticate(sara)
+        self.assertEqual(len(sara_api.get('/api/nutrition/clients/').json()), 1)
+        self.api.put('/api/nutrition/team/', {'share_clients': False}, format='json')
+        sara.refresh_from_db()
+        self.assertEqual(len(sara_api.get('/api/nutrition/clients/').json()), 0)
+        make_client(sara, name='Sara client')
+        self.assertEqual(len(self.api.get('/api/nutrition/clients/').json()), 2)
+        self.assertEqual(sara_api.post('/api/nutrition/team/members/', {'name': 'X', 'email': 'x@x.test'}, format='json').status_code, 403)
+        self.api.put(f'/api/nutrition/team/members/{sara.id}/', {'active': False}, format='json')
+        sara.refresh_from_db()
+        self.assertFalse(sara.is_active)
+        self.assertTrue(mine.id)

@@ -6,6 +6,8 @@ class Clinic(models.Model):
     """A clinic groups several dietitians who share clients and branding."""
     name = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
+    # True: every dietitian sees all the company's clients. False: each sees their own; the admin sees everyone's.
+    share_clients = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name

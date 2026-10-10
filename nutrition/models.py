@@ -40,6 +40,13 @@ class FoodItem(models.Model):
     multiplying_factor = models.FloatField(default=1.0)
     # Vitamins & minerals in ONE serving (USDA): {"iron_mg": 1.2, "vitd_ug": 0, ...}. Empty = no data (e.g. brands).
     micros = models.JSONField(default=dict, blank=True)
+    # Foods added by dietitians. From a label photo (brand required): straight into the main list.
+    # Typed by hand: only the dietitian (and their company) see it until an admin approves it.
+    brand = models.CharField(max_length=100, blank=True)
+    source = models.CharField(max_length=20, blank=True)  # '' (library) / label_photo / manual
+    added_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='added_foods')
+    is_public = models.BooleanField(default=True)
+    review_status = models.CharField(max_length=10, blank=True)  # '' / pending / approved / rejected
 
     def __str__(self):
         return self.name

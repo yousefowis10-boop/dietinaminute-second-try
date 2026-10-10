@@ -23,10 +23,20 @@ KCAL_PER_GRAM = {'protein': 4, 'carb': 4, 'fat': 9}
 # ---------------------------------------------------------------- access ---
 
 def team_user_ids(user):
-    """The dietitian alone, or every dietitian in the same clinic."""
+    """The dietitian alone, or every dietitian in the same company (when the company shares clients,
+    or always for the company admin)."""
     if getattr(user, 'clinic_id', None):
-        return list(User.objects.filter(clinic_id=user.clinic_id).values_list('id', flat=True))
+        if user.is_clinic_admin or user.clinic.share_clients:
+            return list(User.objects.filter(clinic_id=user.clinic_id).values_list('id', flat=True))
     return [user.id]
+
+
+def visible_foods(user):
+    """Foods this dietitian can pick: the main list plus their (company's) own foods. Pork recipes are hidden."""
+    from django.db.models import Q
+    from .models import FoodItem
+    team = list(User.objects.filter(clinic_id=user.clinic_id).values_list('id', flat=True)) if user.clinic_id else [user.id]
+    return FoodItem.objects.filter(Q(is_public=True) | Q(added_by_id__in=team)).exclude(recipe__has_pork=True)
 
 
 def client_qs(user):

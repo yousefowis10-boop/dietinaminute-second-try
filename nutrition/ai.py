@@ -13,7 +13,7 @@ import urllib.error
 import urllib.request
 
 from .models import DetailedProfile, FoodItem
-from .services import fit_servings, safety_flags, totals_for, within
+from .services import fit_servings, safety_flags, totals_for, visible_foods, within
 
 API_URL = 'https://api.anthropic.com/v1/messages'
 INTERVIEW_FIELDS = [
@@ -157,7 +157,7 @@ def draft_plan(client, meals=4, language='ar'):
     if not all(targets.values()):
         raise AIUnavailable('missing_targets')
     excluded = set(client.excluded_foods.values_list('id', flat=True))
-    allowed = [f for f in FoodItem.objects.exclude(recipe__has_pork=True) if f.id not in excluded and f.food_type in ('protein', 'carb', 'fat')]
+    allowed = [f for f in visible_foods(client.user) if f.id not in excluded and f.food_type in ('protein', 'carb', 'fat')]
     foods_by_id = {f.id: f for f in allowed}
     meal_tags = ['meal1', 'snack1', 'meal2', 'snack2', 'meal3', 'snack3', 'meal4'][:max(2, min(int(meals) * 2 - 1, 7))]
 
@@ -350,3 +350,37 @@ def read_blood_test(files, client):
     date = out.get('test_date')
     return {'test_date': date if isinstance(date, str) and re.match(r'^\d{4}-\d{2}-\d{2}$', date) else None,
             'lab': str(out.get('lab') or '')[:120], 'results': results, 'test_mode': False}
+
+
+def read_food_label(files):
+    """Read the nutrition facts from photos of a product's label. The dietitian checks the values and adds the brand."""
+    if is_fake():
+        return {'name': 'Protein bar', 'name_ar': 'لوح بروتين', 'brand': '', 'serving': 60, 'unit': 'g',
+                'kcal': 220, 'protein': 20, 'carb': 22, 'fat': 7, 'test_mode': True}
+    import base64
+    sources = []
+    for data, content_type in files:
+        b64 = base64.b64encode(data).decode()
+        if content_type == 'application/pdf':
+            sources.append({'type': 'document', 'source': {'type': 'base64', 'media_type': 'application/pdf', 'data': b64}})
+        else:
+            media = content_type if content_type in ('image/jpeg', 'image/png', 'image/webp', 'image/gif') else 'image/jpeg'
+            sources.append({'type': 'image', 'source': {'type': 'base64', 'media_type': media, 'data': b64}})
+    prompt = (
+        "These photos show a food product's packaging and its nutrition facts table (Arabic or English). "
+        'Return JSON: {"name": short product name in English, "name_ar": the name in Arabic, "brand": brand name or "", '
+        '"serving": serving size number, "unit": "g" or "ml", "kcal": number, "protein": number, "carb": number, "fat": number}. '
+        "Use the values PER SERVING when the table has them; otherwise use per 100 g / 100 ml and set serving to 100. "
+        "carb = total carbohydrates. Do not guess numbers that are not printed; use null instead."
+    )
+    out = _json(_call(SYSTEM, sources + [{'type': 'text', 'text': prompt}], max_tokens=800))
+
+    def num(v):
+        try:
+            return round(float(v), 1) if v is not None else None
+        except (TypeError, ValueError):
+            return None
+    return {'name': str(out.get('name') or '')[:90], 'name_ar': str(out.get('name_ar') or '')[:90],
+            'brand': str(out.get('brand') or '')[:100], 'serving': num(out.get('serving')) or 100,
+            'unit': 'ml' if out.get('unit') == 'ml' else 'g', 'kcal': num(out.get('kcal')),
+            'protein': num(out.get('protein')), 'carb': num(out.get('carb')), 'fat': num(out.get('fat')), 'test_mode': False}

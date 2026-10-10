@@ -21,6 +21,7 @@ from .views import ClientProfileView, \
 from . import views_v2 as v2
 from . import views_v3 as v3
 from . import views_v4 as v4
+from . import views_foods as vf
 
 urlpatterns = [
     # --- upgrade ---
@@ -77,6 +78,13 @@ urlpatterns = [
     path('blood-files/<int:file_id>/', v4.BloodTestFileView.as_view()),
     path('plan/<int:plan_id>/micros/', v4.PlanMicrosView.as_view()),
     path('recipes/<int:food_id>/', v4.RecipeView.as_view()),
+    path('foods/read-label/', vf.FoodLabelReadView.as_view()),
+    path('foods/add/', vf.FoodAddView.as_view()),
+    path('foods/review/', vf.FoodReviewView.as_view()),
+    path('foods/review/<int:food_id>/', vf.FoodReviewView.as_view()),
+    path('team/', vf.TeamView.as_view()),
+    path('team/members/', vf.TeamMemberView.as_view()),
+    path('team/members/<int:member_id>/', vf.TeamMemberView.as_view()),
     # --- existing ---
     path('profile/', UserProfileView.as_view(), name='user-profile'),
 

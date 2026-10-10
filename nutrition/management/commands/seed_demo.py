@@ -107,6 +107,7 @@ class Command(BaseCommand):
             user.set_password(password)
         user.is_subscribed = True
         user.plan_tier = 'pro'  # demo account can try the AI features (test mode)
+        user.is_staff = True  # test site only: Yousef can try approving foods with the demo account
         user.first_name = 'Demo'
         user.save()
 
