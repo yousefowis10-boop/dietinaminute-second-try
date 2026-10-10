@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Check, Loader2, Sparkles, TriangleAlert, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Check, ChevronDown, Loader2, Sparkles, TriangleAlert, X } from "lucide-react";
 import { useI18n } from "./i18n";
 
 export function PageHeader({ title, subtitle, actions, back }) {
@@ -248,4 +248,22 @@ export function apiError(err, t) {
   if (data?.error === "excluded_foods") return t("excludedBlocked", { foods: (data.foods || []).join("، ") });
   if (data?.detail && typeof data.detail === "string") return data.detail;
   return t("error");
+}
+
+// Open / closed state for a folding box, remembered on this computer (e.g. "dim.fold.charts").
+export function useFold(key, initial = true) {
+  const [open, setOpen] = useState(() => {
+    try { const v = localStorage.getItem(key); return v === null ? initial : v === "1"; } catch { return initial; }
+  });
+  const toggle = (next) => setOpen((o) => {
+    const v = typeof next === "boolean" ? next : !o;
+    try { localStorage.setItem(key, v ? "1" : "0"); } catch { /* private window */ }
+    return v;
+  });
+  return [open, toggle];
+}
+
+// The little arrow that shows whether a box is open.
+export function FoldArrow({ open, className = "" }) {
+  return <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""} ${className}`} />;
 }

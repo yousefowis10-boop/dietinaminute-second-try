@@ -210,9 +210,29 @@ function EditDayModal({ open, day, dayName, slots, foods, excluded, onClose, onS
   );
 }
 
+// One part of the PDF (day plan, week, shopping list, recipes, workout): always starts on a new page.
+function PdfBlock({ ar, children }) {
+  return <div data-pdf-block dir={ar ? "rtl" : "ltr"} className="bg-white p-8 font-sans text-brand-ink">{children}</div>;
+}
+
+// Each block is drawn on its own pages; rows, meals and recipes marked .pdf-keep are never split across two pages.
+export function buildPdf(root, filename) {
+  const blocks = [...root.querySelectorAll("[data-pdf-block]")];
+  const opt = {
+    margin: 8, filename, image: { type: "jpeg", quality: 0.92 },
+    html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: "mm", format: "a4" },
+    pagebreak: { mode: ["css"], avoid: [".pdf-keep", "section", "li", "tr", "h2", "h3"] },
+  };
+  let worker = html2pdf().set(opt).from(blocks[0]).toPdf();
+  blocks.slice(1).forEach((b) => {
+    worker = worker.get("pdf").then((pdf) => { pdf.addPage(); }).from(b).toContainer().toCanvas().toPdf();
+  });
+  return worker;
+}
+
 export default function PlanSheet() {
   const { planId } = useParams();
-  const { t, lang, num, fmtDate } = useI18n();
+  const { t, lang, num } = useI18n();
   const aiBlocker = useAIBlocker();
   const pdfRef = useRef(null);
   const [data, setData] = useState(null);
@@ -238,6 +258,10 @@ export default function PlanSheet() {
     cachedGet("/nutrition/foods/").then((r) => setFoods(r.data));
   }, [load]);
   const slots = useSlots(data, t);
+  // Local testing only (never set on the real sites): lets the checker read the PDF without downloading it.
+  useEffect(() => {
+    if (process.env.REACT_APP_PDF_TEST && data) window.__pdf = () => buildPdf(pdfRef.current, "test.pdf").outputPdf("datauristring");
+  }, [data]);
   const names = useMemo(() => dayNames(lang), [lang]);
 
   if (!data) return <Spinner label={t("loading")} />;
@@ -270,12 +294,7 @@ export default function PlanSheet() {
   };
   const downloadPdf = async () => {
     setBusy("pdf");
-    try {
-      await html2pdf().set({
-        margin: 8, filename: `${data.client.name} - ${data.plan.name}.pdf`, image: { type: "jpeg", quality: 0.95 },
-        html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: "mm", format: "a4" }, pagebreak: { mode: ["css", "legacy"] },
-      }).from(pdfRef.current).save();
-    } finally { setBusy(""); }
+    try { await buildPdf(pdfRef.current, `${data.client.name} - ${data.plan.name}.pdf`).save(); } finally { setBusy(""); }
   };
   const writeMessage = async () => {
     setBusy("ai");
@@ -411,29 +430,33 @@ export default function PlanSheet() {
         </div>
       )}
 
-      {/* Hidden: what goes into the PDF (day plan, then week, shopping list and workout on new pages). */}
+      {/* Hidden: what goes into the PDF. Each block starts on a new page; inside a block nothing is cut in half. */}
       <div className="pointer-events-none fixed -start-[10000px] top-0 w-[794px]" aria-hidden>
-        <div ref={pdfRef} dir={ar ? "rtl" : "ltr"} className="bg-white p-8 font-sans text-brand-ink">
-          <DaySheet data={data} slots={slots} notes={notes} />
+        <div ref={pdfRef}>
+          <PdfBlock ar={ar}><DaySheet data={data} slots={slots} notes={notes} /></PdfBlock>
           {week && weekInPdf && (
-            <>
-              <div className="html2pdf__page-break" />
+            <PdfBlock ar={ar}>
               <h2 className="mb-3 text-lg font-bold">{t("weekPdfTitle")} · {data.client.name}</h2>
               <div className="space-y-2">
-                {week.days.map((d, i) => <WeekRow key={i} day={d} index={i} slots={slots} names={names} compact />)}
+                {week.days.map((d, i) => <div key={i} className="pdf-keep"><WeekRow day={d} index={i} slots={slots} names={names} compact /></div>)}
               </div>
-            </>
+            </PdfBlock>
           )}
           {data.grocery.length > 0 && (
-            <>
-              <div className="html2pdf__page-break" />
+            <PdfBlock ar={ar}>
               <h2 className="mb-3 flex items-center gap-2 text-lg font-bold"><ShoppingCart className="h-5 w-5 text-brand" />{t("groceryList")}</h2>
               <SmartGrocery rows={data.grocery} printMode />
-            </>
+            </PdfBlock>
           )}
-          {recipes.map((r) => (<div key={r.key}><div className="html2pdf__page-break" /><RecipeCard recipe={r} printMode /></div>))}
-          {data.workout && (<><div className="html2pdf__page-break" /><WorkoutBlock workout={data.workout} allDays /></>)}
-          <footer className="mt-6 flex text-[11px] text-muted" dir="ltr"><span>Diet in a Minute</span><span className="ms-auto">{fmtDate(data.plan.created_at)}</span></footer>
+          {recipes.length > 0 && (
+            <PdfBlock ar={ar}>
+              <h2 className="mb-4 flex items-center gap-2 text-lg font-bold"><BookOpen className="h-5 w-5 text-brand" />{t("recipesTab")}</h2>
+              <div className="space-y-8">
+                {recipes.map((r) => <div key={r.key} className="pdf-keep border-b border-line pb-8 last:border-b-0"><RecipeCard recipe={r} printMode /></div>)}
+              </div>
+            </PdfBlock>
+          )}
+          {data.workout && <PdfBlock ar={ar}><WorkoutBlock workout={data.workout} allDays /></PdfBlock>}
         </div>
       </div>
 

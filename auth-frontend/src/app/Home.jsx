@@ -4,7 +4,7 @@ import { Activity, BellOff, CalendarCheck, CalendarClock, ClipboardList, Inbox, 
 import API from "../hooks/useApi";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../i18n";
-import { Avatar, Badge, Card, Empty, PageHeader, Spinner } from "../ui";
+import { Avatar, Badge, Empty, FoldArrow, PageHeader, Spinner, useFold } from "../ui";
 import { reminderText, typeName } from "./Appointments";
 import { dayLabel, isoDay, money, openWhatsApp } from "./schedule";
 
@@ -23,6 +23,23 @@ function Row({ to, name, sub, children }) {
       </Link>
       {children}
     </li>
+  );
+}
+
+// One folding box on the Today page: a button with its title and count; tap to open or close (remembered).
+function Fold({ id, title, icon, count, tone, actions, children }) {
+  const [open, toggle] = useFold(`dim.today.${id}`, true);
+  return (
+    <section className="card overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3">
+        <button type="button" onClick={() => toggle()} aria-expanded={open} className="flex min-w-0 flex-1 items-center gap-2.5 text-start">
+          {icon}<h3 className="truncate text-[15px] font-bold">{title}</h3>{count !== undefined && <Count n={count} tone={tone} />}
+          <FoldArrow open={open} />
+        </button>
+        {actions}
+      </div>
+      {open && <div className="border-t border-line px-4 pb-3 pt-2">{children}</div>}
+    </section>
   );
 }
 
@@ -75,8 +92,8 @@ export default function Home() {
               </ol>
             </section>
           )}
-          <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
-            <Card title={<>{t("todaysAppointments")} <Count n={data.appointments.length} /></>} icon={<CalendarCheck className="h-4 w-4 text-brand" />}
+          <div className="space-y-3">
+            <Fold id="appointments" title={t("todaysAppointments")} count={data.appointments.length} icon={<CalendarCheck className="h-4 w-4 text-brand" />}
               actions={<Link to="/dashboard/appointments" className="text-xs font-semibold text-brand">{t("openCalendar")}</Link>}>
               {data.appointments.length === 0 ? <p className="text-sm text-muted">{t("noAppointmentsToday")}</p> : (
                 <ul>
@@ -99,9 +116,8 @@ export default function Home() {
                   ))}
                 </ul>
               )}
-            </Card>
-            <div className="space-y-4">
-              <Card title={<>{t("newCheckins")} <Count n={data.checkins.length} tone="ai" /></>} icon={<Inbox className="h-4 w-4 text-ai" />}>
+            </Fold>
+              <Fold id="checkins" title={t("newCheckins")} count={data.checkins.length} tone="ai" icon={<Inbox className="h-4 w-4 text-ai" />}>
                 {data.checkins.length === 0 ? <p className="text-sm text-muted">{t("nothingNew")}</p> : (
                   <ul>
                     {data.checkins.map((c) => (
@@ -111,8 +127,8 @@ export default function Home() {
                     ))}
                   </ul>
                 )}
-              </Card>
-              <Card title={t("weekAdherence")} icon={<Activity className="h-4 w-4 text-brand" />}>
+              </Fold>
+              <Fold id="adherence" title={t("weekAdherence")} count={data.adherence.length} icon={<Activity className="h-4 w-4 text-brand" />}>
                 {data.adherence.length === 0 ? <p className="text-sm text-muted">{t("noAdherenceYet")}</p> : (
                   <ul className="space-y-2">
                     {data.adherence.map((r) => (
@@ -124,12 +140,8 @@ export default function Home() {
                     ))}
                   </ul>
                 )}
-              </Card>
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            <Card title={<>{t("stoppedLogging")} <Count n={data.stopped_logging.length} tone="bad" /></>} icon={<BellOff className="h-4 w-4 text-bad" />}>
+              </Fold>
+            <Fold id="stopped" title={t("stoppedLogging")} count={data.stopped_logging.length} tone="bad" icon={<BellOff className="h-4 w-4 text-bad" />}>
               {data.stopped_logging.length === 0 ? <p className="text-sm text-muted">{t("everyoneLogging")}</p> : (
                 <ul>
                   {data.stopped_logging.map((r) => (
@@ -139,8 +151,8 @@ export default function Home() {
                   ))}
                 </ul>
               )}
-            </Card>
-            <Card title={<>{t("followUpsDue")} <Count n={data.follow_ups.length} /></>} icon={<CalendarClock className="h-4 w-4 text-brand" />}>
+            </Fold>
+            <Fold id="followups" title={t("followUpsDue")} count={data.follow_ups.length + data.interviews_waiting.length} icon={<CalendarClock className="h-4 w-4 text-brand" />}>
               {data.follow_ups.length === 0 && data.interviews_waiting.length === 0 ? <p className="text-sm text-muted">{t("noFollowUps")}</p> : (
                 <ul>
                   {data.interviews_waiting.map((c) => (
@@ -155,8 +167,8 @@ export default function Home() {
                   ))}
                 </ul>
               )}
-            </Card>
-            <Card title={<>{t("moneyTitle")} <Count n={data.packages_ending.length + data.unpaid.length} tone="warn" /></>} icon={<Wallet className="h-4 w-4 text-warn" />}>
+            </Fold>
+            <Fold id="money" title={t("moneyTitle")} count={data.packages_ending.length + data.unpaid.length} tone="warn" icon={<Wallet className="h-4 w-4 text-warn" />}>
               <div className="text-xs font-semibold text-muted">{t("packagesEnding")}</div>
               {data.packages_ending.length === 0 ? <p className="mb-3 mt-1 text-sm text-muted">—</p> : (
                 <ul className="mb-3">
@@ -177,7 +189,7 @@ export default function Home() {
                   ))}
                 </ul>
               )}
-            </Card>
+            </Fold>
           </div>
         </div>
       )}

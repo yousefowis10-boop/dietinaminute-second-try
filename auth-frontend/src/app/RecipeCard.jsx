@@ -14,9 +14,9 @@ export default function RecipeCard({ recipe, printMode = false, compact = false 
   return (
     <article className={printMode ? "break-inside-avoid" : ""}>
       {recipe.photo ? (
-        <img src={recipe.photo} alt="" className={`mb-4 w-full rounded-2xl object-cover ${printMode ? "h-[240px]" : compact ? "h-44" : "h-56 sm:h-72"}`} />
+        <img src={recipe.photo} alt="" className={`mb-4 w-full rounded-2xl object-cover ${printMode ? "h-[190px]" : compact ? "h-44" : "h-56 sm:h-72"}`} />
       ) : (
-        !compact && <div className={`mb-4 grid w-full place-items-center rounded-2xl bg-brand-soft text-brand ${printMode ? "h-24" : "h-28"}`}><ChefHat className="h-9 w-9" /></div>
+        !compact && !printMode && <div className={`mb-4 grid w-full place-items-center rounded-2xl bg-brand-soft text-brand ${printMode ? "h-24" : "h-28"}`}><ChefHat className="h-9 w-9" /></div>
       )}
       <div className="mb-1 text-xs font-semibold text-muted">{lang === "ar" ? recipe.section_ar : recipe.section}</div>
       <h2 className={`font-bold leading-tight ${compact ? "text-lg" : "text-2xl"}`}>{c.title}</h2>

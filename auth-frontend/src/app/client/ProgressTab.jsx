@@ -2,11 +2,11 @@ import { useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import { CategoryScale, Chart as ChartJS, Filler, LinearScale, LineElement, PointElement, Tooltip } from "chart.js";
 import html2pdf from "html2pdf.js";
-import { Check, Download, FileText, Sparkles, Trash2 } from "lucide-react";
+import { Check, Download, FileText, LineChart, Sparkles, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
-import { Card, TestModeBadge } from "../../ui";
+import { Card, FoldArrow, TestModeBadge, useFold } from "../../ui";
 import { AIUnavailableNote, useAIBlocker } from "./AIPanel";
 import { CheckInPanel } from "./CheckIn";
 
@@ -74,8 +74,13 @@ export default function ProgressTab({ data, reload, checkin, setCheckin }) {
     await API.delete(`/nutrition/checkins/${id}/`);
     reload();
   };
+  const [chartsOpen, toggleCharts] = useFold("dim.fold.charts", true);
+  const [listOpen, toggleList] = useFold("dim.fold.checkins", true);
   const downloadReport = async () => {
     setBusy("pdf");
+    toggleCharts(true);
+    toggleList(true);
+    await new Promise((r) => setTimeout(r, 300)); // let the boxes open before the PDF is drawn
     try {
       await html2pdf().set({
         margin: 8, filename: `${c.name} - ${t("progressReport")}.pdf`, image: { type: "jpeg", quality: 0.95 },
@@ -111,6 +116,12 @@ export default function ProgressTab({ data, reload, checkin, setCheckin }) {
         </div>
 
         {points.length >= 2 && (
+          <button type="button" data-html2canvas-ignore onClick={() => toggleCharts()} aria-expanded={chartsOpen}
+            className="card flex w-full items-center gap-2 px-4 py-3 text-start text-[15px] font-bold hover:bg-[#fafbfa]">
+            <LineChart className="h-4 w-4 text-brand" />{t("chartsTitle")}<FoldArrow open={chartsOpen} className="ms-auto" />
+          </button>
+        )}
+        {points.length >= 2 && chartsOpen && (
           <div className="grid gap-4 lg:grid-cols-3">
             {[["weight", "#1f6f5c", ` ${t("kg")}`, t("weightChart"), ds("weight"), loseGoal], ["pbf", "#c2410c", "%", t("fatChart"), ds("pbf"), true], ["smm", "#2563a8", ` ${t("kg")}`, t("muscleChart"), ds("smm"), false]].map(([f, color, unit, title, delta, down]) => (
               <div key={f} className="card px-4 py-3.5">
@@ -123,10 +134,12 @@ export default function ProgressTab({ data, reload, checkin, setCheckin }) {
 
         <div className="card overflow-hidden">
           <div className="flex items-center px-4 py-3.5">
-            <h3 className="text-[15px] font-bold">{t("allCheckins")}</h3>
+            <button type="button" onClick={() => toggleList()} aria-expanded={listOpen} className="flex flex-1 items-center gap-2 text-start">
+              <h3 className="text-[15px] font-bold">{t("allCheckins")}</h3><span className="num text-xs text-muted">({num(rows.length)})</span><FoldArrow open={listOpen} />
+            </button>
             <button type="button" className="btn-secondary ms-auto" disabled={busy === "pdf"} data-html2canvas-ignore onClick={downloadReport}><Download className="h-4 w-4" />{busy === "pdf" ? t("loading") : t("progressPdf")}</button>
           </div>
-          {rows.length ? (
+          {!listOpen ? null : rows.length ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] border-collapse text-[13.5px]">
                 <thead><tr className="border-b border-line bg-[#fafbfa] text-xs text-muted">

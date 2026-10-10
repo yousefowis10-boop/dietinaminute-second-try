@@ -62,15 +62,17 @@ export default function ClientPage() {
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <Avatar name={c.name} size={48} />
         <div className="min-w-0 flex-1 sm:min-w-[24rem]">
-          <h1 className="flex items-center gap-2 text-2xl font-bold">{c.name}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <h1 className="flex items-center gap-1 text-2xl font-bold">{c.name}
             <Link to={`/dashboard/clients/${c.id}/edit`} className="btn-ghost p-1.5 text-muted" title={t("edit")} aria-label={t("edit")}><Pencil className="h-4 w-4" /></Link>
           </h1>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             <span className="chip">{num(c.age)} {t("years")} · {c.gender === "F" ? t("female") : t("male")}</span>
             <span className="chip num">{num(c.weight, 1)} {t("kg")} · {num(c.height)} {t("cm")}</span>
             {c.pbf ? <span className="chip">{t("bodyFat")} {num(c.pbf, 1)}%</span> : null}
             <span className="chip">{t(`ws_${c.work_style}`)}</span>
             <Badge tone="brand">{t("goal")}: {t(`goal_${c.goal || ""}`)}</Badge>
+          </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
