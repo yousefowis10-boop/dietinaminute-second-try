@@ -50,7 +50,13 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
   Not done on purpose: client file split (Yousef: fine as is), one link per client (interview/phone page) — ask first.
 
 ## Pinned (waiting for Yousef)
-- **Recipes library** — Yousef will send his recipe book; then recipes with nutrition per serving, filters, "cook once eat twice".
+- **Recipes library** (Yousef 10 Oct, PDF coming): each recipe becomes ONE food in the Carbs / Protein / Fat lists (by its main
+  macro), 1 serving = one portion, nutrition worked out from its ingredients. Treats are named "Treat – …" so typing "treat"
+  in any food search lists them. In a plan the recipe counts as one item (its ingredients' totals); the client sheet / PDF gets
+  an extra page per recipe used: ingredients with amounts, steps, portions. Shopping list breaks recipes into ingredients.
+- **Allergies from the interview** (Yousef 10 Oct): if the client marks an allergy (peanuts, shellfish, dairy, eggs, wheat,
+  soy, gluten…), the dietitian is ASKED once: "Remove these foods from the search" or "Just mark them in red". Applies in the
+  plan builder and swaps.
 - Later ideas: health-watch sync (needs a real phone app), company wellness, own branded app in the stores.
 
 ## Mockups
