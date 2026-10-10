@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { Droplet, FileText, Plus, Share2, Sparkles, Trash2, Upload, X } from "lucide-react";
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
-import { AIBadge, Card, Spinner, TestModeBadge, apiError } from "../../ui";
+import { AIBadge, Card, InfoTip, Spinner, TestModeBadge, apiError } from "../../ui";
 import { isoDay } from "../schedule";
 import { useAIBlocker } from "./AIPanel";
 import { AdviceCards, StatusPill } from "./bloodUi";
@@ -74,7 +74,7 @@ function ReviewForm({ clientId, markers, initial, onCancel, onSaved, onAddPage, 
           </tbody>
         </table>
       </div>
-      <p className="mt-2 text-xs text-muted">{t("btRangeHint")}</p>
+      <div className="mt-2"><InfoTip text={t("btRangeHint")} /></div>
       <div className="mt-3 flex flex-wrap justify-end gap-2">
         <button type="button" className="btn-ghost me-auto px-2 text-xs" onClick={() => setForm((f) => ({ ...f, rows: [...f.rows, emptyRow()] }))}><Plus className="h-3.5 w-3.5" />{t("btAddTest")}</button>
         <button type="button" className="btn-ghost" onClick={onCancel}>{t("cancel")}</button>
@@ -199,7 +199,7 @@ export default function BloodTab({ client, startUpload, onUploadStarted }) {
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-xs text-muted">{t("btHistoryHint")}</p>
+            <div className="mt-2"><InfoTip text={t("btHistoryHint")} /></div>
           </Card>
         </>
       )}

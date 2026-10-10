@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, History } from "lucide-react";
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
-import { Card, Spinner } from "../../ui";
+import { Card, InfoTip, Spinner } from "../../ui";
 import { StatusPill } from "./bloodUi";
 
 function Spark({ points, low, high }) {
@@ -90,7 +90,7 @@ export default function HistoryTab({ client }) {
       <Card title={t("hBlood")} icon={<History className="h-4 w-4 text-bad" />}>
         {data.blood.length ? table(data.blood) : <p className="text-sm text-muted">{t("hNoBlood")}</p>}
       </Card>
-      <p className="text-xs text-muted">{t("hHint")}</p>
+      <div className="flex items-center gap-2 text-xs text-muted"><InfoTip text={t("hHint")} /></div>
     </div>
   );
 }

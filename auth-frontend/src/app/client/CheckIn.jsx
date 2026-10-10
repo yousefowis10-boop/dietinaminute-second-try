@@ -3,7 +3,7 @@ import { Copy, FileText, Link2, MessageCircle, RefreshCw, Sparkles, Upload } fro
 import toast from "react-hot-toast";
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
-import { apiError } from "../../ui";
+import { InfoTip, apiError } from "../../ui";
 import { useAIBlocker } from "./AIPanel";
 
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -80,8 +80,7 @@ export function CheckInPanel({ client, last, mode, onClose, onSaved }) {
     <div className={`card mb-4 grid overflow-hidden border-[1.5px] border-[#b8d6ca] ${showUpload ? "lg:grid-cols-[320px_1fr]" : ""}`}>
       {showUpload && (
         <div className="border-b border-line bg-[#f6faf8] p-5 lg:border-b-0 lg:border-e">
-          <h3 className="text-[15px] font-bold">{t("uploadTitle")}</h3>
-          <p className="mb-3 mt-1 text-[12.5px] text-muted">{t("uploadHint")}</p>
+          <h3 className="mb-3 flex items-center gap-2 text-[15px] font-bold">{t("uploadTitle")}<InfoTip text={t("uploadHint")} /></h3>
           <button type="button" onClick={() => fileRef.current?.click()}
             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); pick(e.dataTransfer.files?.[0]); }}
             className="grid h-48 w-full place-items-center overflow-hidden rounded-xl border border-dashed border-[#b9c3be] bg-white text-sm text-muted">
@@ -153,7 +152,7 @@ export function CheckInLinkBox({ client }) {
   const url = token ? checkinUrl(token) : "";
   return (
     <div>
-      <p className="mb-3 text-sm text-muted">{t("checkinLinkHint")}</p>
+      <div className="mb-2 flex justify-end"><InfoTip text={t("checkinLinkHint")} /></div>
       <div className="mb-3 truncate rounded-lg bg-page px-3 py-2 text-xs text-muted" dir="ltr">{url || "…"}</div>
       <div className="flex flex-wrap gap-2">
         <button type="button" className="btn-secondary" disabled={!token} onClick={() => navigator.clipboard.writeText(url).then(() => toast.success(t("copied")))}><Copy className="h-4 w-4" />{t("copyLink")}</button>

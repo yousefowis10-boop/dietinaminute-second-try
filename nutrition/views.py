@@ -706,6 +706,8 @@ class ClientDetailedProfileView(APIView):
                 )
             saved = serializer.save()
             sync_never_foods(client, saved)
+            if client.interview_status in ('none', 'sent'):  # filled in by the dietitian: show it on the Interviews page
+                ClientProfile.objects.filter(pk=client.pk).update(interview_status='reviewed')
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

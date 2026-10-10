@@ -15,7 +15,7 @@ export function PageHeader({ title, subtitle, actions, back }) {
   );
 }
 
-export function Card({ title, icon, actions, children, className = "", tone }) {
+export function Card({ title, icon, info, actions, children, className = "", tone }) {
   const toneClass =
     tone === "ai" ? "border-ai/20 bg-gradient-to-b from-ai-soft/70 to-white"
       : tone === "warn" ? "border-warn/30 bg-warn-soft"
@@ -26,6 +26,7 @@ export function Card({ title, icon, actions, children, className = "", tone }) {
         <div className="mb-3 flex items-center gap-2">
           {icon}
           {title && <h3 className={`text-sm font-bold ${tone === "ai" ? "text-ai" : tone === "warn" ? "text-warn" : ""}`}>{title}</h3>}
+          {info && <InfoTip text={info} />}
           {actions && <div className="ms-auto flex items-center gap-2">{actions}</div>}
         </div>
       )}
@@ -266,4 +267,18 @@ export function useFold(key, initial = true) {
 // The little arrow that shows whether a box is open.
 export function FoldArrow({ open, className = "" }) {
   return <ChevronDown className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""} ${className}`} />;
+}
+
+// A small "!" that shows an explanation when you hover over it (or tap it on a phone), so pages stay uncluttered.
+export function InfoTip({ text, className = "" }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className={`relative inline-flex align-middle ${className}`} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+      <button type="button" aria-label={typeof text === "string" ? text : "info"} onClick={() => setOpen((o) => !o)} onBlur={() => setOpen(false)}
+        className="grid h-[18px] w-[18px] place-items-center rounded-full border border-[#c9d0cc] bg-white text-[11px] font-bold leading-none text-muted hover:border-brand hover:text-brand">!</button>
+      {open && (
+        <span role="tooltip" className="absolute start-0 top-full z-40 mt-1.5 w-64 rounded-xl bg-brand-ink px-3 py-2 text-start text-xs font-normal leading-relaxed text-white shadow-lg">{text}</span>
+      )}
+    </span>
+  );
 }

@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { BookOpen, Check, ChevronDown, Copy, LayoutGrid, Minus, Pencil, Plus, Search, Shuffle, Sparkles, Target, X } from "lucide-react";
 import API, { cachedGet } from "../hooks/useApi";
 import { useI18n } from "../i18n";
-import { DraftBadge, Empty, Modal, SafetyFlags, Spinner, apiError, targetStatus } from "../ui";
+import { DraftBadge, Empty, InfoTip, Modal, SafetyFlags, Spinner, apiError, targetStatus } from "../ui";
 import { useAIBlocker } from "./client/AIPanel";
 import MicrosPanel, { microRows } from "./MicrosPanel";
 import { RecipeModal } from "./RecipeCard";
@@ -498,7 +498,7 @@ export default function PlanBuilder() {
             </div>
           )}
           <div className="mt-5 flex flex-wrap items-center gap-3">
-            <p className="flex-1 text-[13px] text-muted">{t("builderHint")}</p>
+            <div className="flex-1"><InfoTip text={t("builderHint")} /></div>
             <button type="button" className="btn-primary h-11" disabled={!active.length} onClick={() => setStep(1)}>{t("nextSplit")}</button>
           </div>
         </>

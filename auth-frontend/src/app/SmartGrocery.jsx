@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, MessageCircle, ShoppingCart } from "lucide-react";
 import { useI18n } from "../i18n";
+import { InfoTip } from "../ui";
 import { englishUnit } from "./foodUtils";
 
 export const SECTIONS = {
@@ -69,7 +70,7 @@ export default function SmartGrocery({ rows, rows2, rows4, ticks, onTick, onShar
       {!printMode && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <ShoppingCart className="h-5 w-5 text-brand" />
-          <h3 className="font-bold">{t("groceryList")}</h3>
+          <h3 className="font-bold">{t("groceryList")}</h3>{!printMode && <InfoTip text={t("groceryHint")} />}
           <span className="text-xs text-muted">· {tickable ? t("boughtOf", { n: bought, total: list.length }) : t("itemsCount", { n: list.length })}</span>
           <div className="ms-auto flex items-center gap-2">
             {rows2 && (
@@ -126,7 +127,6 @@ export default function SmartGrocery({ rows, rows2, rows4, ticks, onTick, onShar
           );
         })}
       </div>
-      {!printMode && <p className="mt-3 text-xs text-muted">{t("groceryHint")}</p>}
     </div>
   );
 }

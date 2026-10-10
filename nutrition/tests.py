@@ -313,3 +313,15 @@ class RecipeTests(TestCase):
         names = {f['name'] for f in self.api.get('/api/nutrition/foods/').json()}
         self.assertNotIn('Vietnamese-Style Pork Tenderloin', names)
         self.assertIn('Crustless Quiche', names)
+
+
+class InterviewListTests(TestCase):
+    def test_interview_filled_by_dietitian_counts(self):
+        user = User.objects.create_user(username='d@x.test', password='x')
+        api = APIClient()
+        api.force_authenticate(user)
+        client = make_client(user, name='Lydia')
+        api.get(f'/api/nutrition/clients/{client.id}/detailed-profile/')
+        self.assertEqual(api.put(f'/api/nutrition/clients/{client.id}/detailed-profile/', {'email': 'l@x.test'}, format='json').status_code, 200)
+        client.refresh_from_db()
+        self.assertEqual(client.interview_status, 'reviewed')

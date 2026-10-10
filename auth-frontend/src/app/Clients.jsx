@@ -16,7 +16,9 @@ export default function Clients({ onlyInterviews = false }) {
 
   const shown = useMemo(() => {
     let list = clients || [];
-    if (onlyInterviews) list = list.filter((c) => c.interview_status === "submitted" || c.interview_status === "sent");
+    // Waiting for review first, then links sent, then done (including ones the dietitian filled in).
+    const order = { submitted: 0, sent: 1, reviewed: 2 };
+    if (onlyInterviews) list = list.filter((c) => c.interview_status in order).sort((a, b) => order[a.interview_status] - order[b.interview_status]);
     const q = query.trim().toLowerCase();
     return q ? list.filter((c) => c.name.toLowerCase().includes(q)) : list;
   }, [clients, query, onlyInterviews]);

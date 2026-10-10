@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, Pill, Plus, Shuffle, TriangleAlert } from "lucide-react";
 import { useI18n } from "../i18n";
+import { InfoTip } from "../ui";
 
 const BAR = { ok: "bg-ok", near: "bg-warn", low: "bg-bad", high: "bg-bad" };
 
@@ -80,7 +81,7 @@ export default function MicrosPanel({ rows, missing = 0, bloodLow = [], onAdd, s
                 </div>
               </div>
             ))}
-            {swap && rows.some((r) => r.sources.length > 0) && <p className="text-[11px] text-muted">{t("microsSwapHint")}</p>}
+            {swap && rows.some((r) => r.sources.length > 0) && <div><InfoTip text={t("microsSwapHint")} /></div>}
             {rows.every((r) => r.status === "ok") && <p className="rounded-xl bg-ok-soft p-3 text-sm text-ok">{t("microsAllGood")}</p>}
           </div>
         </div>

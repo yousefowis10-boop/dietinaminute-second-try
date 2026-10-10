@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { CalendarDays, Copy, MessageCircle, Package, Plus, Send, Smartphone, Trash2 } from "lucide-react";
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
-import { Badge, Card, Field, Modal, apiError } from "../../ui";
+import { Badge, Card, Field, InfoTip, Modal, apiError } from "../../ui";
 import { STATUS_TONE, typeName } from "../Appointments";
 import { addDays, clientAppUrl, dayLabel, fromIso, isoDay, money, openWhatsApp } from "../schedule";
 
@@ -33,9 +33,8 @@ export function ClientAppCard({ client }) {
   const tone = info.adherence === null ? "neutral" : info.adherence >= 75 ? "ok" : info.adherence >= 50 ? "warn" : "bad";
 
   return (
-    <Card title={t("clientApp")} icon={<Smartphone className="h-4 w-4 text-brand" />}
+    <Card title={t("clientApp")} info={t("clientAppHint")} icon={<Smartphone className="h-4 w-4 text-brand" />}
       actions={info.adherence !== null && <Badge tone={tone}>{t("followedPct", { pct: info.adherence })}</Badge>}>
-      <p className="mb-3 text-sm text-muted">{t("clientAppHint")}</p>
       {info.token ? (
         <>
           <div className="mb-3 truncate rounded-lg bg-page px-3 py-2 text-xs text-muted" dir="ltr">{clientAppUrl(info.token)}</div>
@@ -198,8 +197,7 @@ function SendBookingLink({ client, onClose }) {
           </select>
         </Field>
       </div>
-      <div className="mt-4 text-sm font-semibold">{t("offerTimesTitle")}</div>
-      <p className="mb-2 text-xs text-muted">{t("offerTimesHint")}</p>
+      <div className="mb-2 mt-4 flex items-center gap-2 text-sm font-semibold">{t("offerTimesTitle")}<InfoTip text={t("offerTimesHint")} /></div>
       <input className="input mb-2 w-auto" type="date" value={day} onChange={(e) => setDay(e.target.value)} />
       <div className="flex flex-wrap gap-1.5">
         {free.length === 0 && <span className="text-xs text-muted">{t("noFreeTimes")}</span>}

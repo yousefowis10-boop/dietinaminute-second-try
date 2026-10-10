@@ -39,8 +39,7 @@ export function InterviewLinkCard({ data, reload }) {
   };
 
   return (
-    <Card title={t("interviewLink")} icon={<Link2 className="h-4 w-4 text-brand" />} actions={<Badge tone={tone}>{t(`istatus_${data.interview.status}`)}</Badge>}>
-      <p className="mb-3 text-sm text-muted">{t("interviewLinkHint")}</p>
+    <Card title={t("interviewLink")} info={t("interviewLinkHint")} icon={<Link2 className="h-4 w-4 text-brand" />} actions={<Badge tone={tone}>{t(`istatus_${data.interview.status}`)}</Badge>}>
       {token && data.interview.status !== "reviewed" ? (
         <>
           <div className="mb-3 truncate rounded-lg bg-page px-3 py-2 text-xs text-muted" dir="ltr">{interviewUrl(token)}</div>
@@ -81,8 +80,7 @@ export function ExclusionsCard({ data, reload }) {
   };
 
   return (
-    <Card title={t("excludedFoods")} icon={<Ban className="h-4 w-4 text-bad" />}>
-      <p className="mb-3 text-xs text-muted">{t("excludedHint")}</p>
+    <Card title={t("excludedFoods")} info={t("excludedHint")} icon={<Ban className="h-4 w-4 text-bad" />}>
       <div className="mb-3 flex flex-wrap gap-2">
         {excluded.map((f) => (
           <span key={f.id} className="inline-flex items-center gap-1 rounded-full bg-bad-soft px-2.5 py-1 text-xs font-semibold text-bad">
@@ -145,13 +143,13 @@ export default function OverviewTab({ data, reload }) {
           <SafetyFlags flags={data.safety_flags} />
         </Card>
         <ExclusionsCard data={data} reload={reload} />
+        <PackagesCard client={c} />
+        <InterviewLinkCard data={data} reload={reload} />
       </div>
       <div className="space-y-4">
         <AppointmentsCard client={c} />
         <ClientAppCard client={c} />
-        <PackagesCard client={c} />
         <AISummaryPanel clientId={c.id} last={lastSummary} />
-        <InterviewLinkCard data={data} reload={reload} />
       </div>
     </div>
     </>

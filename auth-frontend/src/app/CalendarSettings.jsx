@@ -167,9 +167,8 @@ export default function CalendarSettings() {
   };
 
   return (
-    <Card title={t("calendars")} icon={<CalendarDays className="h-4 w-4 text-brand" />} className="scroll-mt-6"
+    <Card title={t("calendars")} info={t("calendarsHint")} icon={<CalendarDays className="h-4 w-4 text-brand" />} className="scroll-mt-6"
       actions={<button type="button" className="btn-secondary px-3 py-1.5" onClick={() => setEditing(blank())}><Plus className="h-4 w-4" />{t("newCalendar")}</button>}>
-      <p className="mb-3 text-sm text-muted">{t("calendarsHint")}</p>
       <ul className="divide-y divide-line">
         {cals.filter((c) => c.active).map((c) => (
           <li key={c.id} className="flex flex-wrap items-center gap-2 py-2.5 text-sm">
