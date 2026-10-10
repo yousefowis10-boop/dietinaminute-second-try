@@ -232,3 +232,32 @@ class BloodTestTests(TestCase):
         self.assertEqual(iron['status'], 'low')
         self.assertTrue(iron['sources'])
         self.assertEqual(r['missing'], ['rice'])
+
+
+class BookingOfferTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='d@x.test', password='x', first_name='Yousef')
+        self.api = APIClient()
+        self.api.force_authenticate(self.user)
+        self.cal = self.api.get('/api/nutrition/calendars/').json()[0]
+        self.client_profile = make_client(self.user, phone='')
+
+    def test_offer_with_chosen_times(self):
+        cal_obj = Calendar.objects.get(id=self.cal['id'])
+        for i in range(1, 15):
+            day = timezone.localdate() + timedelta(days=i)
+            if free_slots(cal_obj, day, 30):
+                break
+        tp = self.cal['types'][1]['id']
+        r = self.api.post(f'/api/nutrition/clients/{self.client_profile.id}/booking-offer/',
+                          {'calendar': self.cal['id'], 'type': tp, 'slots': [f'{day} 10:00', f'{day} 11:00']}, format='json').json()
+        page = APIClient().get(f"/api/public/book/{r['slug']}/", {'o': r['token']}).json()
+        self.assertEqual(page['offer']['first_name'], 'Ahmad')
+        self.assertEqual(page['offer']['slots'], [f'{day} 10:00', f'{day} 11:00'])
+        url = f"/api/public/book/{r['slug']}/slots/"
+        # a time that was not offered is refused
+        self.assertEqual(APIClient().post(url, {'type': tp, 'date': str(day), 'time': '14:00', 'offer': r['token']}, format='json').status_code, 409)
+        ok = APIClient().post(url, {'type': tp, 'date': str(day), 'time': '11:00', 'offer': r['token']}, format='json')
+        self.assertEqual(ok.status_code, 201, ok.content)
+        self.assertEqual(Appointment.objects.get().client_id, self.client_profile.id)
+        self.assertTrue(APIClient().get(f"/api/public/book/{r['slug']}/", {'o': r['token']}).json()['offer']['booked'])

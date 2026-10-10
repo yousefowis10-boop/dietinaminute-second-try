@@ -775,3 +775,15 @@ class BloodResult(models.Model):
 
     class Meta:
         ordering = ['id']
+
+
+class BookingOffer(models.Model):
+    """A personal booking link for one client: their name is filled in and (optionally) only chosen times are offered."""
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    client = models.ForeignKey(ClientProfile, on_delete=models.CASCADE, related_name='booking_offers')
+    calendar = models.ForeignKey(Calendar, on_delete=models.CASCADE, related_name='offers')
+    type = models.ForeignKey(AppointmentType, null=True, blank=True, on_delete=models.SET_NULL)
+    # ["2026-10-12 10:00", ...]; empty = any free time
+    slots = models.JSONField(default=list, blank=True)
+    appointment = models.ForeignKey('nutrition.Appointment', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
+    created_at = models.DateTimeField(auto_now_add=True)

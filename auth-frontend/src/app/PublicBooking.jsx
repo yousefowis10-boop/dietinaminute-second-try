@@ -38,43 +38,48 @@ export default function PublicBooking() {
   const [error, setError] = useState("");
   const [done, setDone] = useState(null);
   const [refresh, setRefresh] = useState(0);
+  // A personal link (?o=…) from the dietitian: name filled in, maybe only some times offered.
+  const [offerToken] = useState(() => new URLSearchParams(window.location.search).get("o"));
+  const offer = info?.offer;
 
   useEffect(() => {
-    API.get(`/public/book/${slug}/`).then((r) => {
+    API.get(`/public/book/${slug}/`, { params: offerToken ? { o: offerToken } : {} }).then((r) => {
       setInfo(r.data);
       const c = r.data.calendars.find((x) => x.slug === r.data.selected) || r.data.calendars[0];
+      const o = r.data.offer;
       setCal(c);
-      setTypeId(c?.types[0]?.id || null);
+      setTypeId((o?.type && c?.types.some((x) => x.id === o.type) ? o.type : null) || c?.types[0]?.id || null);
       setPay(c?.pay_at_clinic ? "clinic" : "online");
-      setDay(openDays(c, r.data.today)[0]);
-      setState("form");
+      setDay(o?.slots?.length ? o.slots[0].slice(0, 10) : openDays(c, r.data.today)[0]);
+      setState(o?.booked ? "booked" : "form");
     }).catch(() => setState("notfound"));
-  }, [slug]);
+  }, [slug, offerToken]);
 
   useEffect(() => {
-    if (!cal || !typeId || !day) return;
+    if (!cal || !typeId || !day || offer?.slots) return;
     setSlots(null);
     setTime("");
     API.get(`/public/book/${cal.slug}/slots/`, { params: { type: typeId, date: day } })
       .then((r) => setSlots(r.data.slots)).catch(() => setSlots([]));
-  }, [cal, typeId, day, refresh]);
+  }, [cal, typeId, day, refresh, offer]);
 
   const type = cal?.types.find((x) => x.id === typeId);
   const days = info && cal ? openDays(cal, info.today) : [];
 
   const pickCal = (c) => { setCal(c); setTypeId(c.types[0]?.id || null); setPay(c.pay_at_clinic ? "clinic" : "online"); setDay(openDays(c, info.today)[0]); };
   const book = async () => {
-    if (!who.name.trim() || who.phone.replace(/\D/g, "").length < 8) { setError(t("bookNamePhone")); return; }
+    if (!offer && (!who.name.trim() || who.phone.replace(/\D/g, "").length < 8)) { setError(t("bookNamePhone")); return; }
     setBusy(true);
     setError("");
     try {
-      const r = await API.post(`/public/book/${cal.slug}/slots/`, { type: typeId, date: day, time, pay, ...who });
+      const r = await API.post(`/public/book/${cal.slug}/slots/`, { type: typeId, date: day, time, pay, ...who, offer: offerToken || undefined });
       setDone(r.data);
       setState("done");
     } catch (err) {
       const code = err?.response?.data?.detail;
       setError(code === "slot_taken" ? t("slotTaken") : code === "too_many" ? t("tooManyBookings") : t("error"));
       if (code === "slot_taken") setRefresh((n) => n + 1); // show the times that are still free
+      if (code === "already_booked") setState("booked");
     } finally {
       setBusy(false);
     }
@@ -96,6 +101,7 @@ export default function PublicBooking() {
         </header>
         {state === "loading" && <Spinner label={t("loading")} />}
         {state === "notfound" && <div className="card p-8 text-center text-muted">{t("bookNotFound")}</div>}
+        {state === "booked" && <div className="card p-8 text-center"><CheckCircle2 className="mx-auto h-12 w-12 text-ok" /><p className="mt-3 font-semibold">{t("offerAlreadyBooked")}</p></div>}
         {state === "done" && (
           <div className="card p-8 text-center">
             <CheckCircle2 className="mx-auto h-12 w-12 text-ok" />
@@ -108,19 +114,26 @@ export default function PublicBooking() {
         )}
         {state === "form" && (
           <div className="card p-5">
-            {info.calendars.length > 1 && (
+            {offer && <p className="mb-1 rounded-xl bg-brand-soft px-4 py-3 text-sm font-semibold text-brand">{t("bookingFor", { name: offer.first_name })}</p>}
+            {info.calendars.length > 1 && !offer && (
               <>
                 {label(t("bookWithWhom"))}
                 {info.calendars.map((c) => <Option key={c.slug} on={cal.slug === c.slug} onClick={() => pickCal(c)} title={c.name} />)}
               </>
             )}
             {label(t("visitType"))}
-            {cal.types.map((x) => (
+            {cal.types.filter((x) => !offer?.type || x.id === offer.type).map((x) => (
               <Option key={x.id} on={typeId === x.id} onClick={() => setTypeId(x.id)} title={lang === "ar" ? x.name_ar || x.name : x.name}
                 sub={`${x.minutes} ${t("minutes")}${x.online ? ` · ${t("videoCall")}` : ""}`}
                 right={x.price > 0 && <b className="num whitespace-nowrap">{money(x.price, cal.currency)}</b>} />
             ))}
             {label(t("dayAndTime"))}
+            {offer?.slots ? (
+              offer.slots.length === 0 ? <p className="text-sm text-muted">{t("offerNoTimesLeft")}</p> : offer.slots.map((v) => (
+                <Option key={v} on={day === v.slice(0, 10) && time === v.slice(11)} onClick={() => { setDay(v.slice(0, 10)); setTime(v.slice(11)); }}
+                  title={dayLabel(fromIso(v.slice(0, 10)), lang, { weekday: "long", day: "numeric", month: "long" })} right={<b className="num">{v.slice(11)}</b>} />
+              ))
+            ) : (<>
             <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
               {days.map((d) => (
                 <button key={d} type="button" onClick={() => setDay(d)}
@@ -140,13 +153,18 @@ export default function PublicBooking() {
                 </div>
               )}
             </div>
+            </>)}
             {time && (
               <>
-                {label(t("yourDetails"))}
-                <div className="space-y-2">
-                  <input className="input h-11" placeholder={t("fullName")} value={who.name} onChange={(e) => setWho({ ...who, name: e.target.value })} />
-                  <input className="input h-11" type="tel" dir="ltr" placeholder={t("phoneLbl")} value={who.phone} onChange={(e) => setWho({ ...who, phone: e.target.value })} />
-                </div>
+                {!offer && (
+                  <>
+                    {label(t("yourDetails"))}
+                    <div className="space-y-2">
+                      <input className="input h-11" placeholder={t("fullName")} value={who.name} onChange={(e) => setWho({ ...who, name: e.target.value })} />
+                      <input className="input h-11" type="tel" dir="ltr" placeholder={t("phoneLbl")} value={who.phone} onChange={(e) => setWho({ ...who, phone: e.target.value })} />
+                    </div>
+                  </>
+                )}
                 {(cal.pay_online || cal.pay_at_clinic) && type?.price > 0 && (
                   <>
                     {label(t("payment"))}

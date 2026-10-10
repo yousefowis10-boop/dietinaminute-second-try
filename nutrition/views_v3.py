@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import (
-    Appointment, AppointmentType, Calendar, CheckInLink, ClientPackage, DayLog, UserProfile,
+    Appointment, AppointmentType, BookingOffer, Calendar, CheckInLink, ClientPackage, DayLog, UserProfile,
 )
 from .scheduling import (
     adherence, appointment_json, appointments_for, calendars_for, create_calendar, free_slots, last_log_date,
@@ -473,6 +473,13 @@ def _booking_calendar(slug):
     return get_object_or_404(Calendar.objects.select_related('user'), slug=slug, active=True, booking_open=True)
 
 
+def _offer_json(offer, cal):
+    if offer is None:
+        return None
+    return {'first_name': (offer.client.name or '').split(' ')[0], 'type': offer.type_id, 'booked': offer.appointment_id is not None,
+            'slots': _offer_slots(offer, cal) if offer.slots else None}
+
+
 class PublicBookingView(APIView):
     """The booking link a clinic shares. No login."""
     permission_classes = [AllowAny]
@@ -492,6 +499,7 @@ class PublicBookingView(APIView):
                            'price': float(t.price), 'online': t.online} for t in c.types.filter(active=True)],
             } for c in siblings],
             'today': local_now(cal).date().isoformat(),
+            'offer': _offer_json(_offer(request, cal), cal),
         })
 
 
@@ -512,25 +520,34 @@ class PublicBookingSlotsView(APIView):
         cal = _booking_calendar(slug)
         d = request.data
         t = get_object_or_404(cal.types, id=d.get('type'), active=True)
+        offer = _offer(request, cal)
+        if offer and offer.appointment_id:
+            return Response({'detail': 'already_booked'}, status=409)
         name, phone = str(d.get('name') or '').strip()[:100], str(d.get('phone') or '').strip()[:30]
+        if offer:
+            name, phone = name or offer.client.name, phone or offer.client.phone or ''
         day, at = parse_day(d.get('date')), _time(d.get('time'))
-        if not name or len(phone_digits(phone)) < 8:
+        if not name or (not offer and len(phone_digits(phone)) < 8):
             return Response({'detail': 'name_phone_required'}, status=400)
         if not day or not at:
             return Response({'detail': 'bad_time'}, status=400)
         recent = Appointment.objects.filter(guest_phone=phone, created_at__gte=timezone.now() - timedelta(hours=24))
-        if recent.count() >= 3:
+        if phone and recent.count() >= 3:
             return Response({'detail': 'too_many'}, status=429)
         pay = 'online' if d.get('pay') == 'online' and cal.pay_online and online_payment_ready() else 'clinic'
         with transaction.atomic():
             Calendar.objects.select_for_update().filter(id=cal.id).first()  # one booking at a time per calendar
             if at.strftime('%H:%M') not in free_slots(cal, day, t.minutes):
                 return Response({'detail': 'slot_taken'}, status=409)
+            if offer and offer.slots and f"{day.isoformat()} {at.strftime('%H:%M')}" not in offer.slots:
+                return Response({'detail': 'slot_taken'}, status=409)
             digits = phone_digits(phone)
-            match = next((c for c in client_qs(cal.user).exclude(phone='') if phone_digits(c.phone) == digits), None)
+            match = offer.client if offer else next((c for c in client_qs(cal.user).exclude(phone='') if phone_digits(c.phone) == digits), None)
             a = Appointment.objects.create(
                 calendar=cal, type=t, client=match, guest_name=name, guest_phone=phone, date=day, time=at,
                 minutes=t.minutes, price=t.price, pay_method=pay, source='booking_link')
+            if offer:
+                BookingOffer.objects.filter(pk=offer.pk).update(appointment=a)
         return Response({'ok': True, 'id': a.id, 'date': a.date.isoformat(), 'time': a.time.strftime('%H:%M'),
                          'pay': pay}, status=201)
 
@@ -562,3 +579,40 @@ class WorkoutSuggestionsView(APIView):
         picks = [] if profile['place'] is None else suggest_workouts(
             request.user, plan.client, profile['goal'], profile['level'], profile['place'])
         return Response({'profile': profile, 'workouts': [_workout_card(w) for w in picks]})
+
+
+class BookingOfferView(APIView):
+    """A personal booking link for one client (name filled in, optionally only the chosen times)."""
+
+    def post(self, request, client_id):
+        client = get_object_or_404(client_qs(request.user), id=client_id)
+        cal = get_object_or_404(calendars_for(request.user), id=request.data.get('calendar'))
+        tp = cal.types.filter(id=request.data.get('type')).first()
+        slots = []
+        for v in request.data.get('slots') or []:
+            day, at = parse_day(str(v)[:10]), _time(str(v)[11:16])
+            if day and at:
+                slots.append(f"{day.isoformat()} {at.strftime('%H:%M')}")
+        offer = BookingOffer.objects.create(client=client, calendar=cal, type=tp, slots=sorted(set(slots))[:30])
+        return Response({'token': str(offer.token), 'slug': cal.slug}, status=201)
+
+
+def _offer(request, cal):
+    token = request.query_params.get('o') or request.data.get('offer')
+    if not token:
+        return None
+    try:
+        return BookingOffer.objects.select_related('client', 'type').filter(token=token, calendar=cal).first()
+    except Exception:  # not a valid UUID
+        return None
+
+
+def _offer_slots(offer, cal):
+    """The chosen times that are still free (and not in the past)."""
+    out = []
+    for v in offer.slots:
+        day = parse_day(v[:10])
+        minutes = offer.type.minutes if offer.type else 30
+        if day and v[11:16] in free_slots(cal, day, minutes):
+            out.append(v)
+    return out

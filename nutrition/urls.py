@@ -66,6 +66,7 @@ urlpatterns = [
     path('clients/<int:client_id>/packages/', v3.PackageListView.as_view()),
     path('packages/<int:package_id>/', v3.PackageDetailView.as_view()),
     path('clients/<int:client_id>/app/', v3.ClientAppLinkView.as_view()),
+    path('clients/<int:client_id>/booking-offer/', v3.BookingOfferView.as_view()),
     path('plan/<int:plan_id>/workout-suggestions/', v3.WorkoutSuggestionsView.as_view()),
     path('clients/<int:client_id>/blood-tests/', v4.BloodTestListView.as_view()),
     path('clients/<int:client_id>/blood-read/', v4.BloodReadView.as_view()),

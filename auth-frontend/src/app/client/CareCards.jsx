@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { CalendarDays, Copy, MessageCircle, Package, Plus, Smartphone, Trash2 } from "lucide-react";
+import { CalendarDays, Copy, MessageCircle, Package, Plus, Send, Smartphone, Trash2 } from "lucide-react";
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
 import { Badge, Card, Field, Modal, apiError } from "../../ui";
@@ -142,9 +142,98 @@ export function PackagesCard({ client }) {
   );
 }
 
+
+// A personal booking link: the client's name is filled in; optionally only the times you pick are offered.
+function SendBookingLink({ client, onClose }) {
+  const { t, lang } = useI18n();
+  const [cals, setCals] = useState([]);
+  const [calId, setCalId] = useState(null);
+  const [typeId, setTypeId] = useState(null);
+  const [day, setDay] = useState(isoDay(addDays(new Date(), 1)));
+  const [free, setFree] = useState([]);
+  const [picked, setPicked] = useState([]);
+  const [link, setLink] = useState(null);
+  useEffect(() => {
+    API.get("/nutrition/calendars/").then((r) => {
+      const list = r.data.filter((c) => c.active);
+      setCals(list);
+      setCalId(list[0]?.id || null);
+      setTypeId(list[0]?.types.find((x) => x.active)?.id || null);
+    }).catch(() => {});
+  }, []);
+  const cal = cals.find((c) => c.id === calId);
+  const type = cal?.types.find((x) => x.id === typeId);
+  useEffect(() => {
+    if (!cal || !day) return;
+    API.get(`/nutrition/calendars/${cal.id}/free-slots/`, { params: { date: day, minutes: type?.minutes || 30 } })
+      .then((r) => setFree(r.data.slots)).catch(() => setFree([]));
+  }, [cal, day, type]);
+  const toggle = (v) => { setLink(null); setPicked((p) => (p.includes(v) ? p.filter((x) => x !== v) : [...p, v].sort())); };
+  const make = async () => {
+    const r = await API.post(`/nutrition/clients/${client.id}/booking-offer/`, { calendar: calId, type: typeId, slots: picked });
+    const url = `${window.location.origin}/book/${r.data.slug}?o=${r.data.token}`;
+    setLink(url);
+    return url;
+  };
+  const send = async () => {
+    const url = link || (await make());
+    openWhatsApp(client.phone, t("bookingInviteMsg", { name: client.name.split(" ")[0], link: url }));
+  };
+  const copy = async () => {
+    const url = link || (await make());
+    try { await navigator.clipboard.writeText(url); toast.success(t("copied")); } catch { toast.error(t("error")); }
+  };
+  return (
+    <Modal open onClose={onClose} title={t("sendBookingLink")}>
+      <p className="mb-3 text-sm text-muted">{t("sendBookingLinkHint", { name: client.name.split(" ")[0] })}</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label={t("calendar")}>
+          <select className="input" value={calId || ""} onChange={(e) => { setCalId(Number(e.target.value)); setPicked([]); setLink(null); }}>
+            {cals.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+        </Field>
+        <Field label={t("visitType")}>
+          <select className="input" value={typeId || ""} onChange={(e) => { setTypeId(Number(e.target.value)); setLink(null); }}>
+            {(cal?.types || []).filter((x) => x.active).map((x) => <option key={x.id} value={x.id}>{lang === "ar" ? x.name_ar || x.name : x.name} · {x.minutes} {t("minShort")}</option>)}
+          </select>
+        </Field>
+      </div>
+      <div className="mt-4 text-sm font-semibold">{t("offerTimesTitle")}</div>
+      <p className="mb-2 text-xs text-muted">{t("offerTimesHint")}</p>
+      <input className="input mb-2 w-auto" type="date" value={day} onChange={(e) => setDay(e.target.value)} />
+      <div className="flex flex-wrap gap-1.5">
+        {free.length === 0 && <span className="text-xs text-muted">{t("noFreeTimes")}</span>}
+        {free.map((s) => {
+          const v = `${day} ${s}`;
+          return (
+            <button key={v} type="button" onClick={() => toggle(v)}
+              className={`num rounded-lg border px-2.5 py-1 text-xs ${picked.includes(v) ? "border-brand bg-brand text-white" : "border-line bg-white"}`}>{s}</button>
+          );
+        })}
+      </div>
+      {picked.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {picked.map((v) => (
+            <span key={v} className="inline-flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand">
+              {dayLabel(fromIso(v.slice(0, 10)), lang, { weekday: "short", day: "numeric", month: "short" })} · {v.slice(11)}
+              <button type="button" onClick={() => toggle(v)} aria-label="remove">×</button>
+            </span>
+          ))}
+        </div>
+      )}
+      <p className="mt-3 text-xs text-muted">{picked.length ? t("offerChosenCount", { n: picked.length }) : t("offerAnyFree")}</p>
+      <div className="mt-4 flex flex-wrap justify-end gap-2">
+        <button type="button" className="btn-secondary" disabled={!calId} onClick={copy}><Copy className="h-4 w-4" />{t("copyLink")}</button>
+        {client.phone && <button type="button" className="btn bg-[#1fa855] text-white hover:opacity-90" disabled={!calId} onClick={send}><MessageCircle className="h-4 w-4" />{t("sendWhatsApp")}</button>}
+      </div>
+    </Modal>
+  );
+}
+
 export function AppointmentsCard({ client }) {
   const { t, lang } = useI18n();
   const [list, setList] = useState([]);
+  const [sending, setSending] = useState(false);
   useEffect(() => {
     API.get("/nutrition/appointments/", { params: { client: client.id } }).then((r) => setList(r.data)).catch(() => {});
   }, [client.id]);
@@ -162,7 +251,12 @@ export function AppointmentsCard({ client }) {
   );
   return (
     <Card title={t("appointments")} icon={<CalendarDays className="h-4 w-4 text-brand" />}
-      actions={<Link to="/dashboard/appointments" className="btn-ghost px-2 py-1 text-xs"><Plus className="h-3.5 w-3.5" />{t("book")}</Link>}>
+      actions={(
+        <>
+          <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => setSending(true)}><Send className="h-3.5 w-3.5" />{t("sendBookingLink")}</button>
+          <Link to="/dashboard/appointments" className="btn-ghost px-2 py-1 text-xs"><Plus className="h-3.5 w-3.5" />{t("book")}</Link>
+        </>
+      )}>
       {list.length === 0 ? <p className="text-sm text-muted">{t("noAppointmentsClient")}</p> : (
         <>
           {upcoming.length > 0 && <ul className="mb-2 divide-y divide-line">{upcoming.map(row)}</ul>}
@@ -174,6 +268,7 @@ export function AppointmentsCard({ client }) {
           )}
         </>
       )}
+      {sending && <SendBookingLink client={client} onClose={() => setSending(false)} />}
     </Card>
   );
 }
