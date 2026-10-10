@@ -25,6 +25,14 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
   + day buttons + table (sets / reps / rest / how to) everywhere (sheet, PDF all days, phone page, Workouts page).
   Yousef: 'over all looks okay'.
 
+## Feedback from testing round 2 (10 Oct) — all DONE
+- Blood test with several pages: pick many files at once + "Add page" while checking; AI reads all pages together.
+- Diet plan sheet looks like meals: meal cards (icon, time, kcal, P/C/F) with coloured food dots, 2 columns.
+- Client file buttons tidied: pencil next to name, one "Add ▾" menu (check-in, InBody, blood test, link) + New plan.
+- Vitamin suggestions SWAP with the biggest food of the same group (macros stay), instead of adding on top.
+- Shopping list: 1 week / 2 weeks / 1 month; "Shopping list for this week" button on the weekly plan.
+- Phone page: big number is TODAY's %, the week % small underneath.
+
 ## Approved — build next (in this order unless Yousef changes it)
 1. ✅ DONE 9 Oct · **Interview exercise questions** → works out? where + own level / if not: gym? level / if not: home? level / else walking goal. Mockup r10.
 2. ✅ DONE 9 Oct · **Workout suggestion after the diet plan** → 3 best matches by goal + level + place (from #1), one-tap add. Mockup r8.

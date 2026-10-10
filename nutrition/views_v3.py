@@ -428,6 +428,7 @@ class PublicClientAppView(APIView):
                 'weekly': describe_week(plan.weekly),
                 'grocery': smart_grocery(plan),
                 'grocery2': smart_grocery(plan, weeks=2),
+                'grocery4': smart_grocery(plan, weeks=4),
                 'workout': WorkoutTemplateSerializer(plan.workout).data if plan.workout else None,
                 'kcal': round(plan.total_protein * 4 + plan.total_carb * 4 + plan.total_fat * 9),
             },

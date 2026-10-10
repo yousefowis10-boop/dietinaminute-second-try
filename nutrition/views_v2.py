@@ -301,6 +301,7 @@ class PlanSheetView(APIView):
             'unassigned': unassigned,
             'grocery': smart_grocery(plan),
             'grocery2': smart_grocery(plan, weeks=2),
+            'grocery4': smart_grocery(plan, weeks=4),
             'workout': WorkoutTemplateSerializer(plan.workout).data if plan.workout else None,
             'branding': {'clinic_name': account['clinic_name'], 'logo_url': account['logo_url']},
         })

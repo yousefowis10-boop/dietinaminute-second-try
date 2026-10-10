@@ -50,6 +50,9 @@ export function WorkoutBlock({ workout, allDays = false }) {
 }
 
 // The day plan exactly as the client receives it.
+const MEAL_ICON = { meal1: "🍳", snack1: "🍎", meal2: "🍲", snack2: "🥤", meal3: "🍽️", snack3: "🌙", meal4: "🥗" };
+const FOOD_DOT = { carb: "bg-[#b7791f]", protein: "bg-[#2563a8]", fat: "bg-[#8a4fb0]" };
+
 function DaySheet({ data, slots, notes }) {
   const { t, lang, num, fmtDate } = useI18n();
   const ar = lang === "ar";
@@ -71,26 +74,41 @@ function DaySheet({ data, slots, notes }) {
           <div key={k} className={`px-4 py-2.5 ${idx ? "border-s border-line" : "bg-brand-soft"}`}><div className="text-[11px] text-muted">{k}</div><div className="num text-lg font-bold">{v}{u}</div></div>
         ))}
       </div>
-      <div className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         {slots.filter((s) => data.meals[s.key]?.length).map((s) => {
           const rows = data.meals[s.key];
-          const kcal = rows.reduce((a, r) => a + (r.kcal || 0), 0);
+          const sum = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
+          const snack = s.key.startsWith("snack");
           return (
-            <section key={s.key} className="break-inside-avoid overflow-hidden rounded-xl border border-line">
-              <div className="flex items-center gap-2.5 bg-brand px-4 py-2 text-white">
-                <b className="text-sm">{s.name}</b>{s.time && <span className="num text-xs opacity-80">{s.time}</span>}
-                <span className="num ms-auto rounded-full bg-white/15 px-2.5 py-0.5 text-xs">{num(kcal)} {t("kcal")}</span>
+            <section key={s.key} className={`break-inside-avoid overflow-hidden rounded-2xl border ${snack ? "border-line bg-[#fbfcfb]" : "border-[#cfe3db] bg-white"}`}>
+              <div className="flex items-center gap-3 px-4 pt-3.5">
+                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-xl ${snack ? "bg-page" : "bg-brand-soft"}`}>{MEAL_ICON[s.key] || "🍽️"}</span>
+                <div className="min-w-0 flex-1 leading-tight">
+                  <b className="block text-[15px]">{s.name}</b>
+                  {s.time && <span className="num text-xs text-muted">{s.time}</span>}
+                </div>
+                <div className="text-end leading-tight">
+                  <b className="num block text-[15px] text-brand">{num(sum("kcal"))} <span className="text-[11px] font-medium text-muted">{t("kcal")}</span></b>
+                  <span className="num text-[11px] text-muted">{t("pShort")} {num(sum("protein"))} · {t("cShort")} {num(sum("carb"))} · {t("fShort")} {num(sum("fat"))}</span>
+                </div>
               </div>
-              <div className="grid grid-cols-3">
+              <ul className="mt-2.5 border-t border-[#eef2f0] px-4 py-1.5">
                 {rows.map((r, idx) => (
-                  <div key={`${r.food_en}-${idx}`} className={`flex justify-between gap-2 px-4 py-2 text-[13px] ${idx % 3 ? "border-s border-[#f0f2f0]" : ""} ${idx >= 3 ? "border-t border-[#f0f2f0]" : ""}`}>
-                    <span>{ar ? r.food : r.food_en}</span><b className="num whitespace-nowrap">{num(niceAmount(r.amount, r.factor), 1)} {ar ? r.unit : enUnit(r)}</b>
-                  </div>
+                  <li key={`${r.food_en}-${idx}`} className="flex items-center gap-2.5 py-1.5 text-[13.5px]">
+                    <i className={`h-2 w-2 shrink-0 rounded-full ${FOOD_DOT[r.type] || "bg-[#c4ccc8]"}`} />
+                    <span className="min-w-0 flex-1">{ar ? r.food : r.food_en}</span>
+                    <b className="num whitespace-nowrap rounded-md bg-page px-2 py-0.5 text-[12.5px]">{num(niceAmount(r.amount, r.factor), 1)} {ar ? r.unit : enUnit(r)}</b>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </section>
           );
         })}
+      </div>
+      <div className="mt-2.5 flex flex-wrap gap-4 text-[11px] text-muted">
+        <span className="inline-flex items-center gap-1.5"><i className={`h-2 w-2 rounded-full ${FOOD_DOT.carb}`} />{t("carbs")}</span>
+        <span className="inline-flex items-center gap-1.5"><i className={`h-2 w-2 rounded-full ${FOOD_DOT.protein}`} />{t("protein")}</span>
+        <span className="inline-flex items-center gap-1.5"><i className={`h-2 w-2 rounded-full ${FOOD_DOT.fat}`} />{t("fat")}</span>
       </div>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="break-inside-avoid rounded-xl border border-line px-4 py-3 text-[13px]">
@@ -335,7 +353,12 @@ export default function PlanSheet() {
                   <WeekRow key={i} day={d} index={i} slots={slots} names={names} onSwap={() => swapDay(i)} onEdit={() => setEditDay(i)} />
                 ))}
               </div>
-              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={weekInPdf} onChange={(e) => setWeekInPdf(e.target.checked)} />{t("includeWeekPdf")}</label>
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={weekInPdf} onChange={(e) => setWeekInPdf(e.target.checked)} />{t("includeWeekPdf")}</label>
+                <button type="button" className="btn-primary ms-auto" onClick={() => load().then(() => setTab("shop"))}>
+                  <ShoppingCart className="h-4 w-4" />{t("weekShoppingList")}
+                </button>
+              </div>
             </div>
           ) : (
             <div className="card grid place-items-center gap-3 p-10 text-center">
@@ -348,7 +371,7 @@ export default function PlanSheet() {
 
       {tab === "shop" && (
         <div className="card p-5">
-          <SmartGrocery rows={data.grocery} rows2={data.grocery2} onShare={(text) => openWhatsApp(data.client.phone, text)} />
+          <SmartGrocery rows={data.grocery} rows2={data.grocery2} rows4={data.grocery4} onShare={(text) => openWhatsApp(data.client.phone, text)} />
         </div>
       )}
 

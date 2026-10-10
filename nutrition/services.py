@@ -142,6 +142,10 @@ def split_plan(plan):
                 'unit_en': item.food.unit or '',
                 'factor': factor,
                 'kcal': round((item.food.protein * 4 + item.food.carb * 4 + item.food.fat * 9) * item.quantity * float(shares[tag.id])),
+                'type': item.food.food_type,
+                'protein': round(item.food.protein * item.quantity * float(shares[tag.id]), 1),
+                'carb': round(item.food.carb * item.quantity * float(shares[tag.id]), 1),
+                'fat': round(item.food.fat * item.quantity * float(shares[tag.id]), 1),
                 'quantity': f"{amount} {item.food.unit_ar or ''}".strip(),
             })
     return dict(result), unassigned

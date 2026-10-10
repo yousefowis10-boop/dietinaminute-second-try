@@ -107,7 +107,8 @@ export default function ClientApp() {
           <h1 className="mt-2 text-xl font-bold">{t("appHello", { name: data.first_name })} 👋</h1>
           {tab === "today" && (
             <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-              <div className="rounded-xl bg-white/15 px-3 py-2">{t("thisWeek")}<b className="num block text-lg">{data.adherence === null ? "—" : `${data.adherence}%`}</b></div>
+              <div className="rounded-xl bg-white/15 px-3 py-2">{t("todayWord")}<b className="num block text-lg">{meals.length ? `${Math.round((100 * eaten) / meals.length)}%` : "—"}</b>
+                {data.adherence !== null && <span className="num block text-[10.5px] opacity-80">{t("thisWeek")} {data.adherence}%</span>}</div>
               <div className="rounded-xl bg-white/15 px-3 py-2">{t("mealsToday")}<b className="num block text-lg">{eaten} / {meals.length}</b></div>
               <div className="rounded-xl bg-white/15 px-3 py-2">{t("water")}<b className="num block text-lg">{+(log.water * 0.25).toFixed(2)} {t("litre")}</b></div>
             </div>
@@ -213,7 +214,7 @@ export default function ClientApp() {
         )}
 
         {tab === "shop" && plan && (
-          <SmartGrocery rows={plan.grocery} rows2={plan.grocery2} ticks={shop} onTick={toggleShop} compact
+          <SmartGrocery rows={plan.grocery} rows2={plan.grocery2} rows4={plan.grocery4} ticks={shop} onTick={toggleShop} compact
             onShare={(text) => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener")} />
         )}
 

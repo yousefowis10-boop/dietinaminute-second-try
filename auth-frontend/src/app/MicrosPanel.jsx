@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Pill, Plus, TriangleAlert } from "lucide-react";
+import { ChevronDown, Pill, Plus, Shuffle, TriangleAlert } from "lucide-react";
 import { useI18n } from "../i18n";
 
 const BAR = { ok: "bg-ok", near: "bg-warn", low: "bg-bad", high: "bg-bad" };
@@ -32,7 +32,7 @@ export function microRows(items, foods, needs, nutrients, excludedIds = new Set(
 
 const fmt = (v) => (v >= 100 ? Math.round(v).toLocaleString("en-US") : Math.round(v * 10) / 10);
 
-export default function MicrosPanel({ rows, missing = 0, bloodLow = [], onAdd, collapsible = false }) {
+export default function MicrosPanel({ rows, missing = 0, bloodLow = [], onAdd, swap = false, collapsible = false }) {
   const { t, lang, foodName } = useI18n();
   const ar = lang === "ar";
   const [open, setOpen] = useState(!collapsible);
@@ -74,12 +74,13 @@ export default function MicrosPanel({ rows, missing = 0, bloodLow = [], onAdd, c
                   {r.sources.map((f) => (
                     <button key={f.id} type="button" disabled={!onAdd} onClick={() => onAdd?.(f)}
                       className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2 py-1 text-xs disabled:cursor-default">
-                      {onAdd && <Plus className="h-3 w-3 text-brand" />}{foodName(f)} <span className="num text-muted">+{fmt(f.amount)} {unitOf(r)}</span>
+                      {onAdd && (swap ? <Shuffle className="h-3 w-3 text-brand" /> : <Plus className="h-3 w-3 text-brand" />)}{foodName(f)} <span className="num text-muted">+{fmt(f.amount)} {unitOf(r)}</span>
                     </button>
                   ))}
                 </div>
               </div>
             ))}
+            {swap && rows.some((r) => r.sources.length > 0) && <p className="text-[11px] text-muted">{t("microsSwapHint")}</p>}
             {rows.every((r) => r.status === "ok") && <p className="rounded-xl bg-ok-soft p-3 text-sm text-ok">{t("microsAllGood")}</p>}
           </div>
         </div>

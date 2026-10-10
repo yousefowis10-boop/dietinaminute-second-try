@@ -29,8 +29,10 @@ export function useGroceryAmount() {
   };
 }
 
+const PERIOD = { 1: "oneWeek", 2: "twoWeeks", 4: "oneMonth" };
+
 export function groceryText(rows, weeks, t, lang, amountOf) {
-  const lines = [`🛒 ${t("groceryList")} – ${weeks === 2 ? t("twoWeeks") : t("oneWeek")}`];
+  const lines = [`🛒 ${t("groceryList")} – ${t(PERIOD[weeks])}`];
   Object.keys(SECTIONS).forEach((s) => {
     const list = rows.filter((r) => r.section === s);
     if (!list.length) return;
@@ -41,12 +43,12 @@ export function groceryText(rows, weeks, t, lang, amountOf) {
 }
 
 // The shopping list grouped by shop aisle. `ticks` + `onTick` make items tickable (client phone page).
-export default function SmartGrocery({ rows, rows2, ticks, onTick, onShare, printMode = false, compact = false }) {
+export default function SmartGrocery({ rows, rows2, rows4, ticks, onTick, onShare, printMode = false, compact = false }) {
   const { t, lang } = useI18n();
   const ar = lang === "ar";
   const [weeks, setWeeks] = useState(1);
   const amountOf = useGroceryAmount();
-  const list = weeks === 2 && rows2 ? rows2 : rows;
+  const list = (weeks === 4 && rows4) || (weeks === 2 && rows2) || rows;
   const tickable = !!onTick && !printMode;
   const bought = tickable ? list.filter((r) => ticks?.[r.food_en]).length : 0;
   const sections = Object.keys(SECTIONS).filter((s) => list.some((r) => r.section === s));
@@ -61,8 +63,8 @@ export default function SmartGrocery({ rows, rows2, ticks, onTick, onShare, prin
           <div className="ms-auto flex items-center gap-2">
             {rows2 && (
               <div className="inline-flex overflow-hidden rounded-lg border border-line text-xs font-semibold">
-                {[1, 2].map((w) => (
-                  <button key={w} type="button" onClick={() => setWeeks(w)} className={`px-3 py-1.5 ${weeks === w ? "bg-brand text-white" : "bg-white"}`}>{w === 1 ? t("oneWeek") : t("twoWeeks")}</button>
+                {[1, 2, 4].filter((w) => w === 1 || (w === 2 ? rows2 : rows4)).map((w) => (
+                  <button key={w} type="button" onClick={() => setWeeks(w)} className={`px-3 py-1.5 ${weeks === w ? "bg-brand text-white" : "bg-white"}`}>{t(PERIOD[w])}</button>
                 ))}
               </div>
             )}

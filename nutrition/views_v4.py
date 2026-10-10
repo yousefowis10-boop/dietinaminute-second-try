@@ -13,6 +13,13 @@ from .services import client_qs, plan_qs
 from .views_v2 import _ai_error, _decode_file
 
 
+def _decode_files(data):
+    """'files': [{name, content_type, data}, ...] (or a single 'file'); up to 8 pages."""
+    raw = data.get('files') or ([data['file']] if data.get('file') else [])
+    out = [_decode_file(f) for f in raw[:8]]
+    return [f for f in out if f]
+
+
 def _num(v):
     try:
         return float(v) if v not in (None, '') else None
@@ -31,7 +38,7 @@ def result_json(r, gender):
 def test_json(t, gender):
     results = [result_json(r, gender) for r in t.results.all()]
     return {'id': t.id, 'date': t.date.isoformat(), 'lab': t.lab, 'note': t.note, 'shared': t.shared,
-            'has_file': hasattr(t, 'file'), 'results': results,
+            'files': [{'id': f.id, 'name': f.name} for f in t.files.all()], 'results': results,
             'low': sum(1 for r in results if r['status'] == 'low'), 'high': sum(1 for r in results if r['status'] == 'high')}
 
 
@@ -83,7 +90,7 @@ def _save_results(test, rows):
 class BloodTestListView(APIView):
     def get(self, request, client_id):
         client = get_object_or_404(client_qs(request.user), id=client_id)
-        tests = list(client.blood_tests.prefetch_related('results').select_related('file'))
+        tests = list(client.blood_tests.prefetch_related('results', 'files'))
         return Response({
             'tests': [test_json(t, client.gender) for t in tests],
             'advice': blood_advice(client, tests),
@@ -97,14 +104,14 @@ class BloodTestListView(APIView):
         if not date:
             return Response({'detail': 'date_required'}, status=400)
         try:
-            file = _decode_file(d.get('file'))
+            files = _decode_files(d)
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=400)
         with transaction.atomic():
             test = BloodTest.objects.create(client=client, date=date, lab=str(d.get('lab') or '')[:120], note=str(d.get('note') or ''))
             _save_results(test, d.get('results'))
-            if file:
-                BloodTestFile.objects.create(test=test, data=file[0], content_type=file[1], name=file[2])
+            for f in files:
+                BloodTestFile.objects.create(test=test, data=f[0], content_type=f[1], name=f[2])
         return Response(test_json(test, client.gender), status=201)
 
 
@@ -134,9 +141,8 @@ class BloodTestDetailView(APIView):
 
 
 class BloodTestFileView(APIView):
-    def get(self, request, test_id):
-        test = get_object_or_404(BloodTest, id=test_id, client__in=client_qs(request.user))
-        f = get_object_or_404(BloodTestFile, test=test)
+    def get(self, request, file_id):
+        f = get_object_or_404(BloodTestFile, id=file_id, test__client__in=client_qs(request.user))
         resp = HttpResponse(bytes(f.data), content_type=f.content_type)
         resp['Content-Disposition'] = f'inline; filename="{f.name or "blood-test"}"'
         return resp
@@ -149,10 +155,10 @@ class BloodReadView(APIView):
         client = get_object_or_404(client_qs(request.user), id=client_id)
         try:
             ai.check_allowed(request.user)
-            file = _decode_file(request.data.get('file'))
-            if not file:
+            files = _decode_files(request.data)
+            if not files:
                 return Response({'detail': 'file_required'}, status=400)
-            out = ai.read_blood_test(file[0], file[1], client)
+            out = ai.read_blood_test([(f[0], f[1]) for f in files], client)
         except ai.AIUnavailable as exc:
             return _ai_error(exc)
         except ValueError as exc:

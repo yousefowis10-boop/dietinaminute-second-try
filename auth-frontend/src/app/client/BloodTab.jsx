@@ -13,9 +13,11 @@ const emptyRow = () => ({ name: "", value: "", unit: "", ref_low: "", ref_high: 
 const range = (r) => (r.ref_low != null && r.ref_high != null ? `${r.ref_low} – ${r.ref_high}` : r.ref_high != null ? `< ${r.ref_high}` : r.ref_low != null ? `> ${r.ref_low}` : "—");
 
 // Check / type the results before saving (after the AI read them, or by hand).
-function ReviewForm({ clientId, markers, initial, onCancel, onSaved }) {
+function ReviewForm({ clientId, markers, initial, onCancel, onSaved, onAddPage, reading }) {
   const { t, lang } = useI18n();
   const [form, setForm] = useState(initial);
+  // New pages (and what the AI read from them) arrive from the parent.
+  useEffect(() => setForm((f) => ({ ...f, files: initial.files, rows: initial.rows, read: initial.read, testMode: initial.testMode })), [initial]);
   const [busy, setBusy] = useState(false);
   const setRow = (i, patch) => setForm((f) => ({ ...f, rows: f.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
   const pickName = (i, name) => {
@@ -25,7 +27,7 @@ function ReviewForm({ clientId, markers, initial, onCancel, onSaved }) {
   const save = async () => {
     setBusy(true);
     try {
-      await API.post(`/nutrition/clients/${clientId}/blood-tests/`, { date: form.date, lab: form.lab, file: form.file, results: form.rows.filter((r) => r.name && r.value !== "") });
+      await API.post(`/nutrition/clients/${clientId}/blood-tests/`, { date: form.date, lab: form.lab, files: form.files || [], results: form.rows.filter((r) => r.name && r.value !== "") });
       toast.success(t("saved"));
       onSaved();
     } catch (err) {
@@ -39,6 +41,16 @@ function ReviewForm({ clientId, markers, initial, onCancel, onSaved }) {
       <div className="mb-3 grid gap-3 sm:grid-cols-3">
         <label className="text-xs text-muted">{t("btTestDate")}<input className="input mt-1" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></label>
         <label className="text-xs text-muted sm:col-span-2">{t("btLab")}<input className="input mt-1" value={form.lab} onChange={(e) => setForm({ ...form, lab: e.target.value })} /></label>
+      </div>
+      <div className="mb-3 flex flex-wrap items-center gap-1.5">
+        <span className="text-xs text-muted">{t("btPages")}:</span>
+        {(form.files || []).map((f, i) => (
+          <span key={i} className="inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2 py-1 text-xs">
+            <FileText className="h-3.5 w-3.5 text-muted" />{t("btPageN", { n: i + 1 })}
+            <button type="button" className="text-muted hover:text-bad" onClick={() => setForm((x) => ({ ...x, files: x.files.filter((_, j) => j !== i) }))} aria-label="remove"><X className="h-3 w-3" /></button>
+          </span>
+        ))}
+        <button type="button" className="btn-ghost px-2 py-1 text-xs" disabled={reading} onClick={onAddPage}><Plus className="h-3.5 w-3.5" />{reading ? t("btReading") : t("btAddPage")}</button>
       </div>
       <datalist id="bt-markers">{markers.map((m) => <option key={m.code} value={lang === "ar" ? m.name_ar : m.name_en} />)}</datalist>
       <div className="overflow-x-auto">
@@ -86,17 +98,25 @@ export default function BloodTab({ client, startUpload, onUploadStarted }) {
     if (startUpload && fileRef.current) { fileRef.current.click(); onUploadStarted?.(); }
   }, [startUpload, onUploadStarted, data]);
 
-  const pick = async (f) => {
-    if (!f) return;
-    if (f.size > 8 * 1024 * 1024) { toast.error(t("fileTooBig")); return; }
-    const file = { name: f.name, content_type: f.type || "image/jpeg", data: await readFileAsDataUrl(f) };
-    const base = { date: isoDay(), lab: "", file, rows: [emptyRow(), emptyRow(), emptyRow()] };
+  // Pick one or more pages (photos / PDFs). With `append`, they are added to the report being checked.
+  const pick = async (list, append) => {
+    const chosen = [...(list || [])];
+    if (!chosen.length) return;
+    if (chosen.some((f) => f.size > 8 * 1024 * 1024)) { toast.error(t("fileTooBig")); return; }
+    const added = await Promise.all(chosen.map(async (f) => ({ name: f.name, content_type: f.type || "image/jpeg", data: await readFileAsDataUrl(f) })));
+    const prev = append && review ? review : { date: isoDay(), lab: "", files: [], rows: [] };
+    const files = [...(prev.files || []), ...added].slice(0, 8);
+    const keep = prev.rows.filter((r) => r.name && r.value !== "");
+    const base = { ...prev, files, rows: keep.length ? keep : [emptyRow(), emptyRow(), emptyRow()] };
     if (blocker) { setReview(base); return; }
     setReading(true);
     try {
-      const r = await API.post(`/nutrition/clients/${client.id}/blood-read/`, { file });
-      setReview({ ...base, date: r.data.test_date || base.date, lab: r.data.lab || "", read: true, testMode: r.data.test_mode,
-        rows: r.data.results.length ? r.data.results.map((x) => ({ ...x, ref_low: x.ref_low ?? "", ref_high: x.ref_high ?? "" })) : base.rows });
+      const r = await API.post(`/nutrition/clients/${client.id}/blood-read/`, { files });
+      const read = r.data.results.map((x) => ({ ...x, ref_low: x.ref_low ?? "", ref_high: x.ref_high ?? "" }));
+      // keep anything typed by hand that the AI did not find
+      const extra = keep.filter((k) => !read.some((x) => x.name.toLowerCase() === k.name.toLowerCase()));
+      setReview({ ...base, date: (append && prev.date) || r.data.test_date || base.date, lab: prev.lab || r.data.lab || "", read: true,
+        testMode: r.data.test_mode, rows: read.length || extra.length ? [...read, ...extra] : base.rows });
     } catch (err) {
       toast.error(apiError(err, t));
       setReview(base);
@@ -104,15 +124,17 @@ export default function BloodTab({ client, startUpload, onUploadStarted }) {
       setReading(false);
     }
   };
+  const appendRef = useRef(false);
+  const openPicker = (append) => { appendRef.current = append; fileRef.current?.click(); };
   const share = async (test) => { await API.put(`/nutrition/blood-tests/${test.id}/`, { shared: !test.shared }); load(); };
   const remove = async (test) => {
     if (!window.confirm(t("confirmDelete"))) return;
     await API.delete(`/nutrition/blood-tests/${test.id}/`);
     load();
   };
-  const openFile = async (test) => {
+  const openFile = async (file) => {
     try {
-      const r = await API.get(`/nutrition/blood-tests/${test.id}/file/`, { responseType: "blob" });
+      const r = await API.get(`/nutrition/blood-files/${file.id}/`, { responseType: "blob" });
       window.open(URL.createObjectURL(r.data), "_blank", "noopener");
     } catch { toast.error(t("error")); }
   };
@@ -122,19 +144,19 @@ export default function BloodTab({ client, startUpload, onUploadStarted }) {
 
   return (
     <div className="space-y-4">
-      <input ref={fileRef} type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }} />
+      <input ref={fileRef} type="file" multiple accept="image/*,application/pdf" className="hidden" onChange={(e) => { pick(e.target.files, appendRef.current); e.target.value = ""; }} />
       {!review && (
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" className="btn-primary" disabled={reading} onClick={() => fileRef.current?.click()}>
+          <button type="button" className="btn-primary" disabled={reading} onClick={() => openPicker(false)}>
             <Upload className="h-4 w-4" />{reading ? t("btReading") : t("btUpload")}
           </button>
-          <button type="button" className="btn-secondary" onClick={() => setReview({ date: isoDay(), lab: "", file: null, rows: [emptyRow(), emptyRow(), emptyRow()] })}>
+          <button type="button" className="btn-secondary" onClick={() => setReview({ date: isoDay(), lab: "", files: [], rows: [emptyRow(), emptyRow(), emptyRow()] })}>
             <Plus className="h-4 w-4" />{t("btTypeByHand")}
           </button>
           <span className="text-xs text-muted">{blocker ? t("btUploadHintManual") : t("btUploadHint")}</span>
         </div>
       )}
-      {review && <ReviewForm clientId={client.id} markers={data.markers} initial={review} onCancel={() => setReview(null)} onSaved={() => { setReview(null); load(); }} />}
+      {review && <ReviewForm clientId={client.id} markers={data.markers} initial={review} reading={reading} onAddPage={() => openPicker(true)} onCancel={() => setReview(null)} onSaved={() => { setReview(null); load(); }} />}
 
       {data.tests.length === 0 && !review ? (
         <div className="card p-8 text-center text-sm text-muted"><Droplet className="mx-auto mb-2 h-8 w-8 text-bad/60" />{t("btNone")}</div>
@@ -161,7 +183,7 @@ export default function BloodTab({ client, startUpload, onUploadStarted }) {
                     {test.high > 0 && <span className="rounded-full bg-warn-soft px-2 text-[11px] font-bold text-warn">{test.high} {t("bt_high")}</span>}
                     {test.shared && <span className="rounded-full bg-ok-soft px-2 text-[11px] font-bold text-ok">{t("btShared")}</span>}
                     <span className="ms-auto flex gap-1">
-                      {test.has_file && <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => openFile(test)}><FileText className="h-3.5 w-3.5" />{t("btOriginal")}</button>}
+                      {test.files.map((f, i) => <button key={f.id} type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => openFile(f)}><FileText className="h-3.5 w-3.5" />{test.files.length > 1 ? t("btPageN", { n: i + 1 }) : t("btOriginal")}</button>)}
                       <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={() => share(test)}><Share2 className="h-3.5 w-3.5" />{test.shared ? t("btUnshare") : t("btShare")}</button>
                       <button type="button" className="btn-ghost p-1 hover:text-bad" onClick={() => remove(test)}><Trash2 className="h-3.5 w-3.5" /></button>
                     </span>

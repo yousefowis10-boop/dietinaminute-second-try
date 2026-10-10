@@ -224,6 +224,13 @@ class BloodTestTests(TestCase):
                           {'file': {'name': 'lab.png', 'content_type': 'image/png', 'data': base64.b64encode(b'x').decode()}}, format='json')
         self.assertEqual(r.status_code, 200, r.content)
         self.assertEqual(r.json()['results'][0]['code'], 'ferritin')
+        page = {'name': 'p.png', 'content_type': 'image/png', 'data': base64.b64encode(b'x').decode()}
+        r = self.api.post(f'/api/nutrition/clients/{self.client_profile.id}/blood-read/', {'files': [page, page, page]}, format='json')
+        self.assertEqual(r.status_code, 200)
+        saved = self.api.post(f'/api/nutrition/clients/{self.client_profile.id}/blood-tests/',
+                              {'date': '2026-10-01', 'files': [page, page, page], 'results': [{'name': 'Ferritin', 'value': 20}]}, format='json').json()
+        self.assertEqual(len(saved['files']), 3)
+        self.assertEqual(self.api.get(f"/api/nutrition/blood-files/{saved['files'][0]['id']}/").status_code, 200)
 
     def test_plan_micros(self):
         plan = make_plan(self.client_profile)  # 3 servings of a food without data

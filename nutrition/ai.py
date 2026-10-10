@@ -306,8 +306,8 @@ def read_inbody(data, content_type, client):
     return clean
 
 
-def read_blood_test(data, content_type, client):
-    """Read every test from a lab report (photo or PDF). The dietitian checks the values before saving."""
+def read_blood_test(files, client):
+    """Read every test from a lab report: one or more pages (photos or PDFs). The dietitian checks the values before saving."""
     if is_fake():
         return {'test_date': None, 'lab': 'Test lab', 'test_mode': True, 'results': [
             {'name': 'Ferritin', 'value': 9, 'unit': 'ng/mL', 'ref_low': 15, 'ref_high': 150},
@@ -318,20 +318,22 @@ def read_blood_test(data, content_type, client):
             {'name': 'LDL cholesterol', 'value': 142, 'unit': 'mg/dL', 'ref_low': None, 'ref_high': 130},
         ]}
     import base64
-    b64 = base64.b64encode(data).decode()
-    if content_type == 'application/pdf':
-        source = {'type': 'document', 'source': {'type': 'base64', 'media_type': 'application/pdf', 'data': b64}}
-    else:
-        media = content_type if content_type in ('image/jpeg', 'image/png', 'image/webp', 'image/gif') else 'image/jpeg'
-        source = {'type': 'image', 'source': {'type': 'base64', 'media_type': media, 'data': b64}}
+    sources = []
+    for data, content_type in files:
+        b64 = base64.b64encode(data).decode()
+        if content_type == 'application/pdf':
+            sources.append({'type': 'document', 'source': {'type': 'base64', 'media_type': 'application/pdf', 'data': b64}})
+        else:
+            media = content_type if content_type in ('image/jpeg', 'image/png', 'image/webp', 'image/gif') else 'image/jpeg'
+            sources.append({'type': 'image', 'source': {'type': 'base64', 'media_type': media, 'data': b64}})
     prompt = (
-        "This is a medical laboratory report (it may be in Arabic or English). Read every test result exactly as printed. "
+        "These are the pages of one medical laboratory report (Arabic or English). Read every test result on all pages exactly as printed. "
         'Return JSON: {"test_date": "YYYY-MM-DD" or null, "lab": lab name or null, "results": [{"name": test name in English, '
         '"value": number, "unit": unit as printed, "ref_low": number or null, "ref_high": number or null}]}. '
         "Use the reference range printed on the report for ref_low/ref_high (for '< 130' use ref_low null and ref_high 130). "
         "Skip tests whose result is not a number. Do not guess values that are not printed."
     )
-    out = _json(_call(SYSTEM, [source, {'type': 'text', 'text': prompt}], max_tokens=2500))
+    out = _json(_call(SYSTEM, sources + [{'type': 'text', 'text': prompt}], max_tokens=3500))
     results = []
     for r in (out.get('results') or [])[:80]:
         try:

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Droplet, Link2, Pencil, Plus, Trash2, Upload, UserCheck } from "lucide-react";
+import { ChevronDown, Droplet, Link2, Pencil, Plus, Trash2, Upload, UserCheck } from "lucide-react";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Avatar, Badge, Modal, Spinner, Tabs } from "../ui";
@@ -23,6 +23,14 @@ export default function ClientPage() {
   const [checkin, setCheckin] = useState(null); // null | "manual" | "inbody"
   const [linkOpen, setLinkOpen] = useState(false);
   const [bloodUpload, setBloodUpload] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const addRef = useRef(null);
+  useEffect(() => {
+    if (!addOpen) return undefined;
+    const close = (e) => { if (addRef.current && !addRef.current.contains(e.target)) setAddOpen(false); };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [addOpen]);
   const navigate = useNavigate();
 
   const load = useCallback(() => {
@@ -54,7 +62,9 @@ export default function ClientPage() {
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <Avatar name={c.name} size={48} />
         <div className="min-w-0 flex-1 sm:min-w-[24rem]">
-          <h1 className="text-2xl font-bold">{c.name}</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-bold">{c.name}
+            <Link to={`/dashboard/clients/${c.id}/edit`} className="btn-ghost p-1.5 text-muted" title={t("edit")} aria-label={t("edit")}><Pencil className="h-4 w-4" /></Link>
+          </h1>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
             <span className="chip">{num(c.age)} {t("years")} · {c.gender === "F" ? t("female") : t("male")}</span>
             <span className="chip num">{num(c.weight, 1)} {t("kg")} · {num(c.height)} {t("cm")}</span>
@@ -63,12 +73,27 @@ export default function ClientPage() {
             <Badge tone="brand">{t("goal")}: {t(`goal_${c.goal || ""}`)}</Badge>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link to={`/dashboard/clients/${c.id}/edit`} className="btn-secondary"><Pencil className="h-4 w-4" />{t("edit")}</Link>
-          <button type="button" className="btn-secondary" onClick={() => { setCheckin("manual"); setParams({ tab: "progress" }); }}><UserCheck className="h-4 w-4" />{t("newCheckin")}</button>
-          <button type="button" className="btn-secondary" onClick={() => setLinkOpen(true)}><Link2 className="h-4 w-4" />{t("checkinLink")}</button>
-          <button type="button" className="btn-secondary" onClick={() => { setCheckin("inbody"); setParams({ tab: "progress" }); }}><Upload className="h-4 w-4" />{t("uploadInbody")}</button>
-          <button type="button" className="btn-secondary" onClick={() => { setBloodUpload(true); setParams({ tab: "blood" }); }}><Droplet className="h-4 w-4" />{t("btUpload")}</button>
+        <div className="flex items-center gap-2">
+          <div className="relative" ref={addRef}>
+            <button type="button" className="btn-secondary" onClick={() => setAddOpen((o) => !o)} aria-expanded={addOpen}>
+              <Plus className="h-4 w-4" />{t("addMenu")}<ChevronDown className={`h-4 w-4 transition ${addOpen ? "rotate-180" : ""}`} />
+            </button>
+            {addOpen && (
+              <div className="absolute end-0 z-30 mt-1 w-60 rounded-xl border border-line bg-white p-1.5 shadow-xl">
+                {[
+                  [UserCheck, t("newCheckin"), () => { setCheckin("manual"); setParams({ tab: "progress" }); }],
+                  [Upload, t("uploadInbody"), () => { setCheckin("inbody"); setParams({ tab: "progress" }); }],
+                  [Droplet, t("btUpload"), () => { setBloodUpload(true); setParams({ tab: "blood" }); }],
+                  [Link2, t("checkinLink"), () => setLinkOpen(true)],
+                ].map(([Icon, label, go]) => (
+                  <button key={label} type="button" onClick={() => { setAddOpen(false); go(); }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm hover:bg-page">
+                    <Icon className="h-4 w-4 text-muted" />{label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Link to={`/dashboard/clients/${c.id}/plans/new`} className="btn-primary"><Plus className="h-4 w-4" />{t("newPlan")}</Link>
         </div>
       </div>

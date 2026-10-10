@@ -757,7 +757,8 @@ class BloodTest(models.Model):
 
 
 class BloodTestFile(models.Model):
-    test = models.OneToOneField(BloodTest, on_delete=models.CASCADE, related_name='file')
+    # A report can have several pages (photos or PDFs).
+    test = models.ForeignKey(BloodTest, on_delete=models.CASCADE, related_name='files')
     name = models.CharField(max_length=255, blank=True, default='')
     content_type = models.CharField(max_length=100, default='application/octet-stream')
     data = models.BinaryField()

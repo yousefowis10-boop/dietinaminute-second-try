@@ -159,6 +159,27 @@ export default function PlanBuilder() {
   const [loading, setLoading] = useState(true);
   const [editAmount, setEditAmount] = useState(null); // {food_id, meal}
 
+  // Add 1 serving of a vitamin-rich food and take the same amount of its main macro off the biggest food in the
+  // same group, so protein / carbs / fat stay where they were (e.g. salmon in, part of the chicken out).
+  const swapIn = (f) => {
+    const col = colOf(f);
+    const key = col === "carb" ? "carb" : col === "protein" ? "protein" : "fat";
+    setItems((list) => {
+      const others = list.filter((i) => i.food_id !== f.id && i.quantity > 0 && colOf(i) === col && i[key] > 0);
+      const old = others.sort((a, b) => b.quantity * b[key] - a.quantity * a[key])[0];
+      let next = list.some((i) => i.food_id === f.id)
+        ? list.map((i) => (i.food_id === f.id ? { ...i, quantity: (i.quantity > 0 ? i.quantity : 0) + 1 } : i))
+        : [...list, foodToItem(f, { quantity: 1 })];
+      if (old && f[key] > 0) {
+        const less = Math.round(((f[key] / old[key]) * 2)) / 2;
+        const left = Math.max(0, Math.round((old.quantity - less) * 2) / 2);
+        next = next.map((i) => (i.food_id === old.food_id ? { ...i, quantity: left } : i));
+        toast.success(t("swappedFor", { food: foodName(f), old: foodName(old), n: num(old.quantity - left, 1) }));
+      }
+      return next;
+    });
+  };
+
   // Daily vitamin & mineral needs for this client (and which ones their blood test shows low).
   const [microInfo, setMicroInfo] = useState(null);
   useEffect(() => {
@@ -466,7 +487,7 @@ export default function PlanBuilder() {
           {microInfo && (
             <div className="mt-4">
               <MicrosPanel collapsible {...microRows(items, foods, microInfo.needs, microInfo.nutrients, excludedIds)} bloodLow={microInfo.blood_low}
-                onAdd={(f) => setItems((list) => (list.some((i) => i.food_id === f.id) ? list.map((i) => (i.food_id === f.id && !(i.quantity > 0) ? { ...i, quantity: 1 } : i)) : [...list, foodToItem(f, { quantity: 1 })]))} />
+                swap onAdd={swapIn} />
             </div>
           )}
           <div className="mt-5 flex flex-wrap items-center gap-3">
