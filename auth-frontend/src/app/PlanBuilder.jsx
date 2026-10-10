@@ -234,6 +234,18 @@ export default function PlanBuilder() {
           setItems(commons);
           setName(t("defaultPlanName", { date: fmtDate(new Date()) }));
           setSlots(makeSlots(3, true, t));
+          // Started from the Templates page ("Use for a client"): fill the template in straight away.
+          const tplId = new URLSearchParams(window.location.search).get("template");
+          if (tplId) {
+            const [applied, all] = await Promise.all([API.get(`/nutrition/templates/${tplId}/apply/${clientId}/`), API.get("/nutrition/templates/")]);
+            if (cancelled) return;
+            const list = applied.data.items.map((i) => foodToItem({ ...byId[i.food_id], ...i, id: i.food_id }, { quantity: i.quantity, meals: i.meals || [], shares: i.shares || {} }));
+            const ids = new Set(list.map((i) => i.food_id));
+            setItems([...list, ...commons.filter((c) => !ids.has(c.food_id))]);
+            const tpl = all.data.find((x) => String(x.id) === tplId);
+            if (tpl) setName(tplName(tpl, lang));
+            if (applied.data.removed?.length) toast(t("removedExcluded", { foods: applied.data.removed.join("، ") }), { icon: "⚠️" });
+          }
         }
       } catch {
         toast.error(t("error"));

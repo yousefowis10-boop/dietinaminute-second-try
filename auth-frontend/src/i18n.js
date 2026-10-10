@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 const STRINGS = {
   ar: {
     // appointments, client app, Today
+    chooseClient: "اختر العميل", useForClient: "استخدمه لعميل", tipsGood: "يُفضّل", tipsAvoid: "قلّل أو تجنّب",
     chartsTitle: "الرسوم البيانية",
     shop_recipes: "وصفات", recipeLabel: "وصفة", recipesTab: "الوصفات", ingredients: "المكونات", directions: "طريقة التحضير", makesPortions: "تكفي {n} حصة", portionIs: "الحصة: {size}", prepTime: "التحضير", cookTime: "الطبخ", perPortion: "لكل حصة", viewRecipe: "عرض الوصفة", cookTimes: "اطبخها {n} مرة · {p} حصة", batchIngredients: "مكونات الطبخة الواحدة", recipesInPlan: "وصفات خطتك", perWeekPortions: "{n} حصة في الأسبوع", noRecipesYet: "لا توجد وصفات في هذه الخطة بعد. ابحث عن وصفة في قائمة الأطعمة (كلمة \"حلوى\" تُظهر الحلويات).", timesShort: "× {n}",
     btPages: "الصفحات", btPageN: "صفحة {n}", btAddPage: "أضف صفحة", addMenu: "إضافة", pShort: "ب", cShort: "ك", fShort: "د", swappedFor: "أُضيف {food} وخُفّض {old} بمقدار {n} حصة للحفاظ على الماكروز", microsSwapHint: "الأزرار تبدّل الطعام مكان جزء من طعام في نفس المجموعة، فتبقى البروتين والكربوهيدرات والدهون كما هي.", oneMonth: "شهر", weekShoppingList: "قائمة المشتريات لهذا الأسبوع",
@@ -478,6 +479,7 @@ const STRINGS = {
   },
   en: {
     // appointments, client app, Today
+    chooseClient: "Choose the client", useForClient: "Use for a client", tipsGood: "Good to include", tipsAvoid: "Limit or avoid",
     chartsTitle: "Charts",
     shop_recipes: "Recipes", recipeLabel: "Recipe", recipesTab: "Recipes", ingredients: "Ingredients", directions: "Directions", makesPortions: "Makes {n} portions", portionIs: "1 portion: {size}", prepTime: "Prep", cookTime: "Cook", perPortion: "per portion", viewRecipe: "View recipe", cookTimes: "Cook {n}× · {p} portions", batchIngredients: "Ingredients for one batch", recipesInPlan: "Recipes in your plan", perWeekPortions: "{n} portions a week", noRecipesYet: "No recipes in this plan yet. Search for a recipe in the food lists (typing \"treat\" shows the treats).", timesShort: "× {n}",
     btPages: "Pages", btPageN: "Page {n}", btAddPage: "Add page", addMenu: "Add", pShort: "P", cShort: "C", fShort: "F", swappedFor: "Added {food} and took {n} serving(s) off {old}, so the macros stay the same", microsSwapHint: "The buttons swap the food in for part of a food from the same group, so protein, carbs and fat stay where they are.", oneMonth: "1 month", weekShoppingList: "Shopping list for this week",
