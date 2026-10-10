@@ -74,7 +74,8 @@ function DaySheet({ data, slots, notes }) {
           <div key={k} className={`px-4 py-2.5 ${idx ? "border-s border-line" : "bg-brand-soft"}`}><div className="text-[11px] text-muted">{k}</div><div className="num text-lg font-bold">{v}{u}</div></div>
         ))}
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* One meal under the other, in the order the client eats them. */}
+      <div className="space-y-3">
         {slots.filter((s) => data.meals[s.key]?.length).map((s) => {
           const rows = data.meals[s.key];
           const sum = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
