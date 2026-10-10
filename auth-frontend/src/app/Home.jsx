@@ -59,7 +59,8 @@ export default function Home() {
   const pctTone = (p) => (p >= 75 ? "bg-ok" : p >= 50 ? "bg-warn" : "bg-bad");
   const message = (row) => openWhatsApp(row.phone, t("nudgeMsg", { name: row.name.split(" ")[0] }));
   const needs = data && !data.error
-    ? data.checkins.length + data.stopped_logging.length + data.follow_ups.length + data.packages_ending.length + data.unpaid.length
+    ? data.checkins.length + data.stopped_logging.length + data.follow_ups.length + data.interviews_waiting.length
+      + data.packages_ending.length + data.unpaid.length
     : 0;
 
   return (
@@ -128,7 +129,7 @@ export default function Home() {
                   </ul>
                 )}
               </Fold>
-              <Fold id="adherence" title={t("weekAdherence")} count={data.adherence.length} icon={<Activity className="h-4 w-4 text-brand" />}>
+              <Fold id="adherence" title={t("weekAdherence")} icon={<Activity className="h-4 w-4 text-brand" />}>
                 {data.adherence.length === 0 ? <p className="text-sm text-muted">{t("noAdherenceYet")}</p> : (
                   <ul className="space-y-2">
                     {data.adherence.map((r) => (
