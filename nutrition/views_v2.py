@@ -253,7 +253,7 @@ class PublicInterviewView(APIView):
             'clinic_name': (profile.clinic_name if profile else '') or (owner.clinic.name if owner.clinic_id else ''),
             'logo_url': profile.logo_data if profile and profile.logo_data else None,
             'submitted': invite.submitted_at is not None,
-            'foods': list(FoodItem.objects.order_by('food_type', 'name').values('id', 'name', 'name_ar', 'food_type')),
+            'foods': list(FoodItem.objects.exclude(recipe__has_pork=True).order_by('food_type', 'name').values('id', 'name', 'name_ar', 'food_type')),
         })
 
     @transaction.atomic

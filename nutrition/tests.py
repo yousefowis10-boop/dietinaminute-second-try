@@ -306,3 +306,10 @@ class RecipeTests(TestCase):
         self.assertEqual((row['amount'], row['batches']), (7, 4))  # 7 portions a week, 2 per batch
         self.assertIn('1 cup zucchini, thinly sliced', row['ingredients'])
         self.assertEqual(self.api.get(f'/api/nutrition/recipes/{quiche.food_id}/').json()['servings'], 2)
+
+    def test_pork_recipes_hidden_from_food_lists(self):
+        from .models import Recipe
+        self.assertEqual(Recipe.objects.filter(has_pork=True).count(), 6)
+        names = {f['name'] for f in self.api.get('/api/nutrition/foods/').json()}
+        self.assertNotIn('Vietnamese-Style Pork Tenderloin', names)
+        self.assertIn('Crustless Quiche', names)

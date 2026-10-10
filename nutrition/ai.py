@@ -157,7 +157,7 @@ def draft_plan(client, meals=4, language='ar'):
     if not all(targets.values()):
         raise AIUnavailable('missing_targets')
     excluded = set(client.excluded_foods.values_list('id', flat=True))
-    allowed = [f for f in FoodItem.objects.all() if f.id not in excluded and f.food_type in ('protein', 'carb', 'fat')]
+    allowed = [f for f in FoodItem.objects.exclude(recipe__has_pork=True) if f.id not in excluded and f.food_type in ('protein', 'carb', 'fat')]
     foods_by_id = {f.id: f for f in allowed}
     meal_tags = ['meal1', 'snack1', 'meal2', 'snack2', 'meal3', 'snack3', 'meal4'][:max(2, min(int(meals) * 2 - 1, 7))]
 

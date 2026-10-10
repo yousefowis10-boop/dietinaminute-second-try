@@ -184,7 +184,7 @@ class GenerateDietPlanView(APIView):
         def fill_macro(food_type, target, macro_key):
             total = 0
             food_quantities = defaultdict(int)
-            foods = FoodItem.objects.filter(food_type=food_type).order_by(f"-{macro_key}")
+            foods = FoodItem.objects.exclude(recipe__has_pork=True).filter(food_type=food_type).order_by(f"-{macro_key}")
             
             for food in foods:
                 if total >= target:
@@ -348,7 +348,7 @@ class AddItemToPlanView(APIView):
         return Response({"message": "Item added and plan updated."})
 
 class FoodItemListView(ListAPIView):
-    queryset = FoodItem.objects.select_related('recipe')
+    queryset = FoodItem.objects.exclude(recipe__has_pork=True).select_related('recipe')  # pork recipes hidden (Yousef 10 Oct)
     serializer_class = FoodItemSerializer
     permission_classes = [IsAuthenticated]
 
@@ -390,7 +390,7 @@ class GenerateCustomPlanView(APIView):
         # Step 2: Fill remaining macros
         def fill_macro(food_type, macro_key, current, target):
             nonlocal protein_total, carb_total, fat_total
-            foods = FoodItem.objects.filter(food_type=food_type).exclude(id__in=used_ids).order_by(f"-{macro_key}")
+            foods = FoodItem.objects.exclude(recipe__has_pork=True).filter(food_type=food_type).exclude(id__in=used_ids).order_by(f"-{macro_key}")
             for food in foods:
                 if current >= target:
                     break
