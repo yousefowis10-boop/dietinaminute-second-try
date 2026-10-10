@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Navigate, Route, Routes, useParams } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
@@ -5,22 +6,25 @@ import { LanguageProvider } from "./i18n";
 import AuthGuard from "./components/AuthGuard";
 import GuestGuard from "./components/GuestGuard";
 import AppLayout from "./app/AppLayout";
-import Login from "./app/Login";
-import Home from "./app/Home";
-import Clients from "./app/Clients";
-import ClientForm from "./app/ClientForm";
-import ClientPage from "./app/ClientPage";
-import PlanBuilder from "./app/PlanBuilder";
-import PlanSheet from "./app/PlanSheet";
-import Templates from "./app/Templates";
-import Workouts from "./app/Workouts";
-import Foods from "./app/Foods";
-import Settings from "./app/Settings";
-import PublicInterview from "./app/PublicInterview";
-import PublicCheckIn from "./app/PublicCheckIn";
-import PublicBooking from "./app/PublicBooking";
-import ClientApp from "./app/ClientApp";
-import Appointments from "./app/Appointments";
+import { Spinner } from "./ui";
+
+// Pages load on demand, so the client phone page and booking page stay small.
+const Login = lazy(() => import("./app/Login"));
+const Home = lazy(() => import("./app/Home"));
+const Clients = lazy(() => import("./app/Clients"));
+const ClientForm = lazy(() => import("./app/ClientForm"));
+const ClientPage = lazy(() => import("./app/ClientPage"));
+const PlanBuilder = lazy(() => import("./app/PlanBuilder"));
+const PlanSheet = lazy(() => import("./app/PlanSheet"));
+const Templates = lazy(() => import("./app/Templates"));
+const Workouts = lazy(() => import("./app/Workouts"));
+const Foods = lazy(() => import("./app/Foods"));
+const Settings = lazy(() => import("./app/Settings"));
+const PublicInterview = lazy(() => import("./app/PublicInterview"));
+const PublicCheckIn = lazy(() => import("./app/PublicCheckIn"));
+const PublicBooking = lazy(() => import("./app/PublicBooking"));
+const ClientApp = lazy(() => import("./app/ClientApp"));
+const Appointments = lazy(() => import("./app/Appointments"));
 
 // Old links (bookmarks, shared sheets) keep working.
 function OldPlanLink() {
@@ -38,6 +42,7 @@ export default function App() {
       <Toaster position="top-center" toastOptions={{ style: { borderRadius: "10px", fontSize: "14px" } }} />
       <AuthProvider>
         <Router>
+          <Suspense fallback={<div className="grid min-h-[50vh] place-items-center"><Spinner /></div>}>
           <Routes>
             {/* The client's interview link: public, no login. */}
             <Route path="/i/:token" element={<PublicInterview />} />
@@ -82,6 +87,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </Suspense>
         </Router>
       </AuthProvider>
     </LanguageProvider>

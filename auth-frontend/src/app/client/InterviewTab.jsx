@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import html2pdf from "html2pdf.js";
 import { Check, CheckCircle2, ChevronDown, ClipboardList, Download, Link2, Sparkles, TriangleAlert } from "lucide-react";
 import toast from "react-hot-toast";
-import API from "../../hooks/useApi";
+import API, { cachedGet } from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
 import { Modal, Spinner } from "../../ui";
 import { DRINKS, FREQS, FREQ_UNIT, INTERVIEW_STEPS, MEASUREMENT_FIELDS, MEASUREMENT_LABELS, answeredIn, optionLabel } from "../interviewConfig";
@@ -134,7 +134,7 @@ export default function InterviewTab({ data, reload }) {
 
   useEffect(() => {
     API.get(`/nutrition/clients/${c.id}/detailed-profile/`).then((r) => setAnswers(r.data)).catch(() => setAnswers({}));
-    API.get("/nutrition/foods/").then((r) => setFoods(r.data));
+    cachedGet("/nutrition/foods/").then((r) => setFoods(r.data));
     API.get("/nutrition/account/").then((r) => setBranding({ clinic_name: r.data.clinic_name, logo_url: r.data.logo_url }));
   }, [c.id]);
 

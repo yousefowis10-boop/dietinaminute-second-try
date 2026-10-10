@@ -14,7 +14,7 @@ from .models import (
 )
 from .scheduling import (
     adherence, appointment_json, appointments_for, calendars_for, create_calendar, free_slots, last_log_date,
-    latest_plan, local_now, package_json, parse_day, phone_digits, plan_meals, today_summary,
+    latest_plan, local_now, meals_count, package_json, parse_day, phone_digits, plan_meals, today_summary,
 )
 from .serializers import WorkoutTemplateSerializer
 from .services import client_qs, describe_week, smart_grocery
@@ -350,7 +350,7 @@ class ClientAppLinkView(APIView):
             'phone': phone_digits(client.phone),
             'adherence': adherence(client, today),
             'last_log': last_log_date(client),
-            'meals_per_day': len(plan_meals(latest_plan(client))),
+            'meals_per_day': meals_count(latest_plan(client)),
             'logs': [{'date': l.date.isoformat(), 'meals': l.meals, 'water': l.water} for l in logs],
         })
 
@@ -616,3 +616,10 @@ def _offer_slots(offer, cal):
         if day and v[11:16] in free_slots(cal, day, minutes):
             out.append(v)
     return out
+
+
+class CountsView(APIView):
+    """Small numbers for the menu badges (cheap; called on every page change)."""
+
+    def get(self, request):
+        return Response({'interviews_waiting': client_qs(request.user).filter(interview_status='submitted').count()})

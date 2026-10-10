@@ -35,3 +35,16 @@ API.interceptors.response.use(
 
 export { baseURL };
 export default API;
+
+// Lists that rarely change (foods, workouts) are kept for a few minutes so screens open instantly.
+const cache = new Map();
+export function cachedGet(url, ttlMs = 5 * 60 * 1000) {
+  const hit = cache.get(url);
+  if (hit && Date.now() - hit.at < ttlMs) return hit.promise;
+  const promise = API.get(url).catch((err) => { cache.delete(url); throw err; });
+  cache.set(url, { at: Date.now(), promise });
+  return promise;
+}
+export function clearCached(prefix = "") {
+  [...cache.keys()].forEach((k) => { if (k.startsWith(prefix)) cache.delete(k); });
+}

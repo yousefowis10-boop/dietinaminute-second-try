@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from "html2pdf.js";
 import { Copy, Download, Dumbbell, LayoutGrid, MessageCircle, Pencil, Plus, RefreshCw, ShoppingCart, Sparkles, Trash2, TriangleAlert } from "lucide-react";
-import API from "../hooks/useApi";
+import API, { cachedGet } from "../hooks/useApi";
 import { MEAL_ORDER, useI18n } from "../i18n";
 import { Card, DraftBadge, Modal, Spinner, TestModeBadge, apiError } from "../ui";
 import { AIUnavailableNote, useAIBlocker } from "./client/AIPanel";
@@ -213,8 +213,8 @@ export default function PlanSheet() {
   }), [planId]);
   useEffect(() => {
     load().then((d) => API.get(`/nutrition/clients/${d.client.id}/overview/`).then((ov) => setExcluded(new Set(ov.data.excluded_foods.map((f) => f.id)))));
-    API.get("/nutrition/workouts/").then((r) => setWorkouts(r.data));
-    API.get("/nutrition/foods/").then((r) => setFoods(r.data));
+    cachedGet("/nutrition/workouts/").then((r) => setWorkouts(r.data));
+    cachedGet("/nutrition/foods/").then((r) => setFoods(r.data));
   }, [load]);
   const slots = useSlots(data, t);
   const names = useMemo(() => dayNames(lang), [lang]);

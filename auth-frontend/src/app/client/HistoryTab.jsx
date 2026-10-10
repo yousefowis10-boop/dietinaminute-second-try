@@ -3,7 +3,7 @@ import { ChevronDown, History } from "lucide-react";
 import API from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
 import { Card, Spinner } from "../../ui";
-import { StatusPill } from "./BloodTab";
+import { StatusPill } from "./bloodUi";
 
 function Spark({ points, low, high }) {
   if (points.length < 2) return <span className="text-xs text-muted">—</span>;

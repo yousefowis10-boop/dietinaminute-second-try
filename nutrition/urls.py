@@ -55,6 +55,7 @@ urlpatterns = [
     path('ai/clients/<int:client_id>/follow-up/', v2.AIFollowUpView.as_view()),
     path('ai/plans/<int:plan_id>/client-message/', v2.AIClientMessageView.as_view()),
     path('today/', v3.TodayView.as_view()),
+    path('counts/', v3.CountsView.as_view()),
     path('calendars/', v3.CalendarListView.as_view()),
     path('calendars/<int:calendar_id>/', v3.CalendarDetailView.as_view()),
     path('calendars/<int:calendar_id>/types/', v3.AppointmentTypeListView.as_view()),

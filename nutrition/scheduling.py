@@ -132,6 +132,15 @@ def plan_meals(plan):
     return out
 
 
+def meals_count(plan):
+    """How many meals a day the plan has (cheap: only the meal tags of its foods)."""
+    if plan is None:
+        return 0
+    from .models import Tag
+    keys = set(Tag.objects.filter(diet_items__plan=plan).values_list('name', flat=True))
+    return sum(1 for k in keys if MEAL_KEY_RE.match(k))
+
+
 def adherence(client, today, days=7):
     """Share of planned meals the client ticked over the last `days` days (half = 0.5).
     None when the client has never ticked anything."""
@@ -139,7 +148,7 @@ def adherence(client, today, days=7):
     if not client.day_logs.exists():
         return None
     plan = latest_plan(client)
-    meals = len(plan_meals(plan)) if plan else 0
+    meals = meals_count(plan)
     if not meals:
         return None
     first = client.day_logs.order_by('date').first().date
@@ -200,15 +209,17 @@ def today_summary(user, today):
             stopped.append({'id': c.id, 'name': c.name, 'phone': c.phone, 'days': (today - last).days})
     adherence_rows.sort(key=lambda r: -r['pct'])
 
+    from django.db.models import Max
     booked_ahead = set(appts.filter(date__gte=today, status='booked').values_list('client_id', flat=True))
+    last_visit = dict(appts.filter(status='attended', client__isnull=False).values('client_id')
+                      .annotate(m=Max('date')).values_list('client_id', 'm'))
+    last_check = dict(ClientProfileRevision.objects.filter(client__in=clients).values('client_id')
+                      .annotate(m=Max('created_at')).values_list('client_id', 'm'))
     follow = []
     for c in clients:
         if c.id in booked_ahead:
             continue
-        last_visit = appts.filter(client=c, status='attended').order_by('-date').first()
-        last_check = c.profile_revisions.order_by('-created_at').first()
-        dates = [d for d in (last_visit.date if last_visit else None,
-                             last_check.created_at.date() if last_check else None) if d]
+        dates = [d for d in (last_visit.get(c.id), last_check[c.id].date() if c.id in last_check else None) if d]
         last = max(dates) if dates else c.created_at.date()
         gap = (today - last).days
         if gap >= 14:

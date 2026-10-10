@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Check, ChevronDown, Copy, LayoutGrid, Minus, Pencil, Plus, Search, Shuffle, Sparkles, Target, X } from "lucide-react";
-import API from "../hooks/useApi";
+import API, { cachedGet } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { CalorieRing, DraftBadge, Empty, Modal, SafetyFlags, Spinner, apiError, targetStatus } from "../ui";
 import { useAIBlocker } from "./client/AIPanel";
@@ -171,7 +171,7 @@ export default function PlanBuilder() {
     (async () => {
       try {
         const [ov, fd, cm] = await Promise.all([
-          API.get(`/nutrition/clients/${clientId}/overview/`), API.get("/nutrition/foods/"), API.get("/nutrition/foods/common/"),
+          API.get(`/nutrition/clients/${clientId}/overview/`), cachedGet("/nutrition/foods/"), API.get("/nutrition/foods/common/"),
         ]);
         if (cancelled) return;
         setOverview(ov.data);

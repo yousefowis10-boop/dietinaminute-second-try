@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Ban, Copy, Inbox, Link2, MessageCircle, Plus, TriangleAlert, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import API from "../../hooks/useApi";
+import API, { cachedGet } from "../../hooks/useApi";
 import { useI18n } from "../../i18n";
 import { Badge, Card, SafetyFlags } from "../../ui";
 import AISummaryPanel from "./AIPanel";
@@ -62,7 +62,7 @@ export function ExclusionsCard({ data, reload }) {
   const [query, setQuery] = useState("");
   const excluded = data.excluded_foods;
 
-  useEffect(() => { API.get("/nutrition/foods/").then((r) => setFoods(r.data)); }, []);
+  useEffect(() => { cachedGet("/nutrition/foods/").then((r) => setFoods(r.data)); }, []);
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];

@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { CalendarDays, ClipboardList, Dumbbell, Home, LayoutGrid, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Salad, Settings, Users, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useI18n } from "../i18n";
-import { Avatar } from "../ui";
+import { Avatar, Spinner } from "../ui";
 import API from "../hooks/useApi";
 
 function NavItem({ to, icon: Icon, label, badge, end, slim }) {
@@ -82,7 +82,7 @@ export default function AppLayout() {
   useEffect(() => setOpen(false), [location.pathname]);
   useEffect(() => {
     if (!user?.is_subscribed) return;
-    API.get("/nutrition/dashboard/").then((r) => setWaiting(r.data.counts.interviews_waiting)).catch(() => {});
+    API.get("/nutrition/counts/").then((r) => setWaiting(r.data.interviews_waiting)).catch(() => {});
   }, [user, location.pathname]);
 
   if (user && !user.is_subscribed) return <NotSubscribed />;
@@ -162,7 +162,7 @@ export default function AppLayout() {
       )}
       <main className={`px-4 py-6 sm:px-7 ${slimPref ? "lg:ms-[68px]" : "lg:ms-60"}`}>
         <div className="mx-auto max-w-7xl">
-          <Outlet />
+          <Suspense fallback={<Spinner label={t("loading")} />}><Outlet /></Suspense>
         </div>
       </main>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Copy, Dumbbell, Pencil, Plus, Search, ShieldCheck, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
-import API from "../hooks/useApi";
+import API, { clearCached } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Badge, Card, DraftBadge, Field, Modal, PageHeader, Spinner } from "../ui";
 import WorkoutView from "./WorkoutView";
@@ -87,7 +87,7 @@ export default function Workouts() {
   const [editing, setEditing] = useState(null);
   const [open, setOpen] = useState(null);
 
-  const load = () => API.get("/nutrition/workouts/").then((r) => setWorkouts(r.data));
+  const load = () => { clearCached("/nutrition/workouts/"); return API.get("/nutrition/workouts/").then((r) => setWorkouts(r.data)); };
   useEffect(() => { load(); }, []);
 
   const shown = useMemo(() => {

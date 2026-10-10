@@ -5,9 +5,9 @@ import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Spinner } from "../ui";
 import { LanguageSwitch } from "./AppLayout";
-import { WorkoutBlock } from "./PlanSheet";
+import WorkoutView from "./WorkoutView";
 import SmartGrocery from "./SmartGrocery";
-import { AdviceCards } from "./client/BloodTab";
+import { AdviceCards } from "./client/bloodUi";
 import { englishUnit, niceAmount } from "./foodUtils";
 import { dayLabel, fromIso, isoDay } from "./schedule";
 
@@ -218,7 +218,7 @@ export default function ClientApp() {
         )}
 
         {tab === "workout" && (
-          plan?.workout ? <div className="card p-4"><WorkoutBlock workout={plan.workout} /></div>
+          plan?.workout ? <div className="card p-4"><WorkoutView workout={plan.workout} /></div>
             : <div className="card p-6 text-center text-sm text-muted">{t("appNoWorkout")}</div>
         )}
       </main>

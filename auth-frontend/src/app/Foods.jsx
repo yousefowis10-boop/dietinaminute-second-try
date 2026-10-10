@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import API from "../hooks/useApi";
+import { cachedGet } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { PageHeader, Spinner } from "../ui";
 import { amountOf, kcalOf, unitLabel } from "./foodUtils";
@@ -11,7 +11,7 @@ export default function Foods() {
   const [query, setQuery] = useState("");
   const [type, setType] = useState("");
 
-  useEffect(() => { API.get("/nutrition/foods/").then((r) => setFoods(r.data)); }, []);
+  useEffect(() => { cachedGet("/nutrition/foods/").then((r) => setFoods(r.data)); }, []);
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     return (foods || []).filter((f) => (!type || f.food_type === type) && (!q || (f.name || "").toLowerCase().includes(q) || (f.name_ar || "").includes(q)));

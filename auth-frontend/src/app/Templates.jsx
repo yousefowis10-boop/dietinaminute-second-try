@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Stethoscope, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
-import API from "../hooks/useApi";
+import API, { cachedGet } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Card, DraftBadge, Empty, PageHeader, Spinner } from "../ui";
 import { tplDesc, tplName } from "./foodUtils";
@@ -14,7 +14,7 @@ export default function Templates() {
   const load = () => API.get("/nutrition/templates/").then((r) => setTemplates(r.data));
   useEffect(() => {
     load();
-    API.get("/nutrition/foods/").then((r) => setFoods(Object.fromEntries(r.data.map((f) => [f.id, f]))));
+    cachedGet("/nutrition/foods/").then((r) => setFoods(Object.fromEntries(r.data.map((f) => [f.id, f]))));
   }, []);
 
   const remove = async (tpl) => {
