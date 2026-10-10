@@ -24,7 +24,7 @@ from .serializers import (
 )
 from .services import (
     calculate_targets, clean_meal_slots, client_qs, common_foods, describe_week, ensure_tags, follow_up_due,
-    plan_qs, plan_recipes, progress_change, safety_flags, smart_grocery, split_plan, sync_never_foods, team_user_ids, weekly_plan,
+    plan_qs, plan_recipes, progress_change, allergies_of, allergy_food_ids, visible_foods, safety_flags, smart_grocery, split_plan, sync_never_foods, team_user_ids, weekly_plan,
 )
 
 # Questions a client may answer through the public link. Admin fields are not included.
@@ -182,6 +182,9 @@ class ClientOverviewView(APIView):
         return Response({
             'client': ClientProfileSerializer(client).data,
             'excluded_foods': list(client.excluded_foods.values('id', 'name', 'name_ar')),
+            'allergies': allergies_of(client),
+            'allergy_mode': client.allergy_mode,
+            'allergy_food_ids': sorted(allergy_food_ids(client, visible_foods(request.user).select_related('recipe'))),
             'interview': {
                 'status': client.interview_status,
                 'token': str(invite.token) if invite else None,
@@ -815,3 +818,15 @@ class PublicCheckInView(APIView):
         except ValueError as exc:
             return Response({'detail': str(exc)}, status=400)
         return Response({'ok': True})
+
+
+class AllergyModeView(APIView):
+    """The dietitian's one-time choice for a client's allergies: 'hide' the foods or 'mark' them in red."""
+
+    def put(self, request, client_id):
+        client = get_object_or_404(client_qs(request.user), id=client_id)
+        mode = request.data.get('mode')
+        if mode not in ('hide', 'mark', ''):
+            return Response({'mode': 'invalid'}, status=400)
+        ClientProfile.objects.filter(pk=client.pk).update(allergy_mode=mode)
+        return Response({'allergy_mode': mode})

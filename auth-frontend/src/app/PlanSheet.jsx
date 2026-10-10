@@ -253,7 +253,8 @@ export default function PlanSheet() {
     return r.data;
   }), [planId]);
   useEffect(() => {
-    load().then((d) => API.get(`/nutrition/clients/${d.client.id}/overview/`).then((ov) => setExcluded(new Set(ov.data.excluded_foods.map((f) => f.id)))));
+    load().then((d) => API.get(`/nutrition/clients/${d.client.id}/overview/`).then((ov) => setExcluded(new Set([
+      ...ov.data.excluded_foods.map((f) => f.id), ...(ov.data.allergy_mode === "hide" ? ov.data.allergy_food_ids || [] : [])]))));
     cachedGet("/nutrition/workouts/").then((r) => setWorkouts(r.data));
     cachedGet("/nutrition/foods/").then((r) => setFoods(r.data));
   }, [load]);

@@ -170,6 +170,9 @@ class ClientProfile(models.Model):
     formula_name = models.CharField(max_length=100, blank=True, default='')
     calorie_adjustment = models.FloatField(default=0)
 
+    # Allergies from the interview: '' = not decided yet (the builder asks once), 'hide' = remove those foods from
+    # searches and swaps, 'mark' = keep them but show them in red.
+    allergy_mode = models.CharField(max_length=10, blank=True, default='')
     # Foods this client must never get (allergies, medical exclusions). Hard rule.
     excluded_foods = models.ManyToManyField('nutrition.FoodItem', blank=True, related_name='excluded_for_clients')
     INTERVIEW_STATUS = [('none', 'Not sent'), ('sent', 'Link sent'), ('submitted', 'Answered, waiting for review'), ('reviewed', 'Reviewed')]

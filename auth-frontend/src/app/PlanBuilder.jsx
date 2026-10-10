@@ -74,7 +74,7 @@ function Stepper({ value, onChange }) {
 }
 
 // Searchable list of foods (one column's foods only).
-function FoodPicker({ options, others = [], onPick, placeholder, dashed = true }) {
+function FoodPicker({ options, others = [], onPick, placeholder, dashed = true, allergy = new Set() }) {
   const { t, foodName, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -93,7 +93,7 @@ function FoodPicker({ options, others = [], onPick, placeholder, dashed = true }
     <li key={f.id}>
       <button type="button" className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-start text-sm hover:bg-page"
         onClick={() => { onPick(f); setOpen(false); setQ(""); }}>
-        <span className="flex-1">{foodName(f)}{f.recipe && <BookOpen className="ms-1.5 inline h-3.5 w-3.5 text-brand" aria-label={t("recipeLabel")} />}</span>
+        <span className={`flex-1 ${allergy.has(f.id) ? "font-semibold text-bad" : ""}`}>{foodName(f)}{f.recipe && <BookOpen className="ms-1.5 inline h-3.5 w-3.5 text-brand" aria-label={t("recipeLabel")} />}{allergy.has(f.id) && <span className="ms-1.5 rounded-full bg-bad-soft px-1.5 py-px text-[10.5px] font-semibold text-bad">⚠ {t("allergyTag")}</span>}</span>
         {tag && <span className={`rounded-full px-2 py-px text-[11px] font-semibold ${HEAD[colOf(f)] || "bg-page"}`}>{tag}</span>}
         <span className="num text-xs text-muted">{amountOf(f, 1)} {unitLabel(f, lang)}</span>
       </button>
@@ -262,7 +262,22 @@ export default function PlanBuilder() {
     protein: client?.target_protein || 0, carb: client?.target_carb || 0, fat: client?.target_fat || 0, kcal: client?.target_calories || 0,
   }), [client]);
   const totals = useMemo(() => totalsOf(items), [items]);
-  const excludedIds = useMemo(() => new Set((overview?.excluded_foods || []).map((f) => f.id)), [overview]);
+  // Allergies from the interview: asked once per client whether to hide those foods or mark them in red.
+  const [allergyMode, setAllergyMode] = useState("");
+  useEffect(() => { setAllergyMode(overview?.allergy_mode || ""); }, [overview]);
+  const allergyIds = useMemo(() => new Set(overview?.allergy_food_ids || []), [overview]);
+  const askAllergy = Boolean(overview?.allergies?.length) && !allergyMode;
+  const chooseAllergy = async (mode) => {
+    setAllergyMode(mode);
+    if (mode === "hide") setItems((list) => list.filter((i) => !(allergyIds.has(i.food_id) && !(i.quantity > 0))));
+    try { await API.put(`/nutrition/clients/${clientId}/allergy-mode/`, { mode }); } catch { toast.error(t("error")); }
+  };
+  const excludedIds = useMemo(() => {
+    const ids = new Set((overview?.excluded_foods || []).map((f) => f.id));
+    if (allergyMode === "hide") allergyIds.forEach((id) => ids.add(id));
+    return ids;
+  }, [overview, allergyMode, allergyIds]);
+  const markIds = allergyMode === "mark" ? allergyIds : new Set();
   const slotKeys = slots.map((s) => s.key);
   const active = items.filter((i) => i.quantity > 0);
 
@@ -435,6 +450,14 @@ export default function PlanBuilder() {
         </div>
       )}
 
+      {step === 0 && askAllergy && (
+        <div className="card mb-4 flex flex-wrap items-center gap-3 border-bad/30 bg-bad-soft px-4 py-3">
+          <span className="min-w-[16rem] flex-1 text-sm"><b className="text-bad">⚠ {t("allergyAskTitle", { list: overview.allergies.map((a) => t(`allergy_${a}`)).join(lang === "ar" ? "، " : ", ") })}</b>
+            <span className="block text-xs text-[#6b3a3a]">{t("allergyAskBody", { n: allergyIds.size })}</span></span>
+          <button type="button" className="btn-secondary bg-white" onClick={() => chooseAllergy("mark")}>{t("allergyMark")}</button>
+          <button type="button" className="btn-primary" onClick={() => chooseAllergy("hide")}>{t("allergyHide")}</button>
+        </div>
+      )}
       {step === 0 && (
         <>
           <div className="card mb-4 flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
@@ -481,8 +504,8 @@ export default function PlanBuilder() {
                     <tbody>
                       {rows.map((i) => (
                         <tr key={i.food_id} className="border-t border-[#f0f2f0]">
-                          <td className={`h-[50px] ps-4 pe-1.5 font-semibold leading-tight ${i.quantity > 0 ? "" : "text-muted"}`}>
-                            {foodName(i)}{i.recipe && (
+                          <td className={`h-[50px] ps-4 pe-1.5 font-semibold leading-tight ${allergyIds.has(i.food_id) && allergyMode ? "text-bad" : i.quantity > 0 ? "" : "text-muted"}`}>
+                            {allergyIds.has(i.food_id) && allergyMode && <span className="me-1" title={t("allergyTag")}>⚠</span>}{foodName(i)}{i.recipe && (
                               <button type="button" className="ms-1.5 align-middle text-brand hover:text-brand-ink" onClick={() => setRecipeFor(i.food_id)} title={t("viewRecipe")} aria-label={t("viewRecipe")}>
                                 <BookOpen className="inline h-3.5 w-3.5" />
                               </button>
@@ -498,7 +521,7 @@ export default function PlanBuilder() {
                       ))}
                     </tbody>
                   </table>
-                  <div className="px-4 pb-3 pt-2.5"><FoodPicker options={options} others={foods.filter((f) => colOf(f) !== col && !used.has(f.id) && !excludedIds.has(f.id))} onPick={addFood} placeholder={t(`addAnother_${col}`)} /></div>
+                  <div className="px-4 pb-3 pt-2.5"><FoodPicker options={options} others={foods.filter((f) => colOf(f) !== col && !used.has(f.id) && !excludedIds.has(f.id))} onPick={addFood} placeholder={t(`addAnother_${col}`)} allergy={markIds} /></div>
                 </section>
               );
             })}

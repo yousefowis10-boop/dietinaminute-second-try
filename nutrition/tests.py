@@ -394,3 +394,22 @@ class FoodAddAndTeamTests(TestCase):
         sara.refresh_from_db()
         self.assertFalse(sara.is_active)
         self.assertTrue(mine.id)
+
+
+class AllergyTests(TestCase):
+    def test_allergy_foods_and_choice(self):
+        from .models import DetailedProfile
+        user = User.objects.create_user(username='d@x.test', password='x')
+        api = APIClient()
+        api.force_authenticate(user)
+        client = make_client(user)
+        for name, p in [('Egg, large (boiled)', 6), ('Almond milk', 1), ('Peanut butter, natural', 4), ('Chicken Breast', 31)]:
+            FoodItem.objects.create(name=name, unit='1', protein=p, carb=1, fat=1, food_type='protein')
+        DetailedProfile.objects.get_or_create(client=client, defaults={'user': user})
+        DetailedProfile.objects.filter(client=client).update(food_allergies=['Dairy', 'Eggs'])
+        ov = api.get(f'/api/nutrition/clients/{client.id}/overview/').json()
+        hits = set(FoodItem.objects.filter(id__in=ov['allergy_food_ids']).values_list('name', flat=True))
+        self.assertEqual(hits, {'Egg, large (boiled)'})  # almond milk and peanut butter are not dairy
+        self.assertEqual(ov['allergy_mode'], '')
+        api.put(f'/api/nutrition/clients/{client.id}/allergy-mode/', {'mode': 'hide'}, format='json')
+        self.assertEqual(api.get(f'/api/nutrition/clients/{client.id}/overview/').json()['allergy_mode'], 'hide')

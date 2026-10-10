@@ -449,6 +449,8 @@ def weekly_plan(plan, seed=None, days=7):
     rng = random.Random(seed if seed is not None else plan.id)
     client = plan.client
     excluded = set(client.excluded_foods.values_list('id', flat=True))
+    if client.allergy_mode == 'hide':
+        excluded |= allergy_food_ids(client)
     detailed = DetailedProfile.objects.filter(client=client).first()
     liked = set(detailed.liked_foods or []) if detailed else set()
     by_name = {f.name.strip().lower(): f for f in FoodItem.objects.all()}
@@ -665,3 +667,59 @@ def smart_grocery(plan, weeks=1):
         rows.append(row)
     order = {s: i for i, s in enumerate(SHOP_SECTIONS)}
     return sorted(rows, key=lambda r: (order[r['section']], r['food_en'].lower()))
+
+
+# ---------------------------------------------------------------- allergies ---
+
+# Interview allergy -> words that mark a food (or a recipe ingredient) as containing it.
+ALLERGY_WORDS = {
+    'Peanuts': ['peanut'],
+    'Shellfish': ['shrimp', 'prawn', 'crab', 'lobster', 'shellfish', 'mussel', 'oyster', 'clam', 'calamari', 'squid'],
+    'Dairy': ['milk', 'yogurt', 'youghret', 'yoghurt', 'cheese', 'labneh', 'laban', 'cream', 'butter', 'ghee', 'whey',
+              'casein', 'cottage', 'ricotta', 'mozzarella', 'feta', 'parmesan', 'halloumi', 'hallomi', 'cheddar'],
+    'Eggs': ['egg'],
+    'Wheat': ['wheat', 'bread', 'toast', 'pasta', 'bulgur', 'couscous', 'flour', 'tortilla', 'sandwich', 'biscuit', 'cracker', 'freekeh'],
+    'Soy': ['soy', 'tofu', 'edamame', 'liquid aminos'],
+    'Gluten': ['wheat', 'bread', 'toast', 'pasta', 'bulgur', 'couscous', 'flour', 'tortilla', 'sandwich', 'biscuit', 'cracker',
+               'barley', 'rye', 'freekeh', 'oat'],
+}
+# Per allergy: things that sound like it but are not ("almond milk" is not dairy, "eggplant" is not egg).
+_NOT_ALLERGEN = {
+    'Dairy': ['almond milk', 'coconut milk', 'oat milk', 'soy milk', 'rice milk', 'cashew milk', 'coconut cream', 'cocoa butter',
+              'peanut butter', 'almond butter', 'nut butter', 'cashew butter', 'cream of tartar', 'dairy-free'],
+    'Eggs': ['eggplant', 'egg-free'],
+    'Peanuts': ['peanut-free'],
+    'Wheat': ['buckwheat'],
+    'Gluten': ['buckwheat', 'gluten-free'],
+}
+
+
+def _contains(text, allergy):
+    text = f' {text.lower()} '
+    for safe in _NOT_ALLERGEN.get(allergy, []):
+        text = text.replace(safe, ' ')
+    return any(w in text for w in ALLERGY_WORDS[allergy])
+
+
+def allergy_food_ids(client, foods=None):
+    """Ids of foods (and recipes, by their ingredients) that contain the client's interview allergies."""
+    from .models import FoodItem
+    allergies = allergies_of(client)
+    if not allergies:
+        return set()
+    foods = foods if foods is not None else FoodItem.objects.select_related('recipe')
+    out = set()
+    for f in foods:
+        text = f.name or ''
+        recipe = recipe_of(f)
+        if recipe:
+            text += ' ' + ' '.join(recipe.content.get('en', {}).get('ingredients', []))
+        if any(_contains(text, a) for a in allergies):
+            out.add(f.id)
+    return out
+
+
+def allergies_of(client):
+    from .models import DetailedProfile
+    detailed = DetailedProfile.objects.filter(client=client).first()
+    return [a for a in ((detailed.food_allergies if detailed else None) or []) if a in ALLERGY_WORDS]
