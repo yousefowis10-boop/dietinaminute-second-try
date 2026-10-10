@@ -10,6 +10,7 @@ from datetime import timedelta
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 from .models import BMRFormula, ClientProfile, DietPlan
@@ -538,7 +539,7 @@ def sync_never_foods(client, detailed):
 
 # ------------------------------------------------------------ smart grocery ---
 
-SHOP_SECTIONS = ['vegetables', 'fruit', 'meat_fish', 'dairy_eggs', 'bread_grains', 'oils_nuts', 'other']
+SHOP_SECTIONS = ['vegetables', 'fruit', 'meat_fish', 'dairy_eggs', 'bread_grains', 'oils_nuts', 'other', 'recipes']
 # First match wins, so more specific words come first (e.g. "peanut butter" before "butter", "sweet potato" before "potato").
 _SECTION_WORDS = [
     ('oils_nuts', ['peanut butter', 'almond butter', 'olive oil', 'canola oil', 'coconut oil', ' oil', 'butter', 'ghee', 'avocado',
@@ -577,11 +578,8 @@ def _raw_factor(food):
     return next((f for w, f in _RAW_FACTOR if w in name), None)
 
 
-def smart_grocery(plan, weeks=1):
-    """What to buy for 1 or 2 weeks: uses the weekly plan (with its swaps) when there is one,
-    cooked grains turned into dry weight, grams rounded up to shop sizes, pieces rounded up."""
-    import math
-    from .models import FoodItem
+def weekly_servings(plan):
+    """Servings of each food in one week: from the weekly plan (with its swaps) when there is one."""
     servings = defaultdict(float)
     week_days = (plan.weekly or {}).get('days') or []
     if week_days:
@@ -591,13 +589,52 @@ def smart_grocery(plan, weeks=1):
     else:
         for item in plan.items.all():
             servings[item.food_id] += float(item.quantity or 0) * 7
-    foods = {f.id: f for f in FoodItem.objects.filter(id__in=servings)}
+    return servings
+
+
+def recipe_of(food):
+    try:
+        return food.recipe
+    except ObjectDoesNotExist:
+        return None
+
+
+def plan_recipes(plan):
+    """The recipes used in a plan, with everything the recipe page needs (ingredients, steps, photo, portions)."""
+    from .models import Recipe
+    servings = weekly_servings(plan)
+    out = []
+    for r in Recipe.objects.select_related('food').filter(food_id__in=[f for f, n in servings.items() if n > 0]):
+        f = r.food
+        out.append({'key': r.key, 'food_id': f.id, 'name': f.name, 'name_ar': f.name_ar, 'photo': r.photo,
+                    'servings': r.servings, 'section': r.section, 'section_ar': r.section_ar, 'is_treat': r.is_treat,
+                    'per_week': round(servings[f.id], 1), 'kcal': round(f.protein * 4 + f.carb * 4 + f.fat * 9),
+                    'protein': f.protein, 'carb': f.carb, 'fat': f.fat, 'content': r.content})
+    return sorted(out, key=lambda r: r['name'].lower())
+
+
+def smart_grocery(plan, weeks=1):
+    """What to buy for 1, 2 or 4 weeks: uses the weekly plan (with its swaps) when there is one,
+    cooked grains turned into dry weight, grams rounded up to shop sizes, pieces rounded up.
+    Recipes are listed with their ingredients and how many times to cook them."""
+    import math
+    from .models import FoodItem
+    servings = weekly_servings(plan)
+    foods = {f.id: f for f in FoodItem.objects.filter(id__in=servings).select_related('recipe')}
     rows = []
     for food_id, n in servings.items():
         food = foods.get(food_id)
         if food is None or n <= 0:
             continue
         n *= weeks
+        recipe = recipe_of(food)
+        if recipe:
+            portions = int(math.ceil(n - 1e-9))
+            rows.append({'food_id': food_id, 'food': food.name_ar or food.name, 'food_en': food.name, 'section': 'recipes',
+                         'kind': 'recipe', 'amount': portions, 'batches': int(math.ceil(portions / max(recipe.servings, 1))),
+                         'servings': recipe.servings, 'ingredients': recipe.content.get('en', {}).get('ingredients', []),
+                         'ingredients_ar': recipe.content.get('ar', {}).get('ingredients', []), 'note': ''})
+            continue
         factor = food.multiplying_factor or 1
         unit_l = (food.unit or '').lower()
         row = {'food_id': food_id, 'food': food.name_ar or food.name, 'food_en': food.name, 'section': shop_section(food),

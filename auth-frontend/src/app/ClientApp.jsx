@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { CalendarDays, Check, Droplet, Dumbbell, ListChecks, Salad, ShoppingCart, X } from "lucide-react";
+import { BookOpen, CalendarDays, Check, ChefHat, Droplet, Dumbbell, ListChecks, Salad, ShoppingCart, X } from "lucide-react";
 import API from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { Spinner } from "../ui";
 import { LanguageSwitch } from "./AppLayout";
 import WorkoutView from "./WorkoutView";
 import SmartGrocery from "./SmartGrocery";
+import RecipeCard from "./RecipeCard";
 import { AdviceCards } from "./client/bloodUi";
 import { englishUnit, niceAmount } from "./foodUtils";
 import { dayLabel, fromIso, isoDay } from "./schedule";
@@ -210,6 +211,23 @@ export default function ClientApp() {
               ))
             )}
             {plan.notes && <div className="card mt-3 whitespace-pre-line p-4 text-sm">{plan.notes}</div>}
+            {plan.recipes?.length > 0 && (
+              <>
+                <h2 className="mb-2 mt-5 flex items-center gap-2 font-bold"><BookOpen className="h-4 w-4 text-brand" />{t("recipesInPlan")}</h2>
+                {plan.recipes.map((r) => (
+                  <details key={r.key} className="group mb-2 overflow-hidden rounded-xl border border-line bg-white">
+                    <summary className="flex cursor-pointer list-none items-center gap-3 p-2.5 text-sm">
+                      {r.photo ? <img src={r.photo} alt="" className="h-12 w-12 shrink-0 rounded-lg object-cover" />
+                        : <span className="grid h-12 w-12 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand"><ChefHat className="h-5 w-5" /></span>}
+                      <span className="min-w-0 flex-1"><b className="block leading-tight">{(r.content?.[lang] || r.content?.en)?.title}</b>
+                        <span className="text-xs text-muted">{t("perWeekPortions", { n: r.per_week })}</span></span>
+                      <span className="text-muted transition-transform group-open:rotate-180">⌄</span>
+                    </summary>
+                    <div className="border-t border-line p-3.5"><RecipeCard recipe={r} compact /></div>
+                  </details>
+                ))}
+              </>
+            )}
           </>
         )}
 

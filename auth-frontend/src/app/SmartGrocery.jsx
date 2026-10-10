@@ -11,6 +11,7 @@ export const SECTIONS = {
   bread_grains: { icon: "🍞", tone: "bg-[#fdf4e3] text-[#b7791f]" },
   oils_nuts: { icon: "🫒", tone: "bg-[#f1f3e4] text-[#5f6b1f]" },
   other: { icon: "🛒", tone: "bg-page text-muted" },
+  recipes: { icon: "📖", tone: "bg-brand-soft text-brand" },
 };
 
 // "1.1 kg", "350 g", "14 eggs" … in the current language.
@@ -18,6 +19,7 @@ export function useGroceryAmount() {
   const { t, lang, num } = useI18n();
   const ar = lang === "ar";
   return (r) => {
+    if (r.kind === "recipe") return t("cookTimes", { n: num(r.batches), p: num(r.amount) });
     if (r.kind === "g" || r.kind === "ml") {
       const big = r.amount >= 1000;
       const n = big ? num(r.amount / 1000, 1) : num(r.amount);
@@ -37,9 +39,18 @@ export function groceryText(rows, weeks, t, lang, amountOf) {
     const list = rows.filter((r) => r.section === s);
     if (!list.length) return;
     lines.push("", `${SECTIONS[s].icon} ${t(`shop_${s}`)}`);
-    list.forEach((r) => lines.push(`• ${lang === "ar" ? r.food : r.food_en} – ${amountOf(r)}`));
+    list.forEach((r) => {
+      lines.push(`• ${lang === "ar" ? r.food : r.food_en} – ${amountOf(r)}`);
+      if (r.kind === "recipe") recipeLines(r, lang).forEach((x) => lines.push(`   – ${x}`));
+    });
   });
   return lines.join("\n");
+}
+
+// A recipe's ingredients for the whole period: one batch's list, "× n" when it is cooked n times.
+export function recipeLines(r, lang) {
+  const list = (lang === "ar" ? r.ingredients_ar : r.ingredients) || r.ingredients || [];
+  return list.map((x) => (r.batches > 1 ? `${x}  × ${r.batches}` : x));
 }
 
 // The shopping list grouped by shop aisle. `ticks` + `onTick` make items tickable (client phone page).
@@ -84,7 +95,7 @@ export default function SmartGrocery({ rows, rows2, rows4, ticks, onTick, onShar
           const items = list.filter((r) => r.section === s)
             .sort((a, b) => (tickable ? Number(!!ticks?.[a.food_en]) - Number(!!ticks?.[b.food_en]) : 0));
           return (
-            <section key={s} className="break-inside-avoid overflow-hidden rounded-2xl border border-line bg-white">
+            <section key={s} className={`break-inside-avoid overflow-hidden rounded-2xl border border-line bg-white ${s === "recipes" && !compact ? "sm:col-span-2 lg:col-span-3" : ""}`}>
               <div className={`flex items-center gap-2 px-3.5 py-2 text-[13px] font-bold ${SECTIONS[s].tone}`}>
                 <span className="text-base">{SECTIONS[s].icon}</span>{t(`shop_${s}`)}<span className="ms-auto text-[11px] font-semibold opacity-70">{items.length}</span>
               </div>
@@ -102,6 +113,11 @@ export default function SmartGrocery({ rows, rows2, rows4, ticks, onTick, onShar
                         <span className={`min-w-0 flex-1 ${done ? "text-muted line-through" : "font-medium"}`}>{ar ? r.food : r.food_en}</span>
                         <span className={`num shrink-0 rounded-lg px-2 py-0.5 text-[12.5px] font-bold ${done ? "text-muted" : "bg-page text-brand-ink"}`}>{amountOf(r)}</span>
                       </Row>
+                      {r.kind === "recipe" && (
+                        <ul className={`px-3.5 pb-2.5 text-[12.5px] ${done ? "text-muted line-through" : "text-[#3d4a44]"} ${tickable ? "ps-11" : ""}`}>
+                          {recipeLines(r, lang).map((x, n) => <li key={n} className="flex gap-1.5 py-0.5"><span className="text-muted">–</span><span>{x}</span></li>)}
+                        </ul>
+                      )}
                     </li>
                   );
                 })}

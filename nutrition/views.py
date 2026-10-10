@@ -348,7 +348,7 @@ class AddItemToPlanView(APIView):
         return Response({"message": "Item added and plan updated."})
 
 class FoodItemListView(ListAPIView):
-    queryset = FoodItem.objects.all()
+    queryset = FoodItem.objects.select_related('recipe')
     serializer_class = FoodItemSerializer
     permission_classes = [IsAuthenticated]
 

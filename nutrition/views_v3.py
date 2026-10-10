@@ -17,7 +17,7 @@ from .scheduling import (
     latest_plan, local_now, meals_count, package_json, parse_day, phone_digits, plan_meals, today_summary,
 )
 from .serializers import WorkoutTemplateSerializer
-from .services import client_qs, describe_week, smart_grocery
+from .services import client_qs, describe_week, plan_recipes, smart_grocery
 
 CAL_FIELDS = ('name', 'color', 'timezone', 'hours', 'break_start', 'break_end', 'slot_minutes', 'currency',
               'pay_online', 'pay_at_clinic', 'booking_open', 'reminders', 'active')
@@ -429,6 +429,7 @@ class PublicClientAppView(APIView):
                 'grocery': smart_grocery(plan),
                 'grocery2': smart_grocery(plan, weeks=2),
                 'grocery4': smart_grocery(plan, weeks=4),
+                'recipes': plan_recipes(plan),
                 'workout': WorkoutTemplateSerializer(plan.workout).data if plan.workout else None,
                 'kcal': round(plan.total_protein * 4 + plan.total_carb * 4 + plan.total_fat * 9),
             },

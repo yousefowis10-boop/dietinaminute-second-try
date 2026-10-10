@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Check, ChevronDown, Copy, LayoutGrid, Minus, Pencil, Plus, Search, Shuffle, Sparkles, Target, X } from "lucide-react";
+import { BookOpen, Check, ChevronDown, Copy, LayoutGrid, Minus, Pencil, Plus, Search, Shuffle, Sparkles, Target, X } from "lucide-react";
 import API, { cachedGet } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { DraftBadge, Empty, Modal, SafetyFlags, Spinner, apiError, targetStatus } from "../ui";
 import { useAIBlocker } from "./client/AIPanel";
 import MicrosPanel, { microRows } from "./MicrosPanel";
+import { RecipeModal } from "./RecipeCard";
 import { amountOf, kcalOf, niceAmount, roundHalf, totalsOf, tplDesc, tplName, unitLabel } from "./foodUtils";
 
 const COLS = ["carb", "protein", "fat"];
@@ -26,7 +27,7 @@ function foodToItem(food, extra = {}) {
   return {
     food_id: food.id, name: food.name, name_ar: food.name_ar, unit: food.unit, unit_ar: food.unit_ar,
     protein: food.protein, carb: food.carb, fat: food.fat, food_type: food.food_type,
-    multiplying_factor: food.multiplying_factor || 1, quantity: 0, meals: [], shares: {}, common: false, ...extra,
+    multiplying_factor: food.multiplying_factor || 1, recipe: food.recipe || null, quantity: 0, meals: [], shares: {}, common: false, ...extra,
   };
 }
 
@@ -92,7 +93,7 @@ function FoodPicker({ options, others = [], onPick, placeholder, dashed = true }
     <li key={f.id}>
       <button type="button" className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-start text-sm hover:bg-page"
         onClick={() => { onPick(f); setOpen(false); setQ(""); }}>
-        <span className="flex-1">{foodName(f)}</span>
+        <span className="flex-1">{foodName(f)}{f.recipe && <BookOpen className="ms-1.5 inline h-3.5 w-3.5 text-brand" aria-label={t("recipeLabel")} />}</span>
         {tag && <span className={`rounded-full px-2 py-px text-[11px] font-semibold ${HEAD[colOf(f)] || "bg-page"}`}>{tag}</span>}
         <span className="num text-xs text-muted">{amountOf(f, 1)} {unitLabel(f, lang)}</span>
       </button>
@@ -158,6 +159,8 @@ export default function PlanBuilder() {
   const [busy, setBusy] = useState("");
   const [loading, setLoading] = useState(true);
   const [editAmount, setEditAmount] = useState(null); // {food_id, meal}
+  const [recipeFor, setRecipeFor] = useState(null); // food id of the recipe shown in the pop-up
+  const closeRecipe = useCallback(() => setRecipeFor(null), []);
 
   // Add 1 serving of a vitamin-rich food and take the same amount of its main macro off the biggest food in the
   // same group, so protein / carbs / fat stay where they were (e.g. salmon in, part of the chicken out).
@@ -467,7 +470,11 @@ export default function PlanBuilder() {
                       {rows.map((i) => (
                         <tr key={i.food_id} className="border-t border-[#f0f2f0]">
                           <td className={`h-[50px] ps-4 pe-1.5 font-semibold leading-tight ${i.quantity > 0 ? "" : "text-muted"}`}>
-                            {foodName(i)}{!i.common && <span className="ms-1.5 rounded-full bg-page px-1.5 py-px align-middle text-[10.5px] font-semibold text-muted">{t("addedTag")}</span>}
+                            {foodName(i)}{i.recipe && (
+                              <button type="button" className="ms-1.5 align-middle text-brand hover:text-brand-ink" onClick={() => setRecipeFor(i.food_id)} title={t("viewRecipe")} aria-label={t("viewRecipe")}>
+                                <BookOpen className="inline h-3.5 w-3.5" />
+                              </button>
+                            )}{!i.common && <span className="ms-1.5 rounded-full bg-page px-1.5 py-px align-middle text-[10.5px] font-semibold text-muted">{t("addedTag")}</span>}
                             <span className="num block text-[11px] font-normal text-muted">1 = {amountOf(i, 1)} {unitLabel(i, lang)}</span>
                           </td>
                           <td className="px-1.5"><Stepper value={i.quantity} onChange={(q) => updateItem(i.food_id, { quantity: q })} /></td>
@@ -688,6 +695,7 @@ export default function PlanBuilder() {
           </ul>
         )}
       </Modal>
+      <RecipeModal foodId={recipeFor} onClose={closeRecipe} />
     </>
   );
 }

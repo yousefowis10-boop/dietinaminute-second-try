@@ -45,6 +45,25 @@ class FoodItem(models.Model):
         return self.name
 
 
+class Recipe(models.Model):
+    """A cookbook recipe. It is ALSO one food (1 serving = 1 portion) so it can go in any plan;
+    the client sheet / PDF then shows its ingredients, steps and photo."""
+    food = models.OneToOneField(FoodItem, on_delete=models.CASCADE, related_name='recipe')
+    key = models.SlugField(max_length=80, unique=True)
+    section = models.CharField(max_length=50, blank=True)
+    section_ar = models.CharField(max_length=50, blank=True)
+    servings = models.PositiveSmallIntegerField(default=1)  # portions one batch makes
+    photo = models.CharField(max_length=120, blank=True)  # path on the website, e.g. /recipes/meatza.jpg
+    is_treat = models.BooleanField(default=False)
+    has_pork = models.BooleanField(default=False)
+    # {"en": {title, serving_size, prep, cook, ingredients: [...], steps: [...]}, "ar": {...same...}}
+    content = models.JSONField(default=dict)
+    source = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.key
+
+
 class ClientProfileRevision(models.Model):
     client = models.ForeignKey('nutrition.ClientProfile', on_delete=models.CASCADE, related_name='profile_revisions')
     created_at = models.DateTimeField(auto_now_add=True)

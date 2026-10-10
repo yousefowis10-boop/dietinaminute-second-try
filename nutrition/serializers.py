@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 from .models import PlanTemplate, WorkoutTemplate, InterviewInvite, AIResult, ClientProfile, DietItem, DietPlan, FoodItem, BMRFormula, BMRGenderFormula, BMRActivityMultiplier, Tag, DetailedProfile, UserProfile, DetailedProfileRevision
 
@@ -102,9 +103,19 @@ class DietPlanSerializer(serializers.ModelSerializer):
         ]
 
 class FoodItemSerializer(serializers.ModelSerializer):
+    recipe = serializers.SerializerMethodField()
+
     class Meta:
         model = FoodItem
-        fields = ['id', 'name', 'name_ar', 'unit', 'unit_ar', 'food_type', 'protein', 'carb', 'fat', 'multiplying_factor', 'micros']
+        fields = ['id', 'name', 'name_ar', 'unit', 'unit_ar', 'food_type', 'protein', 'carb', 'fat', 'multiplying_factor', 'micros',
+                  'recipe']
+
+    def get_recipe(self, food):
+        try:
+            r = food.recipe
+        except ObjectDoesNotExist:
+            return None
+        return {'key': r.key, 'photo': r.photo, 'servings': r.servings, 'treat': r.is_treat}
 
 
 class BMRGenderFormulaSerializer(serializers.ModelSerializer):

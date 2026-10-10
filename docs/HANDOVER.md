@@ -7,7 +7,7 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
 
 ## Test copy (Railway project 16fc2575-998b-4ed8-b471-1a962301a9eb, env b6aff677-c1e9-4c77-80a5-deafe2c523f1)
 - backend-test (bdff837c-…): https://backend-test-production-fd61.up.railway.app — Django; AI_FAKE=true, DEMO_DATA=true.
-  Pre-deploy: migrate → seed_demo → seed_library (seed_library also runs add_usda_foods).
+  Pre-deploy: migrate → seed_demo → seed_library (seed_library also runs add_usda_foods, add_food_micros, add_recipes).
 - website-test (6437c908-…): https://website-test-production-f8cd.up.railway.app — React (auth-frontend/), builds from `new-version`.
 - phase0-checker (41114065-…): Bun function; fetches tools/test-copy-checker.ts from GitHub at a fixed commit SHA and runs
   ~100 API checks. To re-run: update its source with the new SHA, then read its logs ("ALL CHECKS PASSED").
@@ -63,3 +63,6 @@ AI as a Pro upgrade, workouts, check-ins. All work is on branch `new-version` an
    workout suggestions (r8). Mockup docs/mockups/r10-interview-exercise.html. NO CODE until Yousef says so.
 8. Before go-live: database BACKUP of live DB (required), AI key, prices (Basic/Pro), switch-over plan,
    recommendations after check-ins and nicer sheet design are deferred.
+
+- Recipes: nutrition/recipes_book.json (100 recipes, en + ar) + auth-frontend/public/recipes/*.jpg; `add_recipes` loads them
+  (safe to re-run). Made from the book PDF with scripts kept outside the repo (bookparse/bookclean/bookmerge).

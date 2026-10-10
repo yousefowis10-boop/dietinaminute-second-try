@@ -50,10 +50,16 @@ New screens always get a picture (mockup) first. Everything Arabic + English.
   Not done on purpose: client file split (Yousef: fine as is), one link per client (interview/phone page) — ask first.
 
 ## Pinned (waiting for Yousef)
-- **Recipes library** (Yousef 10 Oct, PDF coming): each recipe becomes ONE food in the Carbs / Protein / Fat lists (by its main
-  macro), 1 serving = one portion, nutrition worked out from its ingredients. Treats are named "Treat – …" so typing "treat"
-  in any food search lists them. In a plan the recipe counts as one item (its ingredients' totals); the client sheet / PDF gets
-  an extra page per recipe used: ingredients with amounts, steps, portions. Shopping list breaks recipes into ingredients.
+- ✅ **Recipes library** (built 10 Oct, NOT pushed yet — see below): all 100 recipes from "The Bodybuilder's Kitchen" (Yousef
+  confirmed 10 Oct he holds the rights to the book). Each recipe is ONE food in the Carbs / Protein / Fat lists (where most of
+  its calories come from: 54 protein, 32 carbs, 14 fat), unit "portion", nutrition = the book's per-portion values (more exact
+  than adding up ingredients). 19 treats (shakes, desserts, sweet bars, muffins) are named "Treat – …" / "حلوى – …".
+  6 recipes contain pork/ham/bacon: kept, clearly named "(pork)" / "لحم خنزير" — ask Yousef if they should be hidden.
+  Full Arabic translation of every title, ingredient and step. 18 food photos taken from the book (public/recipes/).
+  Shows in: plan builder (📖 opens the recipe), Food database (Recipes filter), client sheet (Recipes tab + one PDF page per
+  recipe with photo), client phone page (Plan → "Recipes in your plan"), shopping list ("Recipes" section: cook N times,
+  the batch ingredients × N).
+  ⚠️ The GitHub repo is PUBLIC: pushing would publish the whole book. Waiting for Yousef: make the repo private first?
 - **Allergies from the interview** (Yousef 10 Oct): if the client marks an allergy (peanuts, shellfish, dairy, eggs, wheat,
   soy, gluten…), the dietitian is ASKED once: "Remove these foods from the search" or "Just mark them in red". Applies in the
   plan builder and swaps.

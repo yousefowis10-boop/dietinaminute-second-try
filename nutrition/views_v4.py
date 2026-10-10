@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from . import ai
 from .bloodwork import MARKERS, NUTRIENTS, advice_for, best_sources, daily_needs, marker_range, match_marker, plan_micros, status_of
-from .models import BloodResult, BloodTest, BloodTestFile, DetailedProfile, FoodItem
+from .models import BloodResult, BloodTest, BloodTestFile, DetailedProfile, FoodItem, Recipe
 from .scheduling import latest_plan, parse_day
 from .services import client_qs, plan_qs
 from .views_v2 import _ai_error, _decode_file
@@ -243,3 +243,15 @@ class PlanMicrosView(APIView):
                          'pct': pct, 'status': status,
                          'sources': best_sources(key, foods, excluded) if status in ('low', 'near') else []})
         return Response({'rows': rows, 'missing': missing, 'blood_low': _blood_lows(client)})
+
+
+class RecipeView(APIView):
+    """One recipe (by its food id): ingredients, steps, photo, portions."""
+
+    def get(self, request, food_id):
+        r = get_object_or_404(Recipe.objects.select_related('food'), food_id=food_id)
+        f = r.food
+        return Response({'key': r.key, 'food_id': f.id, 'name': f.name, 'name_ar': f.name_ar, 'photo': r.photo,
+                         'servings': r.servings, 'section': r.section, 'section_ar': r.section_ar, 'is_treat': r.is_treat,
+                         'kcal': round(f.protein * 4 + f.carb * 4 + f.fat * 9), 'protein': f.protein, 'carb': f.carb,
+                         'fat': f.fat, 'content': r.content})

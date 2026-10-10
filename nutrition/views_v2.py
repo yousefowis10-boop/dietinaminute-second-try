@@ -24,7 +24,7 @@ from .serializers import (
 )
 from .services import (
     calculate_targets, clean_meal_slots, client_qs, common_foods, describe_week, ensure_tags, follow_up_due,
-    plan_qs, progress_change, safety_flags, smart_grocery, split_plan, sync_never_foods, team_user_ids, weekly_plan,
+    plan_qs, plan_recipes, progress_change, safety_flags, smart_grocery, split_plan, sync_never_foods, team_user_ids, weekly_plan,
 )
 
 # Questions a client may answer through the public link. Admin fields are not included.
@@ -302,6 +302,7 @@ class PlanSheetView(APIView):
             'grocery': smart_grocery(plan),
             'grocery2': smart_grocery(plan, weeks=2),
             'grocery4': smart_grocery(plan, weeks=4),
+            'recipes': plan_recipes(plan),
             'workout': WorkoutTemplateSerializer(plan.workout).data if plan.workout else None,
             'branding': {'clinic_name': account['clinic_name'], 'logo_url': account['logo_url']},
         })

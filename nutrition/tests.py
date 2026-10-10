@@ -268,3 +268,41 @@ class BookingOfferTests(TestCase):
         self.assertEqual(ok.status_code, 201, ok.content)
         self.assertEqual(Appointment.objects.get().client_id, self.client_profile.id)
         self.assertTrue(APIClient().get(f"/api/public/book/{r['slug']}/", {'o': r['token']}).json()['offer']['booked'])
+
+
+class RecipeTests(TestCase):
+    def setUp(self):
+        from io import StringIO
+
+        from django.core.management import call_command
+        call_command('add_recipes', stdout=StringIO())
+        self.user = User.objects.create_user(username='d@x.test', password='x')
+        self.api = APIClient()
+        self.api.force_authenticate(self.user)
+
+    def test_recipes_are_foods_in_the_right_group(self):
+        from .models import Recipe
+        self.assertEqual(Recipe.objects.count(), 100)
+        quiche = Recipe.objects.get(key='crustless-quiche').food
+        self.assertEqual((quiche.food_type, quiche.unit, quiche.protein), ('protein', 'portion', 29.1))
+        mousse = Recipe.objects.get(key='choco-cado-mousse').food
+        self.assertEqual((mousse.name, mousse.food_type), ('Treat – Choco-Cado Mousse', 'fat'))
+        foods = self.api.get('/api/nutrition/foods/').json()
+        treat = [f for f in foods if 'treat' in f['name'].lower()]
+        self.assertGreaterEqual(len(treat), 15)
+        self.assertEqual(treat[0]['recipe']['treat'], True)
+
+    def test_recipe_in_plan_sheet_and_shopping_list(self):
+        from .models import Recipe
+        client = make_client(self.user)
+        plan = make_plan(client)
+        quiche = Recipe.objects.get(key='crustless-quiche')  # makes 2 portions
+        DietItem.objects.create(plan=plan, food=quiche.food, category='protein', quantity=1, protein=29, carb=11, fat=4)
+        data = self.api.get(f'/api/nutrition/plan/{plan.id}/sheet/').json()
+        self.assertEqual([r['key'] for r in data['recipes']], ['crustless-quiche'])
+        self.assertEqual(data['recipes'][0]['photo'], '/recipes/crustless-quiche.jpg')
+        self.assertTrue(data['recipes'][0]['content']['ar']['steps'])
+        row = next(r for r in data['grocery'] if r['section'] == 'recipes')
+        self.assertEqual((row['amount'], row['batches']), (7, 4))  # 7 portions a week, 2 per batch
+        self.assertIn('1 cup zucchini, thinly sliced', row['ingredients'])
+        self.assertEqual(self.api.get(f'/api/nutrition/recipes/{quiche.food_id}/').json()['servings'], 2)

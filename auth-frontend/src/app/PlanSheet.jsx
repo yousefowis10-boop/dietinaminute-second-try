@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import html2pdf from "html2pdf.js";
-import { Copy, Download, Dumbbell, LayoutGrid, MessageCircle, Pencil, Plus, RefreshCw, ShoppingCart, Sparkles, Trash2, TriangleAlert } from "lucide-react";
+import { BookOpen, Copy, Download, Dumbbell, LayoutGrid, MessageCircle, Pencil, Plus, RefreshCw, ShoppingCart, Sparkles, Trash2, TriangleAlert } from "lucide-react";
 import API, { cachedGet } from "../hooks/useApi";
 import { MEAL_ORDER, useI18n } from "../i18n";
 import { Card, DraftBadge, Modal, Spinner, TestModeBadge, apiError } from "../ui";
@@ -13,6 +13,7 @@ import WorkoutSuggestions from "./WorkoutSuggestions";
 import WorkoutView from "./WorkoutView";
 import SmartGrocery from "./SmartGrocery";
 import MicrosPanel from "./MicrosPanel";
+import RecipeCard from "./RecipeCard";
 import { openWhatsApp } from "./schedule";
 
 const enUnit = (row) => englishUnit(row.unit_en, row.unit, row.factor ?? 100);
@@ -57,6 +58,7 @@ function DaySheet({ data, slots, notes }) {
   const { t, lang, num, fmtDate } = useI18n();
   const ar = lang === "ar";
   const p = data.plan;
+  const recipeNames = new Set((data.recipes || []).map((r) => r.name));
   return (
     <div className="bg-white">
       <header className="flex items-center gap-4 border-b-[3px] border-brand pb-4">
@@ -97,7 +99,7 @@ function DaySheet({ data, slots, notes }) {
                 {rows.map((r, idx) => (
                   <li key={`${r.food_en}-${idx}`} className="flex items-center gap-2.5 py-1.5 text-[13.5px]">
                     <i className={`h-2 w-2 shrink-0 rounded-full ${FOOD_DOT[r.type] || "bg-[#c4ccc8]"}`} />
-                    <span className="min-w-0 flex-1">{ar ? r.food : r.food_en}</span>
+                    <span className="min-w-0 flex-1">{ar ? r.food : r.food_en}{recipeNames.has(r.food_en) && <BookOpen className="ms-1.5 inline h-3.5 w-3.5 text-brand" aria-label={t("recipeLabel")} />}</span>
                     <b className="num whitespace-nowrap rounded-md bg-page px-2 py-0.5 text-[12.5px]">{num(niceAmount(r.amount, r.factor), 1)} {ar ? r.unit : enUnit(r)}</b>
                   </li>
                 ))}
@@ -286,7 +288,9 @@ export default function PlanSheet() {
   };
   const lo = week ? Math.min(...week.days.map((d) => d.kcal)) : 0;
   const hi = week ? Math.max(...week.days.map((d) => d.kcal)) : 0;
-  const tabs = [["day", t("tabDayPlan")], ["week", t("tabWeekly")], ["shop", t("tabShopping")], ["workout", t("tabWorkout")], ["micros", t("tabMicros")]];
+  const recipes = data.recipes || [];
+  const tabs = [["day", t("tabDayPlan")], ["week", t("tabWeekly")], ["shop", t("tabShopping")], ...(recipes.length ? [["recipes", `${t("recipesTab")} (${num(recipes.length)})`]] : []),
+    ["workout", t("tabWorkout")], ["micros", t("tabMicros")]];
 
   return (
     <>
@@ -376,6 +380,12 @@ export default function PlanSheet() {
         </div>
       )}
 
+      {tab === "recipes" && (
+        <div className="grid gap-4 xl:grid-cols-2">
+          {recipes.map((r) => <div key={r.key} className="card p-5 sm:p-6"><RecipeCard recipe={r} /></div>)}
+        </div>
+      )}
+
       {tab === "micros" && <PlanMicros planId={planId} />}
       {tab !== "workout" && !data.workout && (
         <button type="button" onClick={() => setTab("workout")} className="mb-4 flex w-full items-center gap-2 rounded-xl border border-brand/20 bg-brand-soft px-4 py-3 text-start text-sm font-semibold text-brand">
@@ -421,6 +431,7 @@ export default function PlanSheet() {
               <SmartGrocery rows={data.grocery} printMode />
             </>
           )}
+          {recipes.map((r) => (<div key={r.key}><div className="html2pdf__page-break" /><RecipeCard recipe={r} printMode /></div>))}
           {data.workout && (<><div className="html2pdf__page-break" /><WorkoutBlock workout={data.workout} allDays /></>)}
           <footer className="mt-6 flex text-[11px] text-muted" dir="ltr"><span>Diet in a Minute</span><span className="ms-auto">{fmtDate(data.plan.created_at)}</span></footer>
         </div>

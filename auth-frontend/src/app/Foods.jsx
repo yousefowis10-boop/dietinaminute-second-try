@@ -1,20 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { BookOpen, Search } from "lucide-react";
 import { cachedGet } from "../hooks/useApi";
 import { useI18n } from "../i18n";
 import { PageHeader, Spinner } from "../ui";
 import { amountOf, kcalOf, unitLabel } from "./foodUtils";
+import { RecipeModal } from "./RecipeCard";
 
 export default function Foods() {
   const { t, lang, foodName, num } = useI18n();
   const [foods, setFoods] = useState(null);
   const [query, setQuery] = useState("");
   const [type, setType] = useState("");
+  const [recipeFor, setRecipeFor] = useState(null);
+  const closeRecipe = useCallback(() => setRecipeFor(null), []);
 
   useEffect(() => { cachedGet("/nutrition/foods/").then((r) => setFoods(r.data)); }, []);
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return (foods || []).filter((f) => (!type || f.food_type === type) && (!q || (f.name || "").toLowerCase().includes(q) || (f.name_ar || "").includes(q)));
+    return (foods || []).filter((f) => (!type || (type === "recipe" ? f.recipe : f.food_type === type)) && (!q || (f.name || "").toLowerCase().includes(q) || (f.name_ar || "").includes(q)));
   }, [foods, query, type]);
 
   return (
@@ -28,6 +31,7 @@ export default function Foods() {
         <select className="input w-auto" value={type} onChange={(e) => setType(e.target.value)}>
           <option value="">—</option>
           {["protein", "carb", "fat"].map((x) => <option key={x} value={x}>{t(`type_${x}`)}</option>)}
+          <option value="recipe">{t("recipesTab")}</option>
         </select>
       </div>
       {!foods ? <Spinner label={t("loading")} /> : (
@@ -46,7 +50,11 @@ export default function Foods() {
             <tbody>
               {shown.map((f) => (
                 <tr key={f.id} className="border-t border-line">
-                  <td className="px-4 py-2"><div className="font-medium">{foodName(f)}</div><div className="text-xs text-muted">{t(`type_${f.food_type}`)}</div></td>
+                  <td className="px-4 py-2"><div className="font-medium">{foodName(f)}{f.recipe && (
+                    <button type="button" className="ms-2 inline-flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 align-middle text-[11px] font-semibold text-brand hover:bg-brand hover:text-white" onClick={() => setRecipeFor(f.id)}>
+                      <BookOpen className="h-3 w-3" />{t("viewRecipe")}
+                    </button>
+                  )}</div><div className="text-xs text-muted">{t(`type_${f.food_type}`)}</div></td>
                   <td className="px-3 py-2 text-muted">{amountOf(f, 1)} {unitLabel(f, lang)}</td>
                   <td className="num px-3 py-2 text-center">{num(kcalOf(f))}</td>
                   <td className="num px-3 py-2 text-center">{num(f.protein, 1)}</td>
@@ -58,6 +66,7 @@ export default function Foods() {
           </table>
         </div>
       )}
+      <RecipeModal foodId={recipeFor} onClose={closeRecipe} />
     </>
   );
 }

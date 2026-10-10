@@ -76,6 +76,7 @@ urlpatterns = [
     path('blood-tests/<int:test_id>/', v4.BloodTestDetailView.as_view()),
     path('blood-files/<int:file_id>/', v4.BloodTestFileView.as_view()),
     path('plan/<int:plan_id>/micros/', v4.PlanMicrosView.as_view()),
+    path('recipes/<int:food_id>/', v4.RecipeView.as_view()),
     # --- existing ---
     path('profile/', UserProfileView.as_view(), name='user-profile'),
 
